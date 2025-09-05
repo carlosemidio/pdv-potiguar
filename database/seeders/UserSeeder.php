@@ -50,9 +50,21 @@ class UserSeeder extends Seeder
             'products_view',
             'products_create',
             'products_edit',
-            'notifications_view',
+            'products_delete',
             'cities_view',
-            'categories_view'
+            'categories_view',
+            'categories_create',
+            'categories_edit',
+            'categories_delete',
+            'brands_view',
+            'brands_create',
+            'brands_edit',
+            'brands_delete',
+            'addons_view',
+            'addons_create',
+            'addons_edit',
+            'addons_delete',
+            'notifications_view',
         ];
 
         foreach ($permissions as $permissionName) {

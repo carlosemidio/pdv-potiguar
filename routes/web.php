@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\AddonsController;
+use App\Http\Controllers\Ajax\BrandListController;
 use App\Http\Controllers\AttibuteController;
-use App\Http\Controllers\BrandController;
-use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\Ajax\CategoryListController;
+use App\Http\Controllers\BrandsController;
+use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
@@ -35,6 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('/funcoes', RoleController::class)->names('role');
     Route::resource('/permissoes', PermissionController::class)->names('permission');
     Route::resource('/usuarios', UserController::class)->only(['index', 'create', 'store', 'update'])->names('user');
+    
     Route::get('/usuarios/{uuid}/edit', [UserController::class, 'edit'])->name('user.edit');
     Route::get('/usuarios/{uuid}/show', [UserController::class, 'show'])->name('user.show');
     Route::patch('usuarios/{uuid}/status', [
@@ -59,16 +63,25 @@ Route::middleware('auth')->group(function () {
     Route::resource('/produtos', ProductController::class)
         ->names('product');
 
+    Route::resource('/complementos', AddonsController::class)
+        ->names('addons');
+
+    Route::resource('/categorias', CategoriesController::class)
+        ->names('categories');
+
+    Route::resource('/marcas', BrandsController::class)
+        ->names('brands');
+
     // rota usada no componente select de cidades
     Route::get('search-cities-select', [CityController::class, 'index'])
         ->name('cities-select.search');
 
     // rota usada no componente select de categorias
-    Route::get('search-categories-select', [CategoryController::class, 'index'])
+    Route::get('search-categories-select', [CategoryListController::class, 'index'])
         ->name('categories-select.search');
 
     // rota usada no componente select de marcas
-    Route::get('search-brands-select', [BrandController::class, 'index'])
+    Route::get('search-brands-select', [BrandListController::class, 'index'])
         ->name('brands-select.search');
 
     Route::get('search-attributes-select', [AttibuteController::class, 'index'])

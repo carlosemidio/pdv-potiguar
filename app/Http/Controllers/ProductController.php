@@ -46,7 +46,7 @@ class ProductController extends Controller
         }
 
         $products = $productsQuery->orderBy('name')
-            ->paginate(10)->withQueryString();
+            ->paginate(12)->withQueryString();
 
         return Inertia::render('Product/Index', [
             'products' => ProductResource::collection($products)

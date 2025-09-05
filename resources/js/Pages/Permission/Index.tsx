@@ -4,17 +4,18 @@ import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
+import { PageProps, PaginatedData } from '@/types';
 import { Permission } from '@/types/Permission';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Edit, Trash } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
+import Pagination from '@/Components/Pagination/Pagination';
 
 export default function Index({
     auth,
     permissions,
-}: PageProps<{ permissions: { data: Permission[] } }>) {
+}: PageProps<{ permissions: PaginatedData<Permission> }>) {
 
     const [confirmingPermissionDeletion, setConfirmingPermissionDeletion] = useState(false);
     const [permissionIdToDelete, setPermissionIdToDelete] = useState<number | null>(null);
@@ -47,6 +48,10 @@ export default function Index({
     };
 
     const permissionToDelete = permissions.data.find(permission => permission.id === permissionIdToDelete);
+
+    const {
+        meta: { links },
+    } = permissions;
 
     return (
         <AuthenticatedLayout
@@ -106,6 +111,14 @@ export default function Index({
                                 </Card>
                             ))
                         }
+
+                        <Pagination links={links} />
+
+                        {permissions.data.length === 0 && (
+                            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                                Nenhuma permissão encontrada.
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>

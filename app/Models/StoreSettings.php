@@ -2,19 +2,22 @@
 
 namespace App\Models;
 
-use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Brand extends Model
+class StoreSetting extends Model
 {
-    use HasFactory, SoftDeletes, HasSlug;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
-        'name',
-        'slug',
-        'status',
+        'store_id',
+        'key',
+        'value',
     ];
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
 }

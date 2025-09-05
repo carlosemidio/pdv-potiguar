@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('brands', function (Blueprint $table) {
+        Schema::create('product_addon', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
-            $table->string('name')->unique();
-            $table->string('slug')->unique();
-            $table->boolean('status')->default(true);
-            $table->softDeletes();
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->foreignId('addon_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -27,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('brands');
+        Schema::dropIfExists('product_addon');
     }
 };

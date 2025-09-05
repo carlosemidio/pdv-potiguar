@@ -8,6 +8,7 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 import { ChevronDown, Gauge, KeySquare, Mail, Menu, MonitorCog, Store, UserCircle2, X } from 'lucide-react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import { CgProductHunt } from 'react-icons/cg';
+import { MdAddCircle, MdBrandingWatermark, MdCategory } from 'react-icons/md';
 
 export default function Authenticated({
     user,
@@ -77,11 +78,38 @@ export default function Authenticated({
                                 </NavLink>
                             )}
 
+                            {can('categories_view') && (
+                                <NavLink href={route('categories.index')} active={route().current('categories.index')}>
+                                    <div className='flex gap-2 items-center'>
+                                        <MdCategory className="w-6 h-6" />
+                                        <p>Categorias</p>
+                                    </div>
+                                </NavLink>
+                            )}
+
+                            {can('brands_view') && (
+                                <NavLink href={route('brands.index')} active={route().current('brands.index')}>
+                                    <div className='flex gap-2 items-center'>
+                                        <MdBrandingWatermark className="w-6 h-6" />
+                                        <p>Marcas</p>
+                                    </div>
+                                </NavLink>
+                            )}
+
                             {can('products_view') && (
                                 <NavLink href={route('product.index')} active={route().current('product.index')}>
                                     <div className='flex gap-2 items-center'>
                                         <CgProductHunt className="w-6 h-6" />
                                         <p>Produtos</p>
+                                    </div>
+                                </NavLink>
+                            )}
+
+                            {can('addons_view') && (
+                                <NavLink href={route('addons.index')} active={route().current('addons.index')}>
+                                    <div className='flex gap-2 items-center'>
+                                        <MdAddCircle className="w-6 h-6" />
+                                        <p>Complementos</p>
                                     </div>
                                 </NavLink>
                             )}

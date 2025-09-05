@@ -4,18 +4,19 @@ import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
+import { PageProps, PaginatedData } from '@/types';
 import { Product } from '@/types/Product';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Edit, Eye, Trash } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { formatCustomDateTime } from '@/utils/date-format';
+import Pagination from '@/Components/Pagination/Pagination';
 
 export default function Index({
     auth,
     products,
-}: PageProps<{ products: { data: Product[]} }>) {
+}: PageProps<{ products: PaginatedData<Product> }>) {
     const {
         delete: destroy,
         processing,
@@ -48,6 +49,8 @@ export default function Index({
         clearErrors();
         reset();
     };
+
+    const { data, meta } = products;
 
     return (
         <AuthenticatedLayout
@@ -166,6 +169,16 @@ export default function Index({
                                 </Card>
                             ))
                         }
+
+                        {products.data.length === 0 && (
+                            <div className="text-center py-12 text-gray-500 dark:text-gray-400 col-span-full">
+                                Nenhum produto cadastrado.
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mt-6">
+                        <Pagination links={meta.links} />
                     </div>
                 </div>
             </section>

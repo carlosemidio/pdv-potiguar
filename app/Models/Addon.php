@@ -2,25 +2,23 @@
 
 namespace App\Models;
 
-use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Category extends Model
+class Addon extends Model
 {
-    use HasFactory, SoftDeletes, HasSlug;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',
         'name',
-        'slug',
-        'parent_id',
-        'status',
+        'description',
+        'price',
     ];
 
-    public function parent()
+    public function products()
     {
-        return $this->belongsTo(Category::class, 'parent_id');
+        return $this->belongsToMany(Product::class, 'product_addon', 'addon_id', 'product_id');
     }
 }

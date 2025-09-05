@@ -3,34 +3,38 @@
 return [
     [
         'name' => 'permissions',
-        'display_name' => 'Permissão',
+        'display_name' => 'Permissões',
     ],
     [
         'name' => 'roles',
-        'display_name' => 'Função',
+        'display_name' => 'Funções',
     ],
     [
         'name' => 'users',
-        'display_name' => 'Usuário',
+        'display_name' => 'Usuários',
     ],
     [
         'name' => 'stores',
-        'display_name' => 'Loja',
+        'display_name' => 'Lojas',
     ],
     [
         'name' => 'cities',
-        'display_name' => 'Cidade',
+        'display_name' => 'Cidades',
     ],
     [
         'name' => 'categories',
-        'display_name' => 'Categoria',
+        'display_name' => 'Categorias',
     ],
     [
         'name' => 'products',
-        'display_name' => 'Produto',
+        'display_name' => 'Produtos',
     ],
     [
         'name' => 'notifications',
-        'display_name' => 'Notificação',
+        'display_name' => 'Notificações',
+    ],
+    [
+        'name' => 'addons',
+        'display_name' => 'Complementos',
     ],
 ];

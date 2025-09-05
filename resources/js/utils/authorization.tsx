@@ -1,9 +1,5 @@
 import { usePage } from '@inertiajs/react';
 
-type item = {
-    user_id: number;
-}
-
 export function can(permission: string, idsArray?: number[]): boolean {
     const userPermissions = usePage().props.auth.userPermissions;
     

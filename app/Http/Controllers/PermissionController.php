@@ -16,12 +16,11 @@ class PermissionController extends Controller
     {
         $this->authorize('list', Permission::class);
         $permissions = Permission::orderBy('display_name')
-            ->get();
+            ->paginate(12);
 
         return Inertia::render('Permission/Index', [
             'permissions' => PermissionResource::collection($permissions)
         ]);
-
     }
 
     /**

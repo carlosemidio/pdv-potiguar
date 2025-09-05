@@ -46,4 +46,14 @@ class Store extends Model
     {
         return $this->morphMany(File::class, 'fileable')->where('is_default', false);
     }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function settings()
+    {
+        return $this->hasMany(StoreSetting::class);
+    }
 }

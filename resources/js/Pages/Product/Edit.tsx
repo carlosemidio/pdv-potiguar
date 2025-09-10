@@ -22,35 +22,44 @@ import { Brand } from '@/types/Brand';
 import SearchableCategoriesSelect from '@/Components/SearchableCategoriesSelect';
 import SearchableBrandsSelect from '@/Components/SearchableBrandsSelect';
 import ProductVariantForm from '@/Components/ProductVariantForm';
+import { can } from '@/utils/authorization';
+import ProductAddonsForm from '@/Components/ProductAddonsForm';
 registerPlugin(FilePondPluginImagePreview);
 
 export default function Edit({
     auth,
     product
 }: PageProps<{ product: { data: Product} }>) {
-
     const isEdit = !!product;
 
-    const { data, setData, post, errors, processing, recentlySuccessful } =
-        useForm({
-            _method: product ? 'patch' : 'post',
-            category_id: product ? product.data.category_id : null,
-            brand_id: product ? product.data.brand_id : null,
-            name: product ? product.data.name : '',
-            short_description: product ? product.data.short_description : '',
-            description: product ? product.data.description : '',
-            sku: product ? product.data.sku : '',
-            price: product ? product.data.price : 0,
-            stock_quantity: product ? product.data.stock_quantity : null,
-            status: product ? product.data.status : 1, // Default to active
-            featured: product ? product.data.featured : 0,
-            variants: product ? product.data.variants : [],
-            files: Array<File>(),
-        });
+    const { data, setData, post, errors, processing, recentlySuccessful } = useForm({
+        _method: product ? 'patch' : 'post',
+        category_id: product ? product.data.category_id : null,
+        brand_id: product ? product.data.brand_id : null,
+        name: product ? product.data.name : '',
+        short_description: product ? product.data.short_description : '',
+        description: product ? product.data.description : '',
+        sku: product ? product.data.sku : '',
+        price: product ? product.data.price : 0,
+        stock_quantity: product ? product.data.stock_quantity : null,
+        status: product ? product.data.status : 1, // Default to active
+        featured: product ? product.data.featured : 0,
+        variants: product ? product.data.variants : [],
+        product_addons: product ? product.data.product_addons : [],
+        files: Array<File>(),
+    });
 
     const [category, setCategory] = useState<Category | null>(product ? product.data.category : null);
     const [brand, setBrand] = useState<Brand | null>(product ? product.data.brand : null);
     const [files, setFiles] = useState<File[]>([]);
+
+    const hasTablesView = can('tables_view');
+    
+    const [tabs, setTabs] = useState<string[]>(
+        hasTablesView
+            ? ['Geral', 'Variantes', 'Aditivos', 'Imagens']
+            : ['Geral', 'Variantes', 'Imagens']
+    );
 
     const [selectedTab, setSelectedTab] = useState<string>('Geral');
 
@@ -86,6 +95,7 @@ export default function Edit({
                     category_id: null,
                     brand_id: null,
                     variants: [],
+                    product_addons: [],
                     files: [],
                 }),
             });
@@ -145,7 +155,7 @@ export default function Edit({
                                 {/* Tabs */}
                                 <div className="mb-6">
                                     <div className="flex border-b border-gray-200 dark:border-gray-700">
-                                        {['Geral', 'Variantes', 'Imagens'].map((tab) => (
+                                        {tabs.map((tab) => (
                                             <button
                                                 key={tab}
                                                 type="button"
@@ -313,6 +323,18 @@ export default function Edit({
                                                 onChange={newVariants => setData('variants', newVariants)}
                                             />
                                             <InputError className="mt-2" message={errors.variants} />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {selectedTab === 'Aditivos' && (
+                                    <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                                        <div className="w-full col-span-1 md:col-span-2 lg:col-span-3">
+                                            <ProductAddonsForm
+                                                productAddons={data.product_addons ?? []}
+                                                onChange={newAddons => setData('product_addons', newAddons)}
+                                            />
+                                            <InputError className="mt-2" message={errors.product_addons} />
                                         </div>
                                     </div>
                                 )}

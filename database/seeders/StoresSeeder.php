@@ -42,5 +42,20 @@ class StoresSeeder extends Seeder
             'status' => 1,
             'is_default' => 0
         ]);
+
+        Store::create([
+            'user_id' => 3,
+            'name' => 'Restaurante Teste',
+            'slug' => Str::slug('Restaurante Teste'),
+            'email' => 'restaurante@teste.com',
+            'phone' => '11999999997',
+            'domain' => 'restaurante.com',
+            'description' => 'Este é um restaurante de teste.',
+            'content' => 'Conteúdo do restaurante de teste com informações adicionais.',
+            'latitude' => -23.550520,
+            'longitude' => -46.633308,
+            'status' => 1,
+            'is_default' => 0
+        ]);
     }
 }

@@ -33,7 +33,7 @@ export default function Index({
         setShowModal(true);
     };
 
-    const deleteUser = () => {
+    const deleteProduct = () => {
         destroy(route('product.destroy', { id: product?.id }), {
             preserveScroll: true,
             onSuccess: () => {
@@ -145,7 +145,7 @@ export default function Index({
                                     </div>
 
                                     <Modal show={showModal} onClose={closeModal}>
-                                        <form onSubmit={(e) => { e.preventDefault(); deleteUser(); }} className="p-6">
+                                        <form onSubmit={(e) => { e.preventDefault(); deleteProduct(); }} className="p-6">
                                             <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                                                 Tem certeza que deseja deletar {product?.name}?
                                             </h2>

@@ -22,6 +22,24 @@ class ProductVariant extends Model
         'stock_quantity'
     ];
 
+    protected $appends = [
+        'name'
+    ];
+
+    public function getNameAttribute()
+    {
+        $attributes = $this->attributes()->pluck('name', 'value')->toArray();
+        $nameParts = [];
+        
+        foreach ($attributes as $value => $name) {
+            $nameParts[] = "$name: $value";
+        }
+
+        $name = $this->product ? $this->product->name . ' - ' : '';
+
+        return $name . implode(', ', $nameParts);
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);
@@ -31,11 +49,6 @@ class ProductVariant extends Model
         return $this->belongsToMany(VariantAttribute::class, 'attribute_values')
             ->withPivot('value')
             ->withTimestamps();
-    }
-
-    public function attributeValues()
-    {
-        return $this->hasMany(AttributeValue::class, 'product_variant_id');
     }
 
     public function image(): MorphOne

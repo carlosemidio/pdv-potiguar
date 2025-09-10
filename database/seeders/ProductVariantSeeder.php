@@ -100,5 +100,22 @@ class ProductVariantSeeder extends Seeder
                 }
             }
         }
+
+        // Food products without variants
+        for ($j = 1; $j <= 5; $j++) {
+            Product::create([
+                'user_id' => 3,
+                'store_id' => 3,
+                'category_id' => 2,
+                'brand_id' => 1,
+                'sku' => strtoupper(Str::random(8)),
+                'name' => 'Produto Alimentício ' . $j,
+                'short_description' => 'Descrição curta do produto alimentício ' . $j,
+                'description' => 'Descrição longa do produto alimentício ' . $j,
+                'price' => rand(30, 100),
+                'stock_quantity' => rand(10, 100),
+                'slug' => Str::slug('Produto Alimentício ' . $j),
+            ]);
+        }
     }
 }

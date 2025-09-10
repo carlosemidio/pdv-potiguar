@@ -31,7 +31,7 @@ class ProductController extends Controller
                 ->with('fail', 'Você precisa criar uma loja antes de cadastrar produtos.');
         }
 
-        $productsQuery = Product::with(['user', 'store', 'image', 'variants.image', 'variants.attributeValues'])
+        $productsQuery = Product::with(['user', 'store', 'image', 'variants.image', 'variants.attributes'])
             ->where('store_id', $user->store->id);
 
         if (!$user->hasPermission('products_view', true)) {
@@ -151,7 +151,9 @@ class ProductController extends Controller
             'store',
             'image',
             'images',
-            'variants.images'
+            'variants.images',
+            'variants.attributes',
+            'addons',
         ]);
 
         return Inertia::render('Product/Show', [
@@ -176,7 +178,8 @@ class ProductController extends Controller
             'images',
             'variants.image',
             'variants.images',
-            'variants.attributes'
+            'variants.attributes',
+            'productAddons.addon',
         ]);
 
         return Inertia::render('Product/Edit', [
@@ -192,8 +195,6 @@ class ProductController extends Controller
         $product = Product::where('id', $id)->firstOrFail();
         $this->authorize('update', $product);
         $dataForm = $request->all();
-
-        // dd($dataForm);
 
         try {
             $product->update($dataForm);
@@ -268,6 +269,32 @@ class ProductController extends Controller
                         }
                     }
                 }
+            }
+
+            if (isset($dataForm['product_addons']) && is_array($dataForm['product_addons'])) {
+                $addonIds = [];
+                foreach ($dataForm['product_addons'] as $addonData) {
+                    if (isset($addonData['id'])) {
+                        $productAddon = $product->productAddons()->where('id', $addonData['id'])->first();
+                        if ($productAddon instanceof \App\Models\ProductAddon) {
+                            $productAddon->update([
+                                'addon_id' => $addonData['addon_id'],
+                                'price' => $addonData['price'],
+                            ]);
+                            $addonIds[] = $productAddon->id;
+                        }
+                    } else {
+                        $newProductAddon = $product->productAddons()->create([
+                            'addon_id' => $addonData['addon_id'],
+                            'price' => $addonData['price'],
+                        ]);
+                        if ($newProductAddon instanceof \App\Models\ProductAddon) {
+                            $addonIds[] = $newProductAddon->id;
+                        }
+                    }
+                }
+                // Remove addons that were not included in the update request
+                $product->productAddons()->whereNotIn('id', $addonIds)->delete();
             }
 
             if (isset($dataForm['files']) && is_array($dataForm['files']) && count($dataForm['files']) > 0) {

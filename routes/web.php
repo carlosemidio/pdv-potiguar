@@ -4,6 +4,9 @@ use App\Http\Controllers\AddonsController;
 use App\Http\Controllers\Ajax\BrandListController;
 use App\Http\Controllers\AttibuteController;
 use App\Http\Controllers\Ajax\CategoryListController;
+use App\Http\Controllers\Ajax\ProductListController;
+use App\Http\Controllers\Ajax\ProductVariantListController;
+use App\Http\Controllers\Ajax\TableListController;
 use App\Http\Controllers\BrandsController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\CityController;
@@ -72,6 +75,16 @@ Route::middleware('auth')->group(function () {
     Route::resource('/marcas', BrandsController::class)
         ->names('brands');
 
+    Route::resource('/mesas', App\Http\Controllers\TablesController::class)
+        ->names('tables');
+
+    Route::resource('/pedidos', App\Http\Controllers\OrdersController::class)
+        ->names('orders');
+
+    Route::resource('/itens-pedido', App\Http\Controllers\OrderItemsController::class)
+        ->only(['store', 'destroy'])
+        ->names('orders.items');
+
     // rota usada no componente select de cidades
     Route::get('search-cities-select', [CityController::class, 'index'])
         ->name('cities-select.search');
@@ -86,6 +99,15 @@ Route::middleware('auth')->group(function () {
 
     Route::get('search-attributes-select', [AttibuteController::class, 'index'])
         ->name('attributes-select.search');
+
+    Route::get('search-tables-select', [TableListController::class, 'index'])
+        ->name('tables-select.search');
+
+    Route::get('search-products-select', [ProductListController::class, 'index'])
+        ->name('products-select.search');
+
+    Route::get('search-addons-select', [App\Http\Controllers\Ajax\AddonsListController::class, 'index'])
+        ->name('addons-select.search');
 
     Route::resource('/notificacoes', NotificationController::class)->names('notification');
     Route::patch('/notificacoes/{id}/ler', [NotificationController::class, 'markAsRead'])->name('notification.markAsRead');

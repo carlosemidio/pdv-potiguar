@@ -1,6 +1,7 @@
 import { Brand } from "./Brand";
 import { Category } from "./Category";
 import { Image } from "./image";
+import { ProductAddon } from "./ProductAddon";
 import { Store } from "./Store";
 import { User } from "./user";
 import { Variant } from "./Variant";
@@ -35,6 +36,8 @@ export type Product = {
     stock_quantity: number | null;
 
     variants: Variant[] | null;
+
+    product_addons?: ProductAddon[] | null;
 
     created_at: string;
     updated_at: string;

@@ -4,6 +4,8 @@ import { Image } from "./image";
 export type Variant = {
     id: number;
     product_id: number;
+    name?: string;
+    slug?: string;
 
     sku: string;
     price: number;

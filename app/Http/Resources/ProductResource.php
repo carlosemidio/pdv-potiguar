@@ -28,27 +28,8 @@ class ProductResource extends JsonResource
             'stock_quantity'  => $this->stock_quantity,
             'status'          => $this->status,
             'featured'        => $this->featured,
-
-            'variants' => $this->whenLoaded('variants', function () {
-                return $this->variants->map(function ($variant) {
-                    return [
-                        'id'             => $variant->id,
-                        'sku'            => $variant->sku,
-                        'price'          => $variant->price,
-                        'stock_quantity' => $variant->stock_quantity,
-                        'attributes' => $variant->attributes->map(function ($attribute) {
-                            return [
-                                'id'    => $attribute->id,
-                                'name' => $attribute->name,
-                                'value' => $attribute->pivot->value,
-                            ];
-                        }),
-                        'image' => $variant->image ? new FileResource($variant->image) : null,
-                        'images' => $variant->images && $variant->images->isNotEmpty() ? FileResource::collection($variant->images) : [],
-                    ];
-                });
-            }),
-
+            'variants' => ProductVariantResource::collection($this->whenLoaded('variants')),
+            'product_addons' => ProductAddonResource::collection($this->whenLoaded('productAddons')),
             'image'  => $this->whenLoaded('image'),
             'images' => $this->whenLoaded('images'),
 

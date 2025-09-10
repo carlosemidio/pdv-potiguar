@@ -28,6 +28,12 @@ class UserSeeder extends Seeder
             'user_id' => 1, // Assuming the second user is the lojista
         ], [ 'password' => bcrypt('123') ]);
 
+        $user_restaurant = User::updateOrCreate([
+            'name' => 'restaurant',
+            'email' => 'teste2@email.com',
+            'user_id' => 1, // Assuming the third user is the restaurant
+        ], [ 'password' => bcrypt('123') ]);
+
         // Dev role
         $role_dev = Role::create([
             'name' => 'Dev',
@@ -42,8 +48,44 @@ class UserSeeder extends Seeder
             'user_id' => $user_lojista->id,
         ]);
 
+        // Restaurant role
+        $role_restaurant = Role::create([
+            'name' => 'Restaurant',
+            'user_id' => $user_restaurant->id,
+        ]);
+
         // Permissions for Lojista
-        $permissions = [
+        $store_permissions = [
+            'stores_view',
+            'stores_create',
+            'stores_edit',
+            'products_view',
+            'products_create',
+            'products_edit',
+            'products_delete',
+            'cities_view',
+            'categories_view',
+            'categories_create',
+            'categories_edit',
+            'categories_delete',
+            'brands_view',
+            'brands_create',
+            'brands_edit',
+            'brands_delete',
+            'orders_view',
+            'orders_create',
+            'orders_edit',
+            'orders_delete',
+        ];
+
+        foreach ($store_permissions as $permissionName) {
+            $permission = Permission::firstOrCreate(['name' => $permissionName]);
+            $role_lojista->permissions()->attach($permission->id);
+        }
+
+        $user_lojista->roles()->attach($role_lojista->id);
+
+        $restorant_permissions = [
             'stores_view',
             'stores_create',
             'stores_edit',
@@ -64,14 +106,22 @@ class UserSeeder extends Seeder
             'addons_create',
             'addons_edit',
             'addons_delete',
-            'notifications_view',
+            'tables_view',
+            'tables_create',
+            'tables_edit',
+            'tables_delete',
+            'orders_view',
+            'orders_create',
+            'orders_edit',
+            'orders_delete',
         ];
 
-        foreach ($permissions as $permissionName) {
+        // Permissions for Restaurant
+        foreach ($restorant_permissions as $permissionName) {
             $permission = Permission::firstOrCreate(['name' => $permissionName]);
-            $role_lojista->permissions()->attach($permission->id);
+            $role_restaurant->permissions()->attach($permission->id);
         }
 
-        $user_lojista->roles()->attach($role_lojista->id);
+        $user_restaurant->roles()->attach($role_restaurant->id);
     }
 }

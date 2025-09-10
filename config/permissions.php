@@ -37,4 +37,12 @@ return [
         'name' => 'addons',
         'display_name' => 'Complementos',
     ],
+    [
+        'name' => 'brands',
+        'display_name' => 'Marcas',
+    ],
+    [
+        'name' => 'tables',
+        'display_name' => 'Mesas',
+    ],
 ];

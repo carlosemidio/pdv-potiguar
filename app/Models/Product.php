@@ -65,6 +65,11 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
+    public function productAddons()
+    {
+        return $this->hasMany(ProductAddon::class);
+    }
+
     public function images(): MorphMany
     {
         return $this->morphMany(File::class, 'fileable')->where('is_default', false);

@@ -5,10 +5,11 @@ import { User } from '@/types/user';
 import { can } from '@/utils/authorization';
 import { Button } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
-import { ChevronDown, Gauge, KeySquare, Mail, Menu, MonitorCog, Store, UserCircle2, X } from 'lucide-react';
+import { ChevronDown, Gauge, KeySquare, Mail, Menu, MonitorCog, Store, Table, UserCircle2, X } from 'lucide-react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import { CgProductHunt } from 'react-icons/cg';
 import { MdAddCircle, MdBrandingWatermark, MdCategory } from 'react-icons/md';
+import { TbMenuOrder } from 'react-icons/tb';
 
 export default function Authenticated({
     user,
@@ -60,11 +61,30 @@ export default function Authenticated({
                                     <p>Dashboard</p>
                                 </div>
                             </NavLink>
+                            
                             {can('permissions_view') && (
                                 <NavLink href={route('permission.index')} active={route().current('permission.index')}>
                                     <div className='flex gap-2 items-center'>
                                         <KeySquare className="w-6 h-6" />
                                         <p>Permissões</p>
+                                    </div>
+                                </NavLink>
+                            )}
+
+                            {can('orders_view') && (
+                                <NavLink href={route('orders.index')} active={route().current('orders.index')}>
+                                    <div className='flex gap-2 items-center'>
+                                        <TbMenuOrder className="w-6 h-6" />
+                                        <p>Pedidos</p>
+                                    </div>
+                                </NavLink>
+                            )}
+
+                            {can('tables_view') && (
+                                <NavLink href={route('tables.index')} active={route().current('tables.index')}>
+                                    <div className='flex gap-2 items-center'>
+                                        <Table className="w-6 h-6" />
+                                        <p>Mesas</p>
                                     </div>
                                 </NavLink>
                             )}
@@ -253,7 +273,7 @@ export default function Authenticated({
                     <div className="uppercase tracking-widest px-4 pt-8 lg:px-8 lg:pt-8">
                         <div className='flex items-center gap-2'>
                             {header}
-                            <div className='w-full h-[1px] bg-gray-400 dark:bg-gray-500'></div>
+                            <div className='flex-1 h-[1px] bg-gray-400 dark:bg-gray-500'></div>
                         </div>
                     </div>
                     

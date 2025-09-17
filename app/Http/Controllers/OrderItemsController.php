@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Addon;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -26,50 +27,62 @@ class OrderItemsController extends Controller
         try {
             $request->validate([
                 'order_id' => 'required|exists:orders,id',
-                'product_id' => 'required|exists:products,id',
-                'product_variant_id' => [
-                    'nullable',
-                    'exists:product_variants,id',
-                    function ($attribute, $value, $fail) use ($request) {
-                        if ($value) {
-                            $variant = \App\Models\ProductVariant::find($value);
-                            if (!$variant || $variant->product_id != $request->input('product_id')) {
-                                $fail('A variante selecionada não pertence ao produto informado.');
-                            }
-                        }
-                    },
-                ],
+                'product_variant_id' => 'required|exists:product_variants,id',
                 'quantity' => 'required|integer|min:1',
                 'unit_price' => 'required|numeric|min:0',
             ]);
 
-            $data = $request->only(['order_id', 'product_id', 'product_variant_id', 'quantity', 'unit_price', 'addons']);
+            $data = $request->only(['order_id', 'product_variant_id', 'quantity', 'addons']);
 
-            $orderItem = DB::transaction(function () use ($data) {
-                $order = $this->order->findOrFail($data['order_id']);
+            $order = $this->order->findOrFail($data['order_id']);
 
-                $data['product_variant_id'] = intval($data['product_variant_id'] ?? 0) > 0 ? intval($data['product_variant_id']) : null;
+            if (!in_array($order->status, ['pending', 'in_progress'])) {
+                $orderStatuses = [ 'pending' => 'Pendente', 'in_progress' => 'Em andamento', 'completed' => 'Finalizado', 'canceled' => 'Cancelado' ];
+                $currentStatus = $orderStatuses[$order->status] ?? $order->status;
+
+                return redirect()->back()
+                    ->with('fail', 'Não é possível adicionar itens a um pedido '. $currentStatus . '.');
+            }
+
+            $orderItem = DB::transaction(function () use ($data, $order) {
+                $productVariant = null;
+                if (isset($data['product_variant_id']) && $data['product_variant_id'] > 0) {
+                    $productVariant = ProductVariant::find($data['product_variant_id']);
+                 
+                    if (!$productVariant) {
+                        throw new \Exception('Variante de produto não encontrada.');
+                    }
+                }
 
                 $orderItem = $order->items()->create([
-                    'product_id' => $data['product_id'],
-                    'product_variant_id' => (isset($data['product_variant_id']) && $data['product_variant_id'] > 0) ? $data['product_variant_id'] : null,
+                    'product_variant_id' => $productVariant ? $productVariant->id : null,
                     'quantity' => $data['quantity'],
-                    'unit_price' => $data['unit_price'],
-                    'total_price' => ($data['unit_price'] * $data['quantity']),
+                    'unit_price' => $productVariant->price,
+                    'total_price' => ($productVariant->price * $data['quantity']),
                 ]);
 
                 if (!empty($data['addons'])) {
                     $addonsTotal = 0;
 
-                    foreach ($data['addons'] as $addon) {
+                    foreach ($data['addons'] as $addonData) {
+                        if (!isset($addonData['addon_id'])) {
+                            continue;
+                        }
+
+                        $addon = Addon::find($addonData['addon_id']);
+
+                        if (!$addon) {
+                            continue;
+                        }
+
                         $orderItem->itemAddons()->create([
-                            'addon_id' => $addon['addon_id'] ?? null,
-                            'quantity' => $addon['quantity'] ?? 1, // Default to 1 if not specified
-                            'unit_price' => $addon['unit_price'] ?? 0,
-                            'total_price' => (($addon['unit_price'] ?? 0) * ($addon['quantity'] ?? 1)),
+                            'addon_id' => $addon->id,
+                            'quantity' => $addonData['quantity'] ?? 1, // Default to 1 if not specified
+                            'unit_price' => $addon->price,
+                            'total_price' => ($addon->price * ($addonData['quantity'] ?? 1)),
                         ]);
 
-                        $addonsTotal += (($addon['unit_price'] ?? 0) * ($addon['quantity'] ?? 1));
+                        $addonsTotal += ($addon->price * ($addonData['quantity'] ?? 1));
                     }
 
                     // Update order item total price to include addons
@@ -79,8 +92,8 @@ class OrderItemsController extends Controller
 
                 // Recalculate order totals
                 $order->load('items.itemAddons');
-                $order->total_amount = $order->items->sum('total_price');
-
+                $order->amount = $order->items->sum('total_price');
+                $order->total_amount = (($order->amount + $order->service_fee) - $order->discount);
                 $order->save();
 
                 return $orderItem;
@@ -105,21 +118,36 @@ class OrderItemsController extends Controller
         $this->authorize('update', $orderItem->order);
 
         try {
-            if (!$orderItem->delete()) {
+            $order = Order::find($orderItem->order_id);
+
+            if (!$order) {
                 return redirect()->back()
-                    ->with('fail', 'Erro ao remover item do pedido.');
+                    ->with('fail', 'Pedido não encontrado.');
             }
 
-            // Recalculate order totals
-            $order = $orderItem->order;
-            $order->load('items.itemAddons');
-            $order->total_amount = $order->items->sum(function ($item) {
-                $itemTotal = $item->total_price;
-                $addonsTotal = $item->itemAddons->sum('total_price');
-                return $itemTotal + $addonsTotal;
-            });
+            if (!in_array($order->status, ['pending', 'in_progress'])) {
+                $orderStatuses = [ 'pending' => 'Pendente', 'in_progress' => 'Em andamento', 'completed' => 'Finalizado', 'canceled' => 'Cancelado' ];
+                $currentStatus = $orderStatuses[$order->status] ?? $order->status;
 
-            $order->save();
+                return redirect()->back()
+                    ->with('fail', 'Não é possível remover itens de um pedido '. $currentStatus . '.');
+            }
+
+            DB::transaction(function () use ($orderItem, $order) {
+                // Recalculate order totals
+                $orderItem->delete();
+
+                $order->load('items.itemAddons');
+
+                $order->amount = $order->items->sum(function ($item) {
+                    $itemTotal = $item->total_price;
+                    $addonsTotal = $item->itemAddons->sum('total_price');
+                    return $itemTotal + $addonsTotal;
+                });
+
+                $order->total_amount = (($order->amount + $order->service_fee) - $order->discount);
+                $order->save();
+            });            
 
             return redirect()->route('orders.show', $order->id)
                 ->with('success', 'Item removido com sucesso!');

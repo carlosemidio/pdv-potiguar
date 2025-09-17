@@ -32,14 +32,6 @@ export default function Index({
         setConfirmingOrderDeletion(true);
     };
 
-    const deleteOrder = () => {
-        destroy(route('orders.destroy', { id: orderIdToDelete }), {
-            preserveScroll: true,
-            onSuccess: () => closeModal(),
-            onFinish: () => reset(),
-        });
-    };
-
     const closeModal = () => {
         setConfirmingOrderDeletion(false);
         setOrderIdToDelete(null);
@@ -101,21 +93,51 @@ export default function Index({
                                             {order.status_name}
                                         </span>
                                     </div>
-                                    <div className='mt-2'>
-                                        <p className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-1'>Cliente</p>
-                                        <span className="block bg-gray-100 rounded-lg p-2 text-sm dark:bg-gray-800 dark:text-gray-200 min-h-[40px]">
-                                            {order?.customer_name || <span className="italic text-gray-400">Sem cliente</span>}
-                                        </span>
-
+                                    <div className='mt-2 flex flex-col gap-2'>
+                                        <div className='flex items-center gap-2'>
+                                            <p className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-1'>Cliente:</p>
+                                            <span className="bg-gray-100 rounded-lg px-2 py-1 text-sm dark:bg-gray-800 dark:text-gray-200 min-h-[28px]">
+                                                {order?.customer?.name || <span className="italic text-gray-400">Sem cliente</span>}
+                                            </span>
+                                        </div>
                                         {order.table && (
-                                            <div className='mt-2'>
-                                                <p className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-1'>Mesa</p>
-                                                <span className="block bg-gray-100 rounded-lg p-2 text-sm dark:bg-gray-800 dark:text-gray-200 min-h-[40px]">
+                                            <div className='flex items-center gap-2'>
+                                                <p className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-1'>Mesa:</p>
+                                                <span className="bg-gray-100 rounded-lg px-2 py-1 text-sm dark:bg-gray-800 dark:text-gray-200 min-h-[28px]">
                                                     {order.table.name}
                                                 </span>
                                             </div>
                                         )}
                                     </div>
+
+                                    <div className='mt-4'>
+                                        <p className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-1'>Resumo:</p>
+                                        {order.items.length > 0 ? (
+                                            <ul className='max-h-32 overflow-y-auto pr-2'>
+                                                {order.items.map((item) => (
+                                                    <li key={item.id} className='text-xs text-gray-700 dark:text-gray-300'>
+                                                        {item.quantity}x {item.variant ? item.variant.name : item.product.name} - R$ {item.total_price}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className='text-sm italic text-gray-400'>Nenhum item no pedido.</p>
+                                        )}
+                                    </div>
+
+                                    <div className='grid grid-cols-2 gap-4 mt-4'>
+                                        <div>
+                                            <p className='text-sm text-gray-600 dark:text-gray-400'>Total:</p>
+                                            <span className='font-semibold'>R$ {order.total_amount}</span>
+                                        </div>
+                                        <div>
+                                            <p className='text-sm text-gray-600 dark:text-gray-400'>Pago:</p>
+                                            <span className={`font-semibold ${(order.paid_amount < order.total_amount) ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                                                R$ {order.paid_amount}
+                                            </span>
+                                        </div>
+                                    </div>
+
                                     <div className='mt-2 grid grid-cols-2 gap-2'>
                                         <div>
                                             <p className='text-xs text-gray-500 dark:text-gray-400'>Criado em</p>
@@ -143,15 +165,6 @@ export default function Index({
                                         </div>
                                     </div>
                                     <div className='flex gap-2 mt-4 justify-end'>
-                                        {(can('orders_delete') && (order.user_id != null)) && (
-                                            <DangerButton
-                                                onClick={() => confirmOrderDeletion(order.id)}
-                                                className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-red-600 transition-colors"
-                                                title="Deletar pedido"
-                                            >
-                                                <Trash className='w-5 h-5' />
-                                            </DangerButton>
-                                        )}
                                         {(can('orders_edit') && (order.user_id != null)) && (
                                             <Link href={route('orders.edit', { id: order.id })}>
                                                 <SecondaryButton
@@ -187,30 +200,6 @@ export default function Index({
                     )}
                 </div>
             </section>
-
-            {orderToDelete && (
-                <Modal show={confirmingOrderDeletion} onClose={closeModal}>
-                    <form onSubmit={(e) => { e.preventDefault(); deleteOrder(); }} className="p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                            Tem certeza que deseja deletar o pedido <span className="font-bold">{orderToDelete.number}</span>?
-                        </h2>
-
-                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 mb-6">
-                            Uma vez que o pedido é deletado, todos os seus recursos e dados serão permanentemente deletados.
-                        </p>
-
-                        <div className="mt-6 flex justify-end gap-3">
-                            <SecondaryButton onClick={closeModal}>
-                                Cancelar
-                            </SecondaryButton>
-
-                            <DangerButton className="ms-3" disabled={processing}>
-                                Deletar Pedido
-                            </DangerButton>
-                        </div>
-                    </form>
-                </Modal>
-            )}
         </AuthenticatedLayout>
     )
 }

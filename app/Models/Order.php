@@ -14,12 +14,13 @@ class Order extends Model
         'user_id',
         'store_id',
         'table_id',
+        'customer_id',
         'number',
-        'customer_name',
         'status',
-        'total_amount',
+        'amount',
         'discount',
         'service_fee',
+        'total_amount',
         'paid_amount',
         'payment_status',
     ];
@@ -32,8 +33,8 @@ class Order extends Model
     {
         return match ($this->status) {
             'pending' => 'Pendente',
-            'in_progress' => 'Em Progresso',
-            'completed' => 'Concluído',
+            'in_progress' => 'Em andamento',
+            'completed' => 'Finalizado',
             'cancelled' => 'Cancelado',
             default => 'Desconhecido',
         };
@@ -54,8 +55,18 @@ class Order extends Model
         return $this->belongsTo(Table::class);
     }
 
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 }

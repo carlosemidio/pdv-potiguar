@@ -1,12 +1,15 @@
 import { Store } from "./Store";
 import { Table } from "./Table";
 import { OrderItem } from "./OrderItem";
+import { Payment } from "./Payment";
+import { Customer } from "./Customer";
 
 export type Order = {
     id: number;
     user_id: number;
     store: Store;
-    table: Table;
+    table: Table | null;
+    customer: Customer | null;
     number: number;
     customer_name: string;
     status: string;
@@ -17,6 +20,7 @@ export type Order = {
     paid_amount: number;
     payment_status: number;
     items: OrderItem[];
+    payments?: Payment[];
     created_at: string;
     updated_at: string;
 };

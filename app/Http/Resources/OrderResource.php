@@ -14,8 +14,8 @@ class OrderResource extends JsonResource
             'user_id' => $this->user_id,
             'store' => new StoreResource($this->whenLoaded('store')),
             'table' => new TableResource($this->whenLoaded('table')),
+            'customer' => new CustomerResource($this->whenLoaded('customer')),
             'number' => $this->number,
-            'customer_name' => $this->customer_name,
             'status' => $this->status,
             'status_name' => $this->status_name,
             'total_amount' => $this->total_amount,
@@ -24,6 +24,7 @@ class OrderResource extends JsonResource
             'paid_amount' => $this->paid_amount,
             'payment_status' => $this->payment_status,
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
+            'payments' => PaymentResource::collection($this->whenLoaded('payments')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

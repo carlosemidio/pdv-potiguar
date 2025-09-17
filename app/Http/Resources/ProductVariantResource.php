@@ -12,13 +12,17 @@ class ProductVariantResource extends JsonResource
         
         return [
             'id'             => $this->id,
+            'store_id'       => $this->store_id,
             'product_id'     => $this->product_id,
             'product'        => new ProductResource($this->whenLoaded('product')),
+            'store'          => $this->whenLoaded('store'),
             'name'           => $this->name,
             'slug'           => $this->slug,
             'sku'            => $this->sku,
+            'cost_price'     => $this->cost_price,
             'price'          => $this->price,
             'stock_quantity' => $this->stock_quantity,
+            'featured'       => $this->featured,
             'attributes' => $this->attributes->map(function ($attribute) {
                 return [
                     'id'    => $attribute->id,

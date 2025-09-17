@@ -80,6 +80,15 @@ export default function Authenticated({
                                 </NavLink>
                             )}
 
+                            {can('customers_view') && (
+                                <NavLink href={route('customers.index')} active={route().current('customers.index')}>
+                                    <div className='flex gap-2 items-center'>
+                                        <UserCircle2 className="w-6 h-6" />
+                                        <p>Clientes</p>
+                                    </div>
+                                </NavLink>
+                            )}
+
                             {can('tables_view') && (
                                 <NavLink href={route('tables.index')} active={route().current('tables.index')}>
                                     <div className='flex gap-2 items-center'>

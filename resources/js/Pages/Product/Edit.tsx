@@ -5,17 +5,11 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
-import { Switch, Transition } from '@headlessui/react';
+import { Transition } from '@headlessui/react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler, useEffect, useState } from 'react';
+import { FormEventHandler, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { MdCheckBox, MdDelete } from "react-icons/md";
-import { FilePond, registerPlugin } from "react-filepond";
-import "filepond/dist/filepond.min.css";
-import { FilePondFile } from 'filepond'
-import FilePondPluginImagePreview from "filepond-plugin-image-preview";
-import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 import { Product } from '@/types/Product';
 import { Category } from '@/types/Category';
 import { Brand } from '@/types/Brand';
@@ -24,13 +18,44 @@ import SearchableBrandsSelect from '@/Components/SearchableBrandsSelect';
 import ProductVariantForm from '@/Components/ProductVariantForm';
 import { can } from '@/utils/authorization';
 import ProductAddonsForm from '@/Components/ProductAddonsForm';
-registerPlugin(FilePondPluginImagePreview);
 
 export default function Edit({
     auth,
     product
 }: PageProps<{ product: { data: Product} }>) {
     const isEdit = !!product;
+
+    const emptyImage = {
+        id: 0,
+        user_id: 0,
+        is_default: false,
+        name: '',
+        size: 0,
+        url: '',
+        extension: '',
+        file_url: '',
+        created_at: '',
+        updated_at: '',
+    };
+    const emptyVariant = {
+        id: 0,
+        product_id: 0,
+        sku: '',
+        cost_price: 0,
+        price: 0,
+        stock_quantity: 0,
+        name: '',
+        slug: '',
+        images: [],
+        attribute_values: [],
+        featured: 0,
+        image: emptyImage,
+        created_at: '',
+        updated_at: '',
+    };
+    const initialVariants = product && product.data.variants && product.data.variants.length > 0
+        ? product.data.variants
+        : [emptyVariant]; // Adiciona uma variante compatível
 
     const { data, setData, post, errors, processing, recentlySuccessful } = useForm({
         _method: product ? 'patch' : 'post',
@@ -39,27 +64,17 @@ export default function Edit({
         name: product ? product.data.name : '',
         short_description: product ? product.data.short_description : '',
         description: product ? product.data.description : '',
-        sku: product ? product.data.sku : '',
-        price: product ? product.data.price : 0,
-        stock_quantity: product ? product.data.stock_quantity : null,
-        status: product ? product.data.status : 1, // Default to active
-        featured: product ? product.data.featured : 0,
-        variants: product ? product.data.variants : [],
+        variants: initialVariants,
         product_addons: product ? product.data.product_addons : [],
         files: Array<File>(),
     });
 
     const [category, setCategory] = useState<Category | null>(product ? product.data.category : null);
     const [brand, setBrand] = useState<Brand | null>(product ? product.data.brand : null);
-    const [files, setFiles] = useState<File[]>([]);
 
     const hasTablesView = can('tables_view');
-    
-    const [tabs, setTabs] = useState<string[]>(
-        hasTablesView
-            ? ['Geral', 'Variantes', 'Aditivos', 'Imagens']
-            : ['Geral', 'Variantes', 'Imagens']
-    );
+
+    const tabs = hasTablesView ? ['Geral', 'Variantes', 'Aditivos'] : ['Geral', 'Variantes'];
 
     const [selectedTab, setSelectedTab] = useState<string>('Geral');
 
@@ -76,8 +91,11 @@ export default function Edit({
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        // Prepare files for upload
-        data.files = files;
+        // Validação: ao menos uma variante
+        if (!data.variants || data.variants.length === 0) {
+            alert('Preencha ao menos uma variante do produto.');
+            return;
+        }
 
         if (isEdit) {
             post(route('product.update', product.data.id), {
@@ -87,11 +105,6 @@ export default function Edit({
                     name: '',
                     short_description: '',
                     description: '',
-                    sku: '',
-                    price: 0,
-                    stock_quantity: null,
-                    status: 1,
-                    featured: 0,
                     category_id: null,
                     brand_id: null,
                     variants: [],
@@ -103,16 +116,6 @@ export default function Edit({
             post(route('product.store'));
         }
     };
-
-    const handleDeleteFile = (fileId: number) => {
-        data._method = 'delete';
-        post(route('file.destroy', fileId));
-    }
-
-    const handleSetFileAsDefault = (fileId: number) => {
-        data._method = 'post';
-        post(route('file.setAsDefault', fileId));
-    }
 
     const modules = {
         toolbar: [
@@ -207,19 +210,6 @@ export default function Edit({
                                             <InputError className="mt-2" message={errors.brand_id} />
                                         </div>
 
-                                        <div className="w-full">
-                                            <InputLabel htmlFor="status" value="Status" />
-
-                                            <Switch
-                                                checked={data.status === 1}
-                                                onChange={(checked) => setData('status', checked ? 1 : 0)}
-                                                className="mt-2 group inline-flex h-6 w-11 items-center rounded-full bg-gray-100 dark:bg-gray-600 transition data-[checked]:bg-green-600">
-                                                <span className="size-4 translate-x-1 rounded-full bg-white transition group-data-[checked]:translate-x-6" />
-                                            </Switch>
-                                            <InputError className="mt-2" message={errors.status} />
-                                        </div>
-
-
                                         <div className='col-span-1 md:col-span-2 lg:col-span-3'>
                                             <InputLabel htmlFor="short_description" value="Descrição curta (Cards)" />
 
@@ -254,64 +244,6 @@ export default function Edit({
                                                 className="bg-white break-all text-black shadow-md rounded-md"
                                             />
                                         </div>
-
-                                        <div className='w-full'>
-                                            <InputLabel htmlFor="sku" value="SKU" />
-
-                                            <TextInput
-                                                id="sku"
-                                                className="mt-1 block w-full"
-                                                value={data.sku ?? ''}
-                                                onChange={(e) => setData('sku', e.target.value)}
-                                                autoComplete="sku"
-                                            />
-
-                                            <InputError className="mt-2" message={errors.sku} />
-                                        </div>
-
-                                        <div className='w-full'>
-                                            <InputLabel htmlFor="price" value="Preço" />
-
-                                            <TextInput
-                                                id="price"
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                className="mt-1 block w-full"
-                                                value={data.price ?? ''}
-                                                onChange={(e) => setData('price', parseFloat(e.target.value))}
-                                                autoComplete="price"
-                                            />
-
-                                            <InputError className="mt-2" message={errors.price} />
-                                        </div>
-
-                                        <div className='w-full'>
-                                            <InputLabel htmlFor="stock_quantity" value="Quantidade em estoque" />
-
-                                            <TextInput
-                                                id="stock_quantity"
-                                                type="number"
-                                                className="mt-1 block w-full"
-                                                value={data.stock_quantity ?? ''}
-                                                onChange={(e) => setData('stock_quantity', e.target.value ? parseInt(e.target.value) : null)}
-                                                autoComplete="stock_quantity"
-                                            />
-
-                                            <InputError className="mt-2" message={errors.stock_quantity} />
-                                        </div>
-
-                                        <div className='w-full'>
-                                            <InputLabel htmlFor="featured" value="Destaque" />
-
-                                            <Switch
-                                                checked={data.featured === 1}
-                                                onChange={(checked) => setData('featured', checked ? 1 : 0)}
-                                                className="mt-2 group inline-flex h-6 w-11 items-center rounded-full bg-gray-100 dark:bg-gray-600 transition data-[checked]:bg-green-600">
-                                                <span className="size-4 translate-x-1 rounded-full bg-white transition group-data-[checked]:translate-x-6" />
-                                            </Switch>
-                                            <InputError className="mt-2" message={errors.featured} />
-                                        </div>
                                     </div>                         
                                 )}
 
@@ -320,7 +252,11 @@ export default function Edit({
                                         <div className="w-full col-span-1 md:col-span-2 lg:col-span-3">
                                             <ProductVariantForm
                                                 variants={data.variants ?? []}
-                                                onChange={newVariants => setData('variants', newVariants)}
+                                                onChange={newVariants => {
+                                                    // Impede remoção da primeira variante
+                                                    if (newVariants.length === 0) return;
+                                                    setData('variants', newVariants);
+                                                }}
                                             />
                                             <InputError className="mt-2" message={errors.variants} />
                                         </div>
@@ -336,57 +272,6 @@ export default function Edit({
                                             />
                                             <InputError className="mt-2" message={errors.product_addons} />
                                         </div>
-                                    </div>
-                                )}
-
-                                {selectedTab === 'Imagens' && (
-                                    <div className="w-full col-span-1 md:col-span-2 lg:col-span-3">
-                                        <label className="block font-medium text-xl text-gray-700 mt-10">Imagem principal (Card da listagem)</label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {product?.data?.image && (
-                                                <div className="w-1/4 h-24 bg-gray-200 rounded-lg flex justify-center items-center relative mr-2">
-                                                    <img src={product?.data?.image?.file_url} alt={product?.data?.image?.name} className="h-24 w-full object-cover rounded-lg" />
-                                                    <span
-                                                        onClick={() => {
-                                                            if (product?.data?.image?.id !== undefined) {
-                                                                handleDeleteFile(product.data.image.id);
-                                                            }
-                                                        }}
-                                                        className="w-9 h-9 transition-all duration-200 flex justify-center items-center rounded-bl-2xl hover:text-red-600 text-gray-800 bg-slate-300/50 absolute top-0 right-0">
-                                                        <MdDelete />
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <label className="block font-medium text-xl text-gray-700 mt-10">Galeria</label>
-                                        <div className="flex flex-wrap gap-2 mb-10">
-                                            {product?.data?.images && product?.data?.images.map((image, index) => (
-                                                <div key={index} className="w-1/4 h-24 bg-gray-200 rounded-lg flex justify-center items-center relative mr-2">
-                                                    <img src={image?.file_url} alt={image?.name} className="h-24 w-full object-cover rounded-lg" />
-                                                    <span
-                                                        onClick={() => handleDeleteFile(image?.id)}
-                                                        className="w-9 h-9 transition-all duration-200 flex justify-center items-center rounded-bl-2xl hover:text-red-600 text-gray-800 bg-slate-300/50 absolute top-0 right-0">
-                                                        <MdDelete />
-                                                    </span>
-
-                                                    <span className="w-9 h-9 transition-all duration-200 flex justify-center items-center rounded-bl-2xl hover:text-red-600 text-gray-800 bg-slate-300/50 absolute top-0 left-0"
-                                                        onClick={() => handleSetFileAsDefault(image?.id)}>
-                                                        <MdCheckBox />
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <FilePond
-                                            files={files}
-                                            onupdatefiles={(fileItems: FilePondFile[]) => {
-                                                setFiles(fileItems.map(fileItem => fileItem.file) as File[]);
-                                            }}
-                                            allowMultiple={true}
-                                            maxFiles={10}
-                                            labelIdle='Arraste e solte arquivos ou <span class="filepond--label-action">Selecione</span>'
-                                        />
                                     </div>
                                 )}
                             </div>

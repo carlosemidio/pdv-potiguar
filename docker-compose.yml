@@ -1,5 +1,5 @@
 services:
-    app-catalogo-digital:
+    app-pdv-potiguar:
         container_name: ${APP_NAME}-app
         build:
             context: .

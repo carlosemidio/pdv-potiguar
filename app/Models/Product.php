@@ -21,15 +21,7 @@ class Product extends Model
         'name',
         'slug',
         'description',
-        'short_description',
-        'sku',
-        'price',
-        'stock_quantity',
-        'status',
-        'featured',
-        'meta_title',
-        'meta_description',
-        'meta_keywords'
+        'short_description'
     ];
 
     public function user()

@@ -12,6 +12,7 @@ RUN apt-get install -y \
     zip \
     unzip \
     libzip-dev \
+    libicu-dev \
     fish
 
 # Install Node.js

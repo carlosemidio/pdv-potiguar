@@ -15,11 +15,11 @@ class ProductVariant extends Model
 
     protected $fillable = [
         'product_id',
-        'attribute',
-        'value',
+        'store_id',
+        'featured',
         'sku',
-        'price',
-        'stock_quantity'
+        'cost_price',
+        'price'
     ];
 
     protected $appends = [
@@ -32,7 +32,7 @@ class ProductVariant extends Model
         $nameParts = [];
         
         foreach ($attributes as $value => $name) {
-            $nameParts[] = "$name: $value";
+            $nameParts[] = "$value";
         }
 
         $name = $this->product ? $this->product->name . ' - ' : '';

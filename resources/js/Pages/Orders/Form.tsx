@@ -1,13 +1,14 @@
 import PrimaryButton from '@/Components/PrimaryButton';
+import SearchableCustomersSelect from '@/Components/SearchableCustomersSelect';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
+import { Customer } from '@/types/Customer';
 import { Order } from '@/types/Order';
 import { Table } from '@/types/Table';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { table } from 'console';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 
 export default function Edit({
     auth,
@@ -17,15 +18,17 @@ export default function Edit({
     const isEdit = !!order;
 
     const { data, setData, patch, post, errors, processing } = useForm({
-        table_id: order ? order.data.table.id : '',
-        customer_name: order ? order.data.customer_name : '',
-        status: order ? order.data.status : 'pending',
-        service_fee: order ? order.data.service_fee : 10,
-        discount: order ? order.data.discount : 0,
-        total_amount: order ? order.data.total_amount : 0,
-        paid_amount: order ? order.data.paid_amount : 0,
-        payment_status: order ? order.data.payment_status : 0
+        table_id: order?.data.table?.id ?? '',
+        customer_id: order?.data?.customer?.id ?? '',
+        status: order?.data.status ?? 'pending',
+        service_fee: order?.data.service_fee ?? 0,
+        discount: order?.data.discount ?? 0,
+        total_amount: order?.data.total_amount ?? 0,
+        paid_amount: order?.data.paid_amount ?? 0,
+        payment_status: order?.data.payment_status ?? 0
     });
+
+    const [customer, setCustomer] = useState<Customer | null>(order?.data.customer ?? null);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -80,18 +83,14 @@ export default function Edit({
                             )}
 
                             <div>
-                                <label htmlFor="customer_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Nome do Cliente
-                                </label>
-                                <TextInput
-                                    id="customer_name"
-                                    className="mt-1 block w-full"
-                                    value={data.customer_name}
-                                    onChange={(e) => setData('customer_name', e.target.value)}
-                                    isFocused
-                                    autoComplete="customer_name"
+                                <SearchableCustomersSelect
+                                    selectedCustomer={customer}
+                                    setCustomer={(customer) => {
+                                        setCustomer(customer);
+                                        setData('customer_id', customer.id);
+                                    }}
+                                    isDisabled={processing}
                                 />
-                                {errors.customer_name && <div className="text-sm text-red-600 mt-1">{errors.customer_name}</div>}
                             </div>
 
                             <div>
@@ -106,7 +105,7 @@ export default function Edit({
                                     required
                                 >
                                     <option value="pending">Pendente</option>
-                                    <option value="in_progress">Em Progresso</option>
+                                    <option value="in_progress">Em andamento</option>
                                     <option value="completed">Concluído</option>
                                     <option value="canceled">Cancelado</option>
                                 </select>

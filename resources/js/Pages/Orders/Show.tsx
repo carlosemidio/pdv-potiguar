@@ -8,12 +8,14 @@ import OrderItemFormModal from '@/Components/OrderItemFormModal';
 import { useState } from 'react';
 import { OrderItem } from '@/types/OrderItem';
 import Swal from 'sweetalert2';
+import OrderPaymentsForm from '@/Components/OrderPaymentsForm';
+import { formatDateTime } from '@/utils/date-format';
 
 export default function Index({
     auth,
     order,
 }: PageProps<{ order?: { data: Order } }>) {
-    const { delete: destroy, reset } = useForm();
+    const { delete: destroy, reset, patch } = useForm();
 
     const statusColors: Record<string, string> = {
         'pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
@@ -23,7 +25,10 @@ export default function Index({
     };
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isPaymentsModalOpen, setIsPaymentsModalOpen] = useState(false);
     const [tab, setTab] = useState<'items' | 'details'>('items');
+
+    const orderCanBeModified = order?.data.status === 'pending' || order?.data.status === 'in_progress';
 
     const handleDeleteItem = (item: OrderItem) => {
         Swal.fire({
@@ -39,6 +44,36 @@ export default function Index({
                 preserveScroll: true,
                 onFinish: () => reset(),
             });
+            }
+        });
+    };
+
+    const handleCancelOrder = () => {
+        Swal.fire({
+            title: 'Cancelar pedido',
+            text: `Tem certeza que deseja cancelar o pedido #${order?.data.id}? Esta ação não pode ser desfeita.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, cancelar',
+            cancelButtonText: 'Manter pedido',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                patch(route('orders.cancel', order!.data.id));
+            }
+        });
+    };
+
+    const handleFinishOrder = () => {
+        Swal.fire({
+            title: 'Finalizar pedido',
+            text: `Tem certeza que deseja finalizar o pedido #${order?.data.id}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, finalizar',
+            cancelButtonText: 'Manter pedido',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                patch(route('orders.finish', order!.data.id));
             }
         });
     };
@@ -111,15 +146,17 @@ export default function Index({
                                                     Total: {item.total_price}
                                                 </div>
 
-                                                <button
-                                                    className="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition flex items-center"
-                                                    title="Remover item"
-                                                    onClick={() => handleDeleteItem(item)}
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                </button>
+                                                {orderCanBeModified && (
+                                                    <button
+                                                        className="absolute top-2 right-2 px-1 py-1 text-xs rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition flex items-center"
+                                                        title="Remover item"
+                                                        onClick={() => handleDeleteItem(item)}
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                )}
                                             </Card>
                                         </li>
                                     ))}
@@ -128,22 +165,101 @@ export default function Index({
                                 <p className="text-gray-800 dark:text-gray-200 text-sm">Nenhum item no pedido.</p>
                             )}
 
+                            {orderCanBeModified && (
+                                <div className="sticky left-0 bottom-0 self-start bg-gray-50 dark:bg-gray-800 p-3 rounded-lg shadow-lg w-full md:w-auto">
+                                    <PrimaryButton onClick={() => setIsModalOpen(true)} className="shadow-lg">
+                                        Adicionar Item
+                                    </PrimaryButton>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
                             <div className="flex flex-col bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mt-3 shadow-sm">
                                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Valor Total</span>
-                                <span className="text-sm md:text-base text-gray-800 dark:text-gray-200 font-medium truncate">{order?.data.total_amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                <span className="text-sm md:text-base text-gray-800 dark:text-gray-200 font-medium truncate">{(order?.data.total_amount ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                             </div>
 
-                            <div className="sticky left-0 bottom-0 self-start bg-gray-50 dark:bg-gray-800 p-3 rounded-lg shadow-lg w-full md:w-auto">
-                                <PrimaryButton onClick={() => setIsModalOpen(true)} className="shadow-lg">
-                                    Adicionar Item
-                                </PrimaryButton>
+                            <div className="flex flex-col bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mt-3 shadow-sm">
+                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Valor Pago</span>
+                                <span className="text-sm md:text-base text-gray-800 dark:text-gray-200 font-medium truncate">{(order?.data.paid_amount ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                             </div>
+
+                            <div className="flex flex-col bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mt-3 shadow-sm">
+                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Valor Restante</span>
+                                <span className="text-sm md:text-base text-gray-800 dark:text-gray-200 font-medium truncate">{((order?.data.total_amount ?? 0) - (order?.data.paid_amount ?? 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                            </div>
+                        </div>
+
+                        {order?.data.payments && order.data.payments.length > 0 && (
+                            <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
+                                <span className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Pagamentos</span>
+                                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                    {order.data.payments.map((payment) => (
+                                        <li key={payment.id}>
+                                            <Card className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm relative">
+                                                <div className="absolute top-2 right-2">
+                                                    <span className="p-1 rounded text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                        {payment.method}
+                                                    </span>
+                                                </div>
+                                                <div className="flex flex-col md:flex-row md:items-center justify-between">
+                                                    <div className="text-xs">
+                                                        {payment.notes ? payment.notes : 'N/A'}
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col md:flex-row md:items-center justify-between mt-2">
+                                                    <span className="text-gray-800 dark:text-gray-200 font-medium text-md">
+                                                        {parseFloat(payment.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 text-left">
+                                                        {formatDateTime(payment.created_at)}
+                                                    </span>
+                                                </div>
+                                            </Card>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
+                            {orderCanBeModified && (
+                                <div className="mt-4 flex flex-col md:flex-row gap-2">
+                                    <PrimaryButton
+                                        onClick={handleCancelOrder}
+                                        className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                                    >
+                                        Cancelar Pedido
+                                    </PrimaryButton>
+
+                                    <PrimaryButton
+                                        onClick={handleFinishOrder}
+                                        className="bg-green-600 hover:bg-green-700 focus:ring-green-500"
+                                    >
+                                        Finalizar Pedido
+                                    </PrimaryButton>
+
+                                    <PrimaryButton
+                                        onClick={() => setIsPaymentsModalOpen(true)}
+                                        className="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
+                                    >
+                                        Adicionar Pagamento
+                                    </PrimaryButton>
+                                </div>
+                            )}
                         </div>
 
                         <OrderItemFormModal
                             isOpen={isModalOpen}
                             onClose={() => setIsModalOpen(false)}
                             order={order?.data as Order}
+                        />
+
+                        <OrderPaymentsForm
+                            order={order?.data as Order}
+                            isOpen={isPaymentsModalOpen}
+                            onClose={() => setIsPaymentsModalOpen(false)}
                         />
                     </Card>
                 </div>

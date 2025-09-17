@@ -37,7 +37,7 @@ class OrdersController extends Controller
             $ordersQuery->where('user_id', $user->id);
         }
 
-        $orders = $ordersQuery->with(['store', 'table'])
+        $orders = $ordersQuery->with(['store', 'table', 'customer', 'items.variant'])
             ->orderBy('id', 'desc')
             ->paginate(12)
             ->withQueryString();
@@ -72,7 +72,7 @@ class OrdersController extends Controller
         try {
             $data = $request->validate([
                 'table_id' => 'nullable|exists:tables,id',
-                'customer_name' => 'nullable|string|max:255',
+                'customer_id' => 'nullable|exists:customers,id',
                 'status' => 'required|in:pending,in_progress,completed,cancelled',
                 'service_fee' => 'nullable|numeric|min:0',
                 'total_amount' => 'required|numeric|min:0',
@@ -100,6 +100,18 @@ class OrdersController extends Controller
                     $table->save();
                 }
 
+                // update stock for each item in the order (if applicable)
+
+                foreach ($order->items as $item) {
+                    if ($item->variant) {
+                        $item->variant->stock -= $item->quantity;
+                        $item->variant->save();
+                    } else {
+                        $item->product->stock -= $item->quantity;
+                        $item->product->save();
+                    }
+                }
+
                 return $order;
             });
 
@@ -122,7 +134,7 @@ class OrdersController extends Controller
 
         $this->authorize('view', $order);
 
-        $order->load(['store', 'table', 'items.product', 'items.variant', 'items.itemAddons.addon']);
+        $order->load(['store', 'table', 'items.variant', 'items.itemAddons.addon', 'payments']);
 
         return Inertia::render('Orders/Show', [
             'order' => new OrderResource($order),
@@ -135,7 +147,7 @@ class OrdersController extends Controller
 
         $this->authorize('update', $order);
 
-        $order->load(['store', 'table']);
+        $order->load(['store', 'table', 'customer']);
 
         return Inertia::render('Orders/Form', [
             'order' => new OrderResource($order),
@@ -151,7 +163,7 @@ class OrdersController extends Controller
         try {
             $data = $request->validate([
                 'table_id' => 'nullable|exists:tables,id',
-                'customer_name' => 'nullable|string|max:255',
+                'customer_id' => 'nullable|exists:customers,id',
                 'status' => 'required|in:pending,in_progress,completed,cancelled',
                 'service_fee' => 'nullable|numeric|min:0',
                 'total_amount' => 'required|numeric|min:0',
@@ -173,22 +185,77 @@ class OrdersController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function finish($id)
     {
         $order = $this->order->findOrFail($id);
-        $this->authorize('delete', $order);
+        $this->authorize('update', $order);
 
         try {
-            if (!$order->delete()) {
+            if (!in_array($order->status, ['pending', 'in_progress'])) {
                 return redirect()->back()
-                    ->with('fail', 'Erro ao remover pedido.');
+                    ->with('fail', 'Apenas pedidos pendentes ou em andamento podem ser finalizados.');
+            }
+
+            if ($order->items->isEmpty()) {
+                return redirect()->back()
+                    ->with('fail', 'Não é possível finalizar um pedido sem itens.');
+            }
+
+            if ($order->paid_amount < $order->total_amount) {
+                return redirect()->back()
+                    ->with('fail', 'O valor pago é menor que o valor total do pedido.');
+            }
+
+            $order->status = 'completed';
+
+            if (!$order->save()) {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao finalizar pedido.');
+            }
+
+            if (isset($order->table_id)) {
+                $table = Table::find($order->table_id);
+                $table->status = 'available';
+                $table->save();
             }
 
             return redirect()->route('orders.index')
-                ->with('success', 'Pedido removido com sucesso!');
+                ->with('success', 'Pedido finalizado com sucesso!');
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('fail', 'Erro ao remover pedido: ' . $e->getMessage());
+                ->with('fail', 'Erro ao finalizar pedido: ' . $e->getMessage());
+        }
+    }
+
+    public function cancel($id)
+    {
+        $order = $this->order->findOrFail($id);
+        $this->authorize('update', $order);
+
+        try {
+            if (!in_array($order->status, ['pending', 'in_progress'])) {
+                return redirect()->back()
+                    ->with('fail', 'Apenas pedidos pendentes ou em andamento podem ser cancelados.');
+            }
+
+            $order->status = 'cancelled';
+
+            if (!$order->save()) {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao cancelar pedido.');
+            }
+
+            if (isset($order->table_id)) {
+                $table = Table::find($order->table_id);
+                $table->status = 'available';
+                $table->save();
+            }
+
+            return redirect()->route('orders.index')
+                ->with('success', 'Pedido cancelado com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao cancelar pedido: ' . $e->getMessage());
         }
     }
 }

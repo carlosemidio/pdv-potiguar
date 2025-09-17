@@ -29,9 +29,7 @@ export const formatDateTime = (_date: string) => {
         minute: '2-digit'
     };
 
-  const localDate = date.toLocaleDateString(locale, options);
-  const localTime = date.toLocaleTimeString(locale, options);
-  return `${localDate} ${localTime}`;
+  return date.toLocaleString(locale, options);
 }
 export const formatCustomDateTime = (_date: string) => {
   const date = new Date(_date);

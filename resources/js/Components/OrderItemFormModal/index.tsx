@@ -38,23 +38,25 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
 
     const handleProductChange = (product: Product) => {
         setSelectedProduct(product);
-        const unitPrice = product.price ? parseFloat(String(product.price)) : 0;
-        const quantity = data.quantity ? Number(data.quantity) : 1;
-
+        const productVariants = product.variants || [];
+        let variantId = null;
+        let unitPrice = 0;
+        let totalPrice = 0;
+        if (productVariants.length === 1) {
+            variantId = productVariants[0].id;
+            unitPrice = parseFloat(String(productVariants[0].price)) || 0;
+            totalPrice = unitPrice * (data.quantity || 1);
+        }
         setData({
             ...data,
             product_id: product.id,
-            product_variant_id: null,
+            product_variant_id: variantId,
             unit_price: unitPrice,
-            total_price: unitPrice * quantity,
+            total_price: totalPrice,
         });
 
-        setVariants(product.variants || []);
+        setVariants(productVariants);
         setProductAddons(product.product_addons || []);
-
-        setTimeout(() => {
-            console.log(data);
-        }, 2000);
     }
 
     const handleVariantChange = (variantId: string) => {
@@ -93,6 +95,11 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
     }
 
     const submit = () => {
+        // Torna obrigatório selecionar uma variação
+        if (!data.product_variant_id) {
+            alert('Selecione uma variação do produto.');
+            return;
+        }
         let addons = data.addons || [];
         addons = addons.map(addon => ({
             addon_id: addon.addon_id,
@@ -143,15 +150,16 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                                     className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                     value={String(data.product_variant_id)}
                                     onChange={(e) => handleVariantChange(e.target.value)}
+                                    required
                                 >
-                                    <option value="">Selecione uma variação</option>
+                                    <option value="">Selecione uma variação *</option>
                                     {variants.map((variant) => (
                                         <option key={variant.id} value={String(variant.id)}>
                                             {variant.name}
                                         </option>
                                     ))}
                                 </select>
-                                {errors.product_variant_id && <p className="text-red-600 text-sm mt-1">{errors.product_variant_id}</p>}
+                                {(!data.product_variant_id) && <p className="text-red-600 text-sm mt-1">Selecione uma variação do produto.</p>}
                             </div>
                         )}
 
@@ -185,9 +193,9 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                                 id="unit_price"
                                 className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                 value={data.unit_price}
-                                onChange={(e) => setData('unit_price', parseFloat(e.target.value) || 0)}
                                 min={0}
                                 step="0.01"
+                                disabled
                             />
                             {errors.unit_price && <p className="text-red-600 text-sm mt-1">{errors.unit_price}</p>}
                         </div>
@@ -202,6 +210,7 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                                 min={0}
                                 step="0.01"
                                 disabled
+                                readOnly
                             />
                             {errors.total_price && <p className="text-red-600 text-sm mt-1">{errors.total_price}</p>}
                         </div>

@@ -8,8 +8,10 @@ export type Variant = {
     slug?: string;
 
     sku: string;
+    cost_price: number;
     price: number;
     stock_quantity: number;
+    featured: number;
 
     image: Image | null;
     images: Image[];

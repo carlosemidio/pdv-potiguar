@@ -23,22 +23,8 @@ class ProductResource extends JsonResource
             'slug'            => $this->slug,
             'description'     => $this->description,
             'short_description' => $this->short_description,
-            'sku'             => $this->sku,
-            'price'           => $this->price,
-            'stock_quantity'  => $this->stock_quantity,
-            'status'          => $this->status,
-            'featured'        => $this->featured,
             'variants' => ProductVariantResource::collection($this->whenLoaded('variants')),
             'product_addons' => ProductAddonResource::collection($this->whenLoaded('productAddons')),
-            'image'  => $this->whenLoaded('image'),
-            'images' => $this->whenLoaded('images'),
-
-            'meta' => [
-                'title'       => $this->meta_title,
-                'description' => $this->meta_description,
-                'keywords'    => $this->meta_keywords,
-            ],
-
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];

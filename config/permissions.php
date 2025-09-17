@@ -45,4 +45,12 @@ return [
         'name' => 'tables',
         'display_name' => 'Mesas',
     ],
+    [
+        'name' => 'customers',
+        'display_name' => 'Clientes',
+    ],
+    [
+        'name' => 'orders',
+        'display_name' => 'Pedidos',
+    ]
 ];

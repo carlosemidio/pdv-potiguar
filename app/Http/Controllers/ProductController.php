@@ -76,17 +76,19 @@ class ProductController extends Controller
 
         try {
             $product = Product::create($dataForm);
+
             if ($product instanceof Product) {
                 // Add product variants
                 if (isset($dataForm['variants'])) {
                     foreach ($dataForm['variants'] as $variantData) {
                         $productVariant = ProductVariant::create([
+                            'store_id' => $user->store->id,
                             'product_id' => $product->id,
-                            'attribute' => $variantData['attribute'],
-                            'value' => $variantData['value'],
                             'sku' => $variantData['sku'] ?? null,
+                            'cost_price' => $variantData['cost_price'] ?? null,
                             'price' => $variantData['price'],
                             'stock_quantity' => $variantData['stock_quantity'],
+                            'featured' => $variantData['featured'] ?? 0,
                         ]);
 
                         // Handle variant images
@@ -107,20 +109,13 @@ class ProductController extends Controller
                     }
                 }
 
-                if (isset($dataForm['files']) && is_array($dataForm['files'])) {
-                    foreach ($dataForm['files'] as $file) {
-                        $filePath = Storage::disk('public')
-                            ->put('/products/' . $product->slug, $file);
-    
-                        $uploadedFile = new File([
-                            'user_id' => $request->user()->id,
-                            'name' => $file->getClientOriginalName(),
-                            'size' => $file->getSize(),
-                            'url' => $filePath,
-                            'extension' => $file->extension(),
+                // Add product addons
+                if (isset($dataForm['product_addons']) && is_array($dataForm['product_addons'])) {
+                    foreach ($dataForm['product_addons'] as $addonData) {
+                        $product->productAddons()->create([
+                            'addon_id' => $addonData['addon_id'],
+                            'price' => $addonData['price'],
                         ]);
-                        
-                        $product->images()->save($uploadedFile);
                     }
                 }
 
@@ -210,16 +205,21 @@ class ProductController extends Controller
                         // Update existing variant
                         $productVariant->update([
                             'sku' => $variantData['sku'] ?? null,
+                            'cost_price' => $variantData['cost_price'] ?? null,
                             'price' => $variantData['price'],
                             'stock_quantity' => $variantData['stock_quantity'],
+                            'featured' => $variantData['featured'] ?? 0,
                         ]);
                     } else {
                         // Create new variant
                         $productVariant = ProductVariant::create([
+                            'store_id' => $product->store_id,
                             'product_id' => $product->id,
                             'sku' => $variantData['sku'] ?? null,
+                            'cost_price' => $variantData['cost_price'] ?? null,
                             'price' => $variantData['price'],
-                            'stock_quantity' => $variantData['stock_quantity']
+                            'stock_quantity' => $variantData['stock_quantity'],
+                            'featured' => $variantData['featured'] ?? 0,
                         ]);
                     }
 
@@ -295,23 +295,6 @@ class ProductController extends Controller
                 }
                 // Remove addons that were not included in the update request
                 $product->productAddons()->whereNotIn('id', $addonIds)->delete();
-            }
-
-            if (isset($dataForm['files']) && is_array($dataForm['files']) && count($dataForm['files']) > 0) {
-                foreach ($dataForm['files'] as $file) {
-                    $filePath = Storage::disk('public')
-                        ->put('/products/' . $product->slug, $file);
-
-                    $uploadedFile = new File([
-                        'user_id' => $request->user()->id,
-                        'name' => $file->getClientOriginalName(),
-                        'size' => $file->getSize(),
-                        'url' => $filePath,
-                        'extension' => $file->extension(),
-                    ]);
-                    
-                    $product->images()->save($uploadedFile);
-                }
             }
         
             return redirect()->route('product.index')

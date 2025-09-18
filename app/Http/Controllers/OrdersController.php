@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Table;
 use App\Models\User;
+use App\Services\StockMovementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,10 +17,12 @@ use Inertia\Inertia;
 class OrdersController extends Controller
 {
     protected $order;
+    protected $stockMovementService;
 
-    public function __construct(Order $order)
+    public function __construct(Order $order, StockMovementService $stockMovementService)
     {
         $this->order = $order;
+        $this->stockMovementService = $stockMovementService;
     }
 
     public function index(Request $request)
@@ -230,18 +233,20 @@ class OrdersController extends Controller
                     ->with('fail', 'O valor pago é menor que o valor total do pedido.');
             }
 
-            $order->status = 'completed';
+            DB::transaction(function () use ($order) {
+                $order->status = 'completed';
+                $order->save();
+                $order->load('items.storeProductVariant.productVariant');
 
-            if (!$order->save()) {
-                return redirect()->back()
-                    ->with('fail', 'Erro ao finalizar pedido.');
-            }
+                // update stock for each item in the order
+                $stockMovement = $this->stockMovementService->registerSaleFromOrder($order);
 
-            if (isset($order->table_id)) {
-                $table = Table::find($order->table_id);
-                $table->status = 'available';
-                $table->save();
-            }
+                if (isset($order->table_id) && $stockMovement) {
+                    $table = Table::find($order->table_id);
+                    $table->status = 'available';
+                    $table->save();
+                }
+            });
 
             return redirect()->route('orders.index')
                 ->with('success', 'Pedido finalizado com sucesso!');

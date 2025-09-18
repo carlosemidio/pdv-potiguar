@@ -20,6 +20,11 @@ class StoreProductVariantController extends Controller
 
         $user = User::with('store')->find(Auth::id());
 
+        if (!$user->store) {
+            return redirect(route('dashboard'))
+                ->with('fail', 'Usuário não está associado a nenhuma loja. Por favor, crie uma loja primeiro.');
+        }
+
         $query = StoreProductVariant::where('store_id', $user->store->id)
             ->with(['productVariant.image', 'productVariant.product', 'store']);
 

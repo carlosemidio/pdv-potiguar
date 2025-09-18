@@ -24,6 +24,7 @@ use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductVariantController;
+use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StoreController;
@@ -83,6 +84,9 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/variantes-loja', StoreProductVariantController::class)
         ->names('store-product-variant');
+
+    Route::resource('/movimentacoes-estoque', StockMovementController::class)
+        ->names('stock-movement');
 
     Route::resource('/complementos', AddonsController::class)
         ->names('addons');

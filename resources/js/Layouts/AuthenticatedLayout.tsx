@@ -11,7 +11,7 @@ import { PropsWithChildren, ReactNode, useState } from 'react';
 import { AiFillProduct } from 'react-icons/ai';
 import { CgProductHunt } from 'react-icons/cg';
 import { MdAddCircle, MdBrandingWatermark, MdCategory } from 'react-icons/md';
-import { TbMenuOrder } from 'react-icons/tb';
+import { TbArrowsRightLeft, TbMenuOrder } from 'react-icons/tb';
 
 export default function Authenticated({
     user,
@@ -105,6 +105,15 @@ export default function Authenticated({
                                     <div className='flex gap-2 items-center'>
                                         <TbMenuOrder className="w-6 h-6" />
                                         <p>Pedidos</p>
+                                    </div>
+                                </NavLink>
+                            )}
+
+                            {can('stock-movements_view') && (
+                                <NavLink href={route('stock-movement.index')} active={route().current('stock-movement.index')}>
+                                    <div className='flex gap-2 items-center'>
+                                        <TbArrowsRightLeft className="w-6 h-6" />
+                                        <p>Estoque</p>
                                     </div>
                                 </NavLink>
                             )}

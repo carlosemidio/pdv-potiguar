@@ -16,13 +16,14 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('store_id')->constrained()->onDelete('cascade');
-            $table->foreignId('store_product_variant_id')->constrained()->onDelete('cascade');
-            $table->foreignId('order_item_id')->nullable()->constrained()->onDelete('set null');
-            $table->enum('type', ['in', 'out', 'adjustment']);
+            $table->foreignId('store_product_variant_id')->nullable()
+                ->constrained('store_product_variants')->onDelete('set null');
+            $table->enum('type', ['in', 'out']);
+            $table->string('subtype');
             $table->decimal('quantity', 10, 2);
-            $table->decimal('previous_quantity', 10, 2);
-            $table->decimal('final_quantity', 10, 2);
+            $table->decimal('cost_price', 10, 2)->nullable();
             $table->text('reason')->nullable();
+            $table->string('document_number')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

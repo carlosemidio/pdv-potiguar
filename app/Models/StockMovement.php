@@ -12,13 +12,15 @@ class StockMovement extends Model
 
     protected $fillable = [
         'user_id',
-        'product_variant_id',
-        'order_item_id',
+        'tenant_id',
+        'store_id',
+        'store_product_variant_id',
         'type',
+        'subtype',
         'quantity',
-        'previous_quantity',
-        'final_quantity',
+        'cost_price',
         'reason',
+        'document_number',
     ];
 
     public function user()
@@ -26,13 +28,18 @@ class StockMovement extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function productVariant()
+    public function tenant()
     {
-        return $this->belongsTo(ProductVariant::class);
+        return $this->belongsTo(Tenant::class);
     }
 
-    public function orderItem()
+    public function store()
     {
-        return $this->belongsTo(OrderItem::class);
+        return $this->belongsTo(Store::class);
+    }
+
+    public function storeProductVariant()
+    {
+        return $this->belongsTo(StoreProductVariant::class, 'store_product_variant_id');
     }
 }

@@ -23,8 +23,12 @@ class ProductController extends Controller
 
         $productsQuery = Product::with(['category', 'brand']);
 
-        if (!$user->hasPermission('products_view', true)) {
-            $productsQuery->where('user_id', $user->id);
+        if (!request()->user()->hasPermission('products_view', true)) {
+            $productsQuery->where('user_id', Auth::id());
+        }
+
+        if (request()->user()->tenant_id != null) {
+            $productsQuery->where('tenant_id', request()->user()->tenant_id);
         }
 
         if ($request->has('search')) {

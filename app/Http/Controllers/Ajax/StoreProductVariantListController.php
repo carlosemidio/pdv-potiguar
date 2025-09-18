@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Ajax;
 
 use App\Http\Controllers\Controller;
 use App\Models\StoreProductVariant;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class StoreProductVariantListController extends Controller
 {
@@ -22,6 +24,20 @@ class StoreProductVariantListController extends Controller
         $search = $request->search ?? '';
         $storeProductVariantsQuery = $this->storeProductVariant->query()
             ->with(['productVariant.product']);
+
+        $user = User::with('store')->find(Auth::id());
+        
+        if (!$user->hasPermission('store-product-variants_view', true)) {
+            $storeProductVariantsQuery->where('user_id', Auth::id());
+        }
+
+        if ($user->tenant_id != null) {
+            $storeProductVariantsQuery->where('tenant_id', $user->tenant_id);
+        }
+
+        if ($user->store->id != null) {
+            $storeProductVariantsQuery->where('store_id', $user->store->id);
+        }
 
         if ($search != '') {
             $storeProductVariantsQuery->whereHas('productVariant', function ($query) use ($search) {

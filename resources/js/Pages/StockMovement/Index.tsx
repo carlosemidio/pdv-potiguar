@@ -5,7 +5,7 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Eye, Trash } from 'lucide-react';
+import { Edit, Eye, Trash, Search, Eraser, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { formatCustomDateTime } from '@/utils/date-format';
@@ -65,7 +65,7 @@ export default function Index({
         >
             <Head title="Movimentação de Estoque" />
 
-            <section className='py-12 px-4 text-gray-800 dark:text-gray-200'>
+            <section className='py-2 px-4 text-gray-800 dark:text-gray-200'>
                 <div className="mx-auto lg:px-8">
                     <div className="mb-6">
                         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 flex flex-col md:flex-row md:items-end gap-4 border border-gray-200 dark:border-gray-700">
@@ -104,22 +104,26 @@ export default function Index({
                                     </div>
                                 </div>
                                 <div className="flex flex-row gap-2 items-end">
-                                    <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow mt-2">Filtrar</button>
-                                    <button type="button" onClick={() => { window.location.href = route('stock-movement.index'); }} className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg shadow mt-2">Limpar</button>
+                                    <PrimaryButton type="submit" className="mt-2 inline-flex items-center gap-2">
+                                        <Search className="w-4 h-4" />
+                                        Filtrar
+                                    </PrimaryButton>
+                                    <SecondaryButton type="button" onClick={() => { window.location.href = route('stock-movement.index'); }} className="mt-2 inline-flex items-center gap-2">
+                                        <Eraser className="w-4 h-4" />
+                                        Limpar
+                                    </SecondaryButton>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    <div className='flex justify-end'>
-                        {can('stock-movements_create') && (
-                            <Link href={route('stock-movement.create')}>
-                                <PrimaryButton>
-                                    Nova movimentação
-                                </PrimaryButton>
-                            </Link>
-                        )}
-                    </div>
+                    {can('stock-movements_create') && (
+                        <Link href={route('stock-movement.create')} className="fixed bottom-6 right-6 z-10">
+                            <PrimaryButton className="rounded-full w-12 h-12 p-0 flex items-center justify-center shadow-lg">
+                                <Plus className="w-6 h-6" />
+                            </PrimaryButton>
+                        </Link>
+                    )}
                     <div className="mt-4">
                         {items.length > 0 ? (
                             <div className="relative border-l border-gray-200 dark:border-gray-700">
@@ -211,8 +215,7 @@ export default function Index({
                         <SecondaryButton onClick={closeModal}>
                             Cancelar
                         </SecondaryButton>
-
-                        <DangerButton className="ms-3" disabled={processingDelete}>
+                        <DangerButton type="submit" className="ms-3" disabled={processingDelete}>
                             Deletar movimentação
                         </DangerButton>
                     </div>

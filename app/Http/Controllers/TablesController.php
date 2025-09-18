@@ -24,15 +24,22 @@ class TablesController extends Controller
 
         $search = $request->search ?? '';
         $tablesQuery = $this->table->query();
-        $user = User::find(Auth::user()->id);
+        $user = User::with('store')->find(Auth::id());
+
+        if (!$user->hasPermission('tables_view', true)) {
+            $tablesQuery->where('user_id', Auth::id());
+        }
+
+        if ($user->tenant_id != null) {
+            $tablesQuery->where('tenant_id', $user->tenant_id);
+        }
+
+        if ($user->store != null) {
+            $tablesQuery->where('store_id', $user->store->id);
+        }
 
         if ($search != '') {
             $tablesQuery->where('name', 'like', "%$search%");
-        }
-
-        if (!$user->hasPermission('tables_view', true)) {
-            // Lojista can only see their own tables
-            $tablesQuery->where('user_id', $user->id);
         }
 
         $tables = $tablesQuery->orderBy('name')

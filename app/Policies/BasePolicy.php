@@ -27,7 +27,7 @@ abstract class BasePolicy
      */
     public function viewAny(User $user): Response
     {
-        return $user->hasPermission($this->table_name.'_view', true)
+        return $user->hasPermission($this->table_name . '_view', true)
             ? Response::allow()
             : Response::deny('Você não tem permissão para visualizar estes recursos.');
     }
@@ -37,19 +37,19 @@ abstract class BasePolicy
      */
     public function viewBase(User $user, Model $item): Response
     {
-        $permission = $user->hasPermission($this->table_name.'_view', false);
+        $permission = $user->hasPermission($this->table_name . '_view', false);
 
         if (!$permission) {
             return Response::deny('Você não tem permissão para visualizar este recurso.');
         }
 
-        if ($permission && ($user->id == $item->user_id)) {
+        if ($permission && ($user->tenant_id == $item->tenant_id) && ($user->id == $item->user_id)) {
             return Response::allow();
         }
 
-        $superPermission = $user->hasPermission($this->table_name. '_view', true);
+        $superPermission = $user->hasPermission($this->table_name . '_view', true);
 
-        if ($superPermission) {
+        if ($superPermission && (($user->tenant_id == null) || ($user->tenant_id == $item->tenant_id))) {
             return Response::allow();
         }
 
@@ -61,8 +61,8 @@ abstract class BasePolicy
      */
     public function create(User $user): Response
     {
-        return $user->hasPermission($this->table_name.'_create')
-        ? Response::allow()
+        return $user->hasPermission($this->table_name . '_create')
+            ? Response::allow()
             : Response::deny('Você não tem permissão para criar esse recurso.');
     }
 
@@ -71,19 +71,19 @@ abstract class BasePolicy
      */
     public function updateBase(User $user, Model $item): Response
     {
-        $permission = $user->hasPermission($this->table_name.'_edit', false);
+        $permission = $user->hasPermission($this->table_name . '_edit', false);
 
         if (!$permission) {
             return Response::deny('Você não tem permissão para atualizar este recurso.');
         }
 
-        if ($permission && ($user->id == $item->user_id)) {
+        if ($permission && ($user->tenant_id == $item->tenant_id) && ($user->id == $item->user_id)) {
             return Response::allow();
         }
 
-        $superPermission = $user->hasPermission($this->table_name .'_edit', true);
+        $superPermission = $user->hasPermission($this->table_name . '_edit', true);
 
-        if ($superPermission) {
+        if ($superPermission && (($user->tenant_id == null) || ($user->tenant_id == $item->tenant_id))) {
             return Response::allow();
         }
 
@@ -95,23 +95,22 @@ abstract class BasePolicy
      */
     public function deleteBase(User $user, Model $item): Response
     {
-        $permission = $user->hasPermission($this->table_name .'_delete', false);
+        $permission = $user->hasPermission($this->table_name . '_delete', false);
 
         if (!$permission) {
             return Response::deny('Você não tem permissão para deletar este recurso.');
         }
 
-        if ($permission) {
+        if ($permission && ($user->tenant_id == $item->tenant_id)) {
             return Response::allow();
         }
 
-        $superPermission = $user->hasPermission($this->table_name .'_delete', true);
+        $superPermission = $user->hasPermission($this->table_name . '_delete', true);
 
-        if ($superPermission) {
+        if ($superPermission && (($user->tenant_id == null) || ($user->tenant_id == $item->tenant_id))) {
             return Response::allow();
         }
 
         return Response::deny('Você não tem permissão para visualizar este recurso.');
     }
-
 }

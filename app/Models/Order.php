@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -33,10 +34,14 @@ class Order extends Model
     public function getStatusNameAttribute()
     {
         return match ($this->status) {
-            'pending' => 'Pendente',
-            'in_progress' => 'Em andamento',
-            'completed' => 'Finalizado',
-            'cancelled' => 'Cancelado',
+            OrderStatus::PENDING->value => 'Pendente',
+            OrderStatus::IN_PROGRESS->value => 'Em andamento',
+            OrderStatus::CONFIRMED->value => 'Confirmado',
+            OrderStatus::REJECTED->value => 'Rejeitado',
+            OrderStatus::PAID->value => 'Pago',
+            OrderStatus::SHIPPED->value => 'Enviado',
+            OrderStatus::COMPLETED->value => 'Concluído',
+            OrderStatus::CANCELED->value => 'Cancelado',
             default => 'Desconhecido',
         };
     }

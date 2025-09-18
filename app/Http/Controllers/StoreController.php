@@ -24,10 +24,12 @@ class StoreController extends Controller
         $this->authorize('stores_view');
         $storesQuery = Store::with(['user', 'city']);
 
-        $user = User::find(Auth::id());
+        if (!request()->user()->hasPermission('customers_view', true)) {
+            $storesQuery->where('user_id', Auth::id());
+        }
 
-        if (!$user->hasPermission('stores_view', true)) {
-            $storesQuery->where('user_id', $user->id);
+        if (request()->user()->tenant_id != null) {
+            $storesQuery->where('tenant_id', request()->user()->tenant_id);
         }
 
         if ($request->has('search')) {

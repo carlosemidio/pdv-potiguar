@@ -311,7 +311,7 @@ export default function Authenticated({
                     </header>
                 )}
                 <main className="bg-gray-100 dark:bg-gray-900 h-full">
-                    <div className="uppercase tracking-widest px-4 pt-8 lg:px-8 lg:pt-8">
+                    <div className="uppercase tracking-widest px-2 pt-2 pb-2 lg:px-8 lg:pt-2 lg:pb-2">
                         <div className='flex items-center gap-2'>
                             {header}
                             <div className='flex-1 h-[1px] bg-gray-400 dark:bg-gray-500'></div>
@@ -336,6 +336,27 @@ export default function Authenticated({
 
                     { children }
                 </main>
+                {/* Bottom Navigation (mobile) */}
+                <nav className="fixed bottom-0 inset-x-0 z-40 bg-white/90 dark:bg-gray-800/90 backdrop-blur border-t border-gray-200 dark:border-gray-700 lg:hidden">
+                    <div className="grid grid-cols-4 text-xs">
+                        <Link href={route('dashboard')} className={`flex flex-col items-center py-2 ${route().current('dashboard') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                            <Gauge className="w-5 h-5" />
+                            <span>Home</span>
+                        </Link>
+                        <Link href={route('orders.index')} className={`flex flex-col items-center py-2 ${route().current('orders.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                            <TbMenuOrder className="w-5 h-5" />
+                            <span>Pedidos</span>
+                        </Link>
+                        <Link href={route('stock-movement.index')} className={`flex flex-col items-center py-2 ${route().current('stock-movement.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                            <TbArrowsRightLeft className="w-5 h-5" />
+                            <span>Estoque</span>
+                        </Link>
+                        <Link href={route('product-variant.index')} className={`flex flex-col items-center py-2 ${route().current('product-variant.*') || route().current('store-product-variant.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                            <CgProductHunt className="w-5 h-5" />
+                            <span>Produtos</span>
+                        </Link>
+                    </div>
+                </nav>
             </div>
         </div>
     );

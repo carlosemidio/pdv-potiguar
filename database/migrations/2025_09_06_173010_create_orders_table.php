@@ -21,11 +21,11 @@ return new class extends Migration
             $table->integer('number');
             $table->unique(['store_id', 'number']);
             $table->string('status')->default('pending')
-                ->comment('pending, in_progress, completed, cancelled');
+                ->comment('Ex: pending, in_progress, completed, cancelled');
             $table->decimal('amount', 10, 2)->default(0);
             $table->decimal('discount', 10, 2)->default(0);
             $table->decimal('service_fee', 10, 2)->default(0);
-            $table->decimal('total_amount', 10, 2);
+            $table->decimal('total_amount', 10, 2)->default(0);
             $table->decimal('paid_amount', 10, 2)->default(0);
             $table->boolean('payment_status')->default(false); // false = not paid, true = paid
             $table->softDeletes();

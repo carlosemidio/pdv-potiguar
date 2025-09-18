@@ -28,20 +28,20 @@ ChartJS.register(
 
 export default function Dashboard({ auth }: PageProps) {
     const {
-        viewsToday,
-        viewsLast7Days,
-        viewsLast30Days,
-        totalViews,
+        incomesToday,
+        pendingIncomes,
+        inProgressOrders,
+        finishedOrdersToday,
         viewsByPeriod,
         totalProducts,
         totalStores,
         stores
     } = usePage<PageProps & {
         auth: { user: User };
-        viewsToday: number;
-        viewsLast7Days: number;
-        viewsLast30Days: number;
-        totalViews: number;
+        incomesToday: number;
+        pendingIncomes: number;
+        inProgressOrders: number;
+        finishedOrdersToday: number;
         viewsByPeriod: Record<string, number>;
         totalProducts: number;
         totalStores: number;
@@ -98,30 +98,30 @@ export default function Dashboard({ auth }: PageProps) {
                 <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                            <h3 className="text-lg font-semibold">Bem vindo, {user.name}!</h3>
+                            <h3 className="text-lg font-semibold">Bem vindo(a), {user.name}!</h3>
                             <p className="mt-2 text-gray-600 dark:text-gray-400">
-                                Aqui estão suas estatísticas de visualização de produtos.
+                                Aqui estão alguns dados rápidos sobre sua conta e atividades recentes.
                             </p>
                         </div>
 
                         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                            <h4 className="text-md font-semibold">Visualizações Hoje</h4>
-                            <p className="text-2xl">{viewsToday}</p>
+                            <h4 className="text-md font-semibold">Receita Hoje</h4>
+                            <p className="text-2xl">{incomesToday}</p>
                         </div>
 
                         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                            <h4 className="text-md font-semibold">Visualizações nos últimos 7 Dias</h4>
-                            <p className="text-2xl">{viewsLast7Days}</p>
+                            <h4 className="text-md font-semibold">Valor a Receber</h4>
+                            <p className="text-2xl">{pendingIncomes}</p>
                         </div>
 
                         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                            <h4 className="text-md font-semibold">Visualizações nos últimos 30 Dias</h4>
-                            <p className="text-2xl">{viewsLast30Days}</p>
+                            <h4 className="text-md font-semibold">Pedidos em Andamento</h4>
+                            <p className="text-2xl">{inProgressOrders}</p>
                         </div>
 
                         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                            <h4 className="text-md font-semibold">Visualizações Totais (Desde o início)</h4>
-                            <p className="text-2xl">{totalViews}</p>
+                            <h4 className="text-md font-semibold">Pedidos Finalizados Hoje</h4>
+                            <p className="text-2xl">{finishedOrdersToday}</p>
                         </div>
 
                         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">

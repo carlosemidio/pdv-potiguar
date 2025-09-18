@@ -17,7 +17,6 @@ class StoreProductVariantController extends Controller
     public function index(Request $request)
     {
         $this->authorize('store-product-variants_view');
-
         $user = User::with('store')->find(Auth::id());
 
         if (!$user->store) {
@@ -27,6 +26,18 @@ class StoreProductVariantController extends Controller
 
         $query = StoreProductVariant::where('store_id', $user->store->id)
             ->with(['productVariant.image', 'productVariant.product', 'store']);
+
+        if (!request()->user()->hasPermission('store-product-variants_view', true)) {
+            $query->where('user_id', Auth::id());
+        }
+
+        if (request()->user()->tenant_id != null) {
+            $query->where('tenant_id', request()->user()->tenant_id);
+        }
+
+        if ($user->store != null) {
+            $query->where('store_id', $user->store->id);
+        }
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;

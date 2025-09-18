@@ -110,6 +110,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/pedidos/{id}/cancelar', [OrdersController::class, 'cancel'])
         ->name('orders.cancel');
 
+    Route::patch('/pedidos/{id}/rejeitar', [OrdersController::class, 'reject'])
+        ->name('orders.reject');
+
+    Route::patch('/pedidos/{id}/confirmar', [OrdersController::class, 'confirm'])
+        ->name('orders.confirm');
+
     Route::patch('/pedidos/{id}/finish', [OrdersController::class, 'finish'])
         ->name('orders.finish');
 

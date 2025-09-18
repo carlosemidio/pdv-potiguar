@@ -1,5 +1,5 @@
 import { Customer } from '@/types/Customer';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AsyncSelect from 'react-select/async';
 
 // Define the shape of the options
@@ -22,6 +22,15 @@ const SearchableCustomersSelect: React.FC<SearchableCustomersSelectProps> = ({
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(
     selectedCustomer ? { value: selectedCustomer.id, label: selectedCustomer.name } : null
   );
+  
+  // Keep internal state in sync when the parent updates selectedCustomer (e.g., editing an order)
+  useEffect(() => {
+    if (selectedCustomer) {
+      setSelectedOption({ value: selectedCustomer.id, label: selectedCustomer.name });
+    } else {
+      setSelectedOption(null);
+    }
+  }, [selectedCustomer]);
   
   const [customers, setCustomers] = useState<Customer[]>([]);
 

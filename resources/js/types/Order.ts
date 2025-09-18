@@ -7,6 +7,9 @@ import { Customer } from "./Customer";
 export type Order = {
     id: number;
     user_id: number;
+    store_id: number;
+    table_id: number | null;
+    customer_id: number | null;
     store: Store;
     table: Table | null;
     customer: Customer | null;

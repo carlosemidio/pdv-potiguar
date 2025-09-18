@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Ajax;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class TenantListController extends Controller
@@ -21,8 +22,12 @@ class TenantListController extends Controller
     public function index(Request $request)
     {
         $search = $request->search ?? '';
-
         $tenantsQuery = $this->tenant->query();
+        $user = User::find($request->user()->id);
+
+        if (!$user->hasPermission('tenants_view', true)) {
+            $tenantsQuery->where('user_id', $user->id);
+        }
 
         if ($search != '') {
             $tenantsQuery->where('name', 'like', "%$search%");

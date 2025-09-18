@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Ajax;
 
 use App\Http\Controllers\Controller;
 use App\Models\Table;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class TableListController extends Controller
@@ -20,8 +21,20 @@ class TableListController extends Controller
     public function index(Request $request)
     {
         $search = $request->search ?? '';
-
         $tablesQuery = $this->table->query();
+        $user = User::with('store')->find($request->user()->id);
+
+        if (!$user->hasPermission('tables_view', true)) {
+            $tablesQuery->where('user_id', $user->id);
+        }
+
+        if ($user->tenant_id != null) {
+            $tablesQuery->where('tenant_id', $user->tenant_id);
+        }
+
+        if ($user->store->id != null) {
+            $tablesQuery->where('store_id', $user->store->id);
+        }
 
         if ($search != '') {
             $tablesQuery->where('name', 'like', "%$search%");

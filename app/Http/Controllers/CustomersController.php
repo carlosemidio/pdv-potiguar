@@ -24,15 +24,17 @@ class CustomersController extends Controller
 
         $search = $request->search ?? '';
         $customersQuery = $this->customer->query();
-        $user = User::find(Auth::user()->id);
+        
+        if (!request()->user()->hasPermission('customers_view', true)) {
+            $customersQuery->where('user_id', Auth::id());
+        }
+
+        if (request()->user()->tenant_id != null) {
+            $customersQuery->where('tenant_id', request()->user()->tenant_id);
+        }
 
         if ($search != '') {
             $customersQuery->where('name', 'like', "%$search%");
-        }
-
-        if (!$user->hasPermission('customers_view', true)) {
-            // Lojista só vê seus próprios clientes
-            $customersQuery->where('user_id', $user->id);
         }
 
         $customers = $customersQuery->orderBy('name')

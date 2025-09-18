@@ -20,6 +20,14 @@ class StockMovementController extends Controller
         $query = StockMovement::with(['user', 'tenant', 'store', 'storeProductVariant.productVariant.product'])
             ->orderByDesc('id');
 
+        if (!request()->user()->hasPermission('stock-movements_view', true)) {
+            $query->where('user_id', Auth::id());
+        }
+
+        if (request()->user()->tenant_id != null) {
+            $query->where('tenant_id', request()->user()->tenant_id);
+        }
+
         if ($search = $request->get('search')) {
             $query->whereHas('storeProductVariant.productVariant.product', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%");

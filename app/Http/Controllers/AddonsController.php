@@ -24,15 +24,17 @@ class AddonsController extends Controller
 
         $search = $request->search ?? '';
         $addonsQuery = $this->addon->query();
-        $user = User::find(Auth::user()->id);
+
+        if (!request()->user()->hasPermission('addons_view', true)) {
+            $addonsQuery->where('user_id', Auth::id());
+        }
+
+        if (request()->user()->tenant_id != null) {
+            $addonsQuery->where('tenant_id', request()->user()->tenant_id);
+        }
 
         if ($search != '') {
             $addonsQuery->where('name', 'like', "%$search%");
-        }
-
-        if (!$user->hasPermission('addons_view', true)) {
-            // Lojista can only see their own addons
-            $addonsQuery->where('user_id', $user->id);
         }
 
         $addons = $addonsQuery->orderBy('name')

@@ -26,16 +26,17 @@ class CategoriesController extends Controller
 
         $search = $request->search ?? '';
         $categoriesQuery = $this->category->query();
-        $user = User::find(Auth::user()->id);
+        
+        if (!request()->user()->hasPermission('categories_view', true)) {
+            $categoriesQuery->where('user_id', Auth::id());
+        }
+
+        if (request()->user()->tenant_id != null) {
+            $categoriesQuery->where('tenant_id', request()->user()->tenant_id);
+        }
 
         if ($search != '') {
             $categoriesQuery->where('name', 'like', "%$search%");
-        }
-
-        if (!$user->hasPermission('categories_view', true)) {
-            // Lojista can only see their own categories
-            $categoriesQuery->where('user_id', $user->id)
-                ->orWhereNull('user_id');
         }
 
         $categories = $categoriesQuery->orderBy('name')

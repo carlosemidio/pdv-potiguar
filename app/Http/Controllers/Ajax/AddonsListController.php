@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Ajax;
 use App\Http\Controllers\Controller;
 use App\Models\Addon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AddonsListController extends Controller
 {
@@ -23,6 +24,14 @@ class AddonsListController extends Controller
         $search = $request->search ?? '';
 
         $addonsQuery = $this->addon->query();
+
+        if (!request()->user()->hasPermission('addons_view', true)) {
+            $addonsQuery->where('user_id', Auth::id());
+        }
+
+        if (request()->user()->tenant_id != null) {
+            $addonsQuery->where('tenant_id', request()->user()->tenant_id);
+        }
 
         if ($search != '') {
             $addonsQuery->where('name', 'like', "%$search%");

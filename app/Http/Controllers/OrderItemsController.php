@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
 use App\Models\Addon;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -33,15 +34,12 @@ class OrderItemsController extends Controller
             ]);
 
             $data = $request->only(['order_id', 'store_product_variant_id', 'quantity', 'addons']);
-
             $order = $this->order->findOrFail($data['order_id']);
+            $this->authorize('update', $order);
 
-            if (!in_array($order->status, ['pending', 'in_progress'])) {
-                $orderStatuses = [ 'pending' => 'Pendente', 'in_progress' => 'Em andamento', 'completed' => 'Finalizado', 'canceled' => 'Cancelado' ];
-                $currentStatus = $orderStatuses[$order->status] ?? $order->status;
-
+            if ($order->status != OrderStatus::IN_PROGRESS->value) {
                 return redirect()->back()
-                    ->with('fail', 'Não é possível adicionar itens a um pedido '. $currentStatus . '.');
+                    ->with('fail', 'Não é possível adicionar itens a um pedido que não esteja em andamento.');
             }
 
             $orderItem = DB::transaction(function () use ($data, $order) {
@@ -120,9 +118,9 @@ class OrderItemsController extends Controller
         try {
             $order = Order::find($orderItem->order_id);
 
-            if (!$order) {
+            if ($order->status != OrderStatus::IN_PROGRESS->value) {
                 return redirect()->back()
-                    ->with('fail', 'Pedido não encontrado.');
+                    ->with('fail', 'Não é possível remover itens de um pedido que não esteja em andamento.');
             }
 
             if (!in_array($order->status, ['pending', 'in_progress'])) {

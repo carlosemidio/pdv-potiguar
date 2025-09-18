@@ -20,8 +20,16 @@ class UserListController extends Controller
     public function index(Request $request)
     {
         $search = $request->search ?? '';
-
         $usersQuery = $this->user->query();
+        $user = User::find($request->user()->id);
+
+        if (!$user->hasPermission('users_view', true)) {
+            $usersQuery->where('user_id', $user->id);
+        }
+
+        if ($user->tenant_id != null) {
+            $usersQuery->where('tenant_id', $user->tenant_id);
+        }
 
         if ($search != '') {
             $usersQuery->where('name', 'like', "%$search%");

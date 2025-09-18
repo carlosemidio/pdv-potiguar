@@ -24,16 +24,17 @@ class BrandsController extends Controller
 
         $search = $request->search ?? '';
         $brandsQuery = $this->brand->query();
-        $user = User::find(Auth::user()->id);
+
+        if (!request()->user()->hasPermission('brands_view', true)) {
+            $brandsQuery->where('user_id', Auth::id());
+        }
+
+        if (request()->user()->tenant_id != null) {
+            $brandsQuery->where('tenant_id', request()->user()->tenant_id);
+        }
 
         if ($search != '') {
             $brandsQuery->where('name', 'like', "%$search%");
-        }
-
-        if (!$user->hasPermission('brands_view', true)) {
-            // Lojista can only see their own brands
-            $brandsQuery->where('user_id', $user->id)
-                ->orWhereNull('user_id');
         }
 
         $brands = $brandsQuery->orderBy('name')

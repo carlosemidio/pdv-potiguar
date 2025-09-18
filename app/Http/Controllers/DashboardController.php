@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\View;
@@ -15,20 +17,47 @@ class DashboardController extends Controller
             return redirect()->route('login');
         }
 
-        $viewsToday = 0;
-        $viewsLast7Days = 0;
-        $viewsLast30Days = 0;
+        $incomesToday = 0;
+        $pendingIncomes = 0;
+        $inProgressOrders = 0;
         $viewsByPeriod = collect();
-        $totalViews = 0;
+        $finishedOrdersToday = 0;
         $totalProducts = 0;
+
+        $user = User::with('store')->find($request->user()->id);
+
+        if ($user && $user->store) {
+            $incomesToday = Payment::whereHas('order', function ($query) use ($user) {
+                $query->where('store_id', $user->store->id)
+                      ->where('status', 'completed');
+            })->whereDate('created_at', now()->toDateString())
+            ->sum('amount');
+
+            $pendingIncomes = Order::where('store_id', $user->store->id)
+                ->where('status', 'pending')
+                ->sum('total_amount');
+
+            $pendingIncomes -= Order::where('store_id', $user->store->id)
+                ->where('status', 'pending')
+                ->sum('paid_amount');
+
+            $inProgressOrders = Order::where('store_id', $user->store->id)
+                ->whereIn('status', ['pending', 'in_progress'])
+                ->count();
+
+            $finishedOrdersToday = Order::where('store_id', $user->store->id)
+                ->where('status', 'completed')
+                ->whereDate('updated_at', now()->toDateString())
+                ->count();
+        }
 
         return inertia('Dashboard', [
             'user' => $request->user(),
-            'viewsToday' => $viewsToday,
-            'viewsLast7Days' => $viewsLast7Days,
-            'viewsLast30Days' => $viewsLast30Days,
+            'incomesToday' => $incomesToday,
+            'pendingIncomes' => $pendingIncomes,
+            'inProgressOrders' => $inProgressOrders,
             'viewsByPeriod' => $viewsByPeriod,
-            'totalViews' => $totalViews,
+            'finishedOrdersToday' => $finishedOrdersToday,
             'totalProducts' => $totalProducts
         ]);
     }

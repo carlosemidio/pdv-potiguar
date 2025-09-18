@@ -26,8 +26,12 @@ class ProductVariantController extends Controller
 
         $productVariantsQuery = ProductVariant::with(['product', 'attributes.attributeValues']);
 
-        if (!$user->hasPermission('product-variants_view', true)) {
-            $productVariantsQuery->where('user_id', $user->id);
+        if (!request()->user()->hasPermission('product-variants_view', true)) {
+            $productVariantsQuery->where('user_id', Auth::id());
+        }
+
+        if (request()->user()->tenant_id != null) {
+            $productVariantsQuery->where('tenant_id', request()->user()->tenant_id);
         }
 
         if ($request->has('search')) {

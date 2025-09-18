@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('addons', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
             $table->decimal('price', 8, 2);

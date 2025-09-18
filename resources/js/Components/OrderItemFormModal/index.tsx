@@ -6,13 +6,12 @@ import PrimaryButton from "../PrimaryButton";
 import InputLabel from "../InputLabel";
 import { useForm } from "@inertiajs/react";
 import { Order } from "@/types/Order";
-import SearchableProductsSelect from "../SearchableProductsSelect";
 import { useState } from "react";
-import { Product } from "@/types/Product";
-import { Variant } from "@/types/Variant";
 import { OrderItem } from "@/types/OrderItem";
 import { ProductAddon } from "@/types/ProductAddon";
 import OrderItemAddonsForm from "../OrderItemAddonsForm";
+import SearchableStoreProductVariantsSelect from "../SearchableStoreProductVariantsSelect";
+import { StoreProductVariant } from "@/types/StoreProductVariant";
 
 interface OrderItemFormModalProps {
     isOpen: boolean;
@@ -24,67 +23,34 @@ interface OrderItemFormModalProps {
 export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }: OrderItemFormModalProps) {
     const { data, setData, patch, post, errors, processing } = useForm({
         order_id: order ? order.id : null,
-        product_id: orderItem?.product.id || null,
-        product_variant_id: orderItem?.variant?.id || null,
+        store_product_variant_id: orderItem?.store_product_variant_id || null,
         quantity: orderItem?.quantity || 1,
         unit_price: orderItem?.unit_price || 0,
         total_price: orderItem?.total_price || 0,
         addons: orderItem?.item_addons || [],
     });
 
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(orderItem?.product || null);
-    const [variants, setVariants] = useState<Variant[]>(orderItem?.product?.variants || []);
-    const [productAddons, setProductAddons] = useState<ProductAddon[]>(orderItem?.product?.product_addons || []);
-
-    const handleProductChange = (product: Product) => {
-        setSelectedProduct(product);
-        const productVariants = product.variants || [];
-        let variantId = null;
-        let unitPrice = 0;
-        let totalPrice = 0;
-        if (productVariants.length === 1) {
-            variantId = productVariants[0].id;
-            unitPrice = parseFloat(String(productVariants[0].price)) || 0;
-            totalPrice = unitPrice * (data.quantity || 1);
-        }
-        setData({
-            ...data,
-            product_id: product.id,
-            product_variant_id: variantId,
-            unit_price: unitPrice,
-            total_price: totalPrice,
-        });
-
-        setVariants(productVariants);
-        setProductAddons(product.product_addons || []);
-    }
-
-    const handleVariantChange = (variantId: string) => {
-        const variant = variants.find(v => v.id === parseInt(variantId));
-        let price = data.unit_price || 0;
-
-        if (variant) {
-            price = parseFloat(String(variant.price)) || 0;
-        }
-
-        const totalPrice = price * (data.quantity || 1);
-
-        if (variant) {
-            setData({...data, product_variant_id: variant.id, unit_price: price, total_price: totalPrice });
-        } else {
-            setData({...data, product_variant_id: 0, unit_price: 0, total_price: 0 });
-        }
-    }
+    const [productAddons, setProductAddons] = useState<ProductAddon[]>([]);
+    const [storeProductVariant, setStoreProductVariant] = useState<StoreProductVariant | null>(null);
 
     const handleQuantityChange = (quantity: number) => {
         setData({...data, quantity: quantity, total_price: data.unit_price * quantity });
     }
 
+    const handleVariantChange = (storeProductVariant: StoreProductVariant | null) => {
+        setStoreProductVariant(storeProductVariant);
+        setData({
+            ...data,
+            store_product_variant_id: storeProductVariant ? storeProductVariant.id : null,
+            unit_price: storeProductVariant ? storeProductVariant.price : 0,
+            total_price: (storeProductVariant ? storeProductVariant.price : 0) * data.quantity
+        });
+    };
+
     const closeModal = () => {
         setData({
             order_id: order ? order.id : null,
-            product_id: null,
-            product_variant_id: null,
+            store_product_variant_id: null,
             quantity: 1,
             unit_price: 0,
             total_price: 0,
@@ -96,10 +62,6 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
 
     const submit = () => {
         // Torna obrigatório selecionar uma variação
-        if (!data.product_variant_id) {
-            alert('Selecione uma variação do produto.');
-            return;
-        }
         let addons = data.addons || [];
         addons = addons.map(addon => ({
             addon_id: addon.addon_id,
@@ -135,33 +97,13 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                 <div className="mt-3"> 
                     <div className="space-y-3">
                         <div>
-                            <SearchableProductsSelect
-                                selectedProduct={selectedProduct}
-                                setProduct={handleProductChange}
-                                isDisabled={false}
+                            <SearchableStoreProductVariantsSelect
+                                selectedVariant={storeProductVariant}
+                                setVariant={handleVariantChange}
+                                isDisabled={processing}
                             />
+                            {errors.store_product_variant_id && <p className="text-red-600 text-sm mt-1">{errors.store_product_variant_id}</p>}
                         </div>
-
-                        {variants.length > 0 && (
-                            <div>
-                                <InputLabel htmlFor="product_variant_id" value="Variação do Produto" />
-                                <select
-                                    id="product_variant_id"
-                                    className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    value={String(data.product_variant_id)}
-                                    onChange={(e) => handleVariantChange(e.target.value)}
-                                    required
-                                >
-                                    <option value="">Selecione uma variação *</option>
-                                    {variants.map((variant) => (
-                                        <option key={variant.id} value={String(variant.id)}>
-                                            {variant.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {(!data.product_variant_id) && <p className="text-red-600 text-sm mt-1">Selecione uma variação do produto.</p>}
-                            </div>
-                        )}
 
                         {productAddons.length > 0 && (
                             <div>

@@ -6,7 +6,7 @@ import SecondaryButton from "@/Components/SecondaryButton";
 import TextInput from "@/Components/TextInput";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
-import { Permission } from "@/types/Permission";
+import { Permission } from "@/types/permission";
 import { Role } from "@/types/Role";
 import { Transition } from "@headlessui/react";
 import { Head, Link, useForm } from "@inertiajs/react";
@@ -54,7 +54,8 @@ export default function Edit({
     // Função para agrupar permissões por prefixo
     const groupPermissions = (permissions: Permission[]) => {
         return permissions.reduce((groups, permission) => {
-            const prefix = permission.display_name.split("-")[0]; // Obtém o prefixo antes do primeiro '-'
+            const displayName = permission.display_name ?? '';
+            const prefix = displayName.split("-")[0]; // Obtém o prefixo antes do primeiro '-'
 
             if (!groups[prefix]) {
                 groups[prefix] = [];
@@ -205,66 +206,34 @@ export default function Edit({
                                                         <>
                                                             <div className="flex flex-col bg-gray-100/70 p-2 rounded">
                                                                 <div
-                                                                    key={
-                                                                        permission.id
-                                                                    }
+                                                                    key={permission.id}
                                                                     className="flex items-center gap-1"
                                                                 >
                                                                     <Checkbox
                                                                         id={`permission-${permission.id}`}
                                                                         name={`permission-${permission.id}`}
-                                                                        value={
-                                                                            permission.id
-                                                                        }
+                                                                        value={permission.id}
                                                                         checked={data.permissions
-                                                                            ?.map(
-                                                                                (
-                                                                                    dataPermission
-                                                                                ) =>
-                                                                                    dataPermission.id
-                                                                            )
-                                                                            .includes(
-                                                                                permission.id
-                                                                            )}
-                                                                        onChange={(
-                                                                            e
-                                                                        ) => {
-                                                                            if (
-                                                                                e
-                                                                                    .target
-                                                                                    .checked
-                                                                            ) {
-                                                                                setData(
-                                                                                    "permissions",
-                                                                                    [
-                                                                                        ...data.permissions,
-                                                                                        {
-                                                                                            id: permission.id,
-                                                                                            total_access:
-                                                                                                permission.total_access,
-                                                                                        },
-                                                                                    ]
-                                                                                );
+                                                                            ?.map((dataPermission) => dataPermission.id)
+                                                                            .includes(permission.id)}
+                                                                        onChange={(e) => {
+                                                                            if (e.target.checked) {
+                                                                                setData("permissions", [
+                                                                                    ...data.permissions,
+                                                                                    {
+                                                                                        id: permission.id,
+                                                                                        total_access: permission.total_access,
+                                                                                    },
+                                                                                ]);
                                                                             } else {
-                                                                                setData(
-                                                                                    "permissions",
-                                                                                    data.permissions.filter(
-                                                                                        (
-                                                                                            p
-                                                                                        ) =>
-                                                                                            p.id !==
-                                                                                            permission.id
-                                                                                    )
-                                                                                );
+                                                                                setData("permissions", data.permissions.filter((p) => p.id !== permission.id));
                                                                             }
                                                                         }}
                                                                     ></Checkbox>
                                                                     <InputLabel
                                                                         htmlFor={`permission-${permission.id}`}
                                                                         value={
-                                                                            permission.display_name.split(
-                                                                                "-"
-                                                                            )[1]
+                                                                            (permission.display_name ?? '').split("-")[1] ?? ''
                                                                         }
                                                                     />
                                                                 </div>

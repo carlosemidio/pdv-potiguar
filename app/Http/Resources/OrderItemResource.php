@@ -13,8 +13,8 @@ class OrderItemResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
-            'order' => new OrderResource($this->whenLoaded('order')),
-            'variant' => new ProductResource($this->whenLoaded('variant')),
+            'order_id' => $this->order_id,
+            'store_product_variant' => $this->whenLoaded('storeProductVariant') ? new StoreProductVariantResource($this->storeProductVariant) : null,
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
             'total_price' => $this->total_price,

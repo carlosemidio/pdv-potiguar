@@ -19,18 +19,20 @@ import "filepond/dist/filepond.min.css";
 import { FilePondFile } from 'filepond'
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
+import { User } from '@/types/User';
+import SearchableUsersSelect from '@/Components/SearchableUsersSelect';
 registerPlugin(FilePondPluginImagePreview);
 
 export default function Edit({
     auth,
     store
 }: PageProps<{ store: { data: Store} }>) {
-
     const isEdit = !!store;
 
     const { data, setData, post, errors, processing, recentlySuccessful } =
         useForm({
             _method: store ? 'patch' : 'post',
+            user_id: store ? store.data.user_id : '',
             name: store ? store.data.name : '',
             email: store ? store.data.email : '',
             phone: store ? store.data.phone : '',
@@ -46,6 +48,7 @@ export default function Edit({
 
     const [city, setCity] = useState(store ? store?.data?.city : null);
     const [files, setFiles] = useState<File[]>([]);
+    const [user, setUser] = useState<User | null>(store ? store?.data?.user : null);
 
     const handleCityChange = (selectedCity: City) => {
         setCity(selectedCity);
@@ -89,6 +92,7 @@ export default function Edit({
                 preserveScroll: true,
                 onSuccess: () => setData({
                     _method: store ? 'patch' : 'post',
+                    user_id: '',
                     name: '',
                     email: '',
                     phone: '',
@@ -158,6 +162,21 @@ export default function Edit({
 
                     <div className='bg-white border p-3 rounded dark:border-gray-600 dark:bg-slate-800'>
                         <form onSubmit={submit} className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className='w-full'>
+                                <InputLabel htmlFor="user" value="Usuário" />
+
+                                <SearchableUsersSelect
+                                    setUser={(user) => {
+                                        setUser(user);
+                                        setData('user_id', user ? user.id : '');
+                                    }}
+                                    selectedUser={user}
+                                    isDisabled={processing}
+                                />
+
+                                <InputError className="mt-2" message={errors.user_id} />
+                            </div>
+
                             <div className='w-full'>
                                 <InputLabel htmlFor="name" value="Name" />
 

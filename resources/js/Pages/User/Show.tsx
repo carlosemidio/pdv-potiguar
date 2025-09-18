@@ -4,7 +4,7 @@ import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
-import { User } from '@/types/user';
+import { User } from '@/types/User';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 

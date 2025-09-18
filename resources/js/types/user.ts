@@ -1,8 +1,11 @@
 import { Role } from "./Role";
 import { Store } from "./Store";
+import { Tenant } from "./Tenant";
 
 export type User = {
     id: number;
+    tenant_id: number;
+    tenant: Tenant | null;
     uuid: string;
     name: string;
     email: string;

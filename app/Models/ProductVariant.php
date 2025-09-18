@@ -14,12 +14,10 @@ class ProductVariant extends Model
     use HasFactory, SoftDeletes, GeneratesVariantSlug;
 
     protected $fillable = [
+        'user_id',
+        'tenant_id',
         'product_id',
-        'store_id',
-        'featured',
         'sku',
-        'cost_price',
-        'price'
     ];
 
     protected $appends = [
@@ -43,6 +41,11 @@ class ProductVariant extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function storeProductVariants()
+    {
+        return $this->hasMany(StoreProductVariant::class, 'product_variant_id');
     }
 
     public function attributes() {

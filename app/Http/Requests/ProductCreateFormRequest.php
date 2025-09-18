@@ -24,16 +24,10 @@ class ProductCreateFormRequest extends FormRequest
      */
     public function rules(): array
     {
-        $user = User::with('store')->find(Auth::id());
+        $user = User::find(Auth::id());
 
         return [
-            'name' => [
-                'required',
-                'string',
-                Rule::unique('products')->where(fn ($query) =>
-                    $query->where('store_id', $user->store->id)
-                ),
-            ],
+            'name' => 'required|string|max:255|unique:products,name,NULL,id,tenant_id,' . $user->tenant_id,
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'nullable|exists:brands,id',
             'name' => 'required|string|max:255',

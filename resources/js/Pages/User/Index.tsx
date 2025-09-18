@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
-import { User } from '@/types/user';
+import { User } from '@/types/User';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Edit, LogIn, ShieldCheck, ShieldX } from 'lucide-react';
 import { useState } from 'react';

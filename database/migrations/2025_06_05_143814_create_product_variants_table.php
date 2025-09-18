@@ -13,17 +13,11 @@ return new class extends Migration
     {
         Schema::create('product_variants', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->foreignId('store_id')->constrained('stores')->onDelete('cascade');
             $table->string('slug')->nullable();
             $table->string('sku')->nullable();
-            $table->decimal('cost_price', 10, 2)->default(0.00);
-            $table->decimal('price', 10, 2)->default(0.00);
-            $table->integer('stock_quantity')->default(0);
-            $table->boolean('featured')->default(false);
-
-            $table->bigInteger('view_count')->default(0);
-
             $table->softDeletes();
             $table->timestamps();
         });

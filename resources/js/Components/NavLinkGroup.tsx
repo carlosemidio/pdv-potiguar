@@ -5,11 +5,12 @@ interface NavLinkGroupProps {
     title: string;
     icon: React.ReactNode;
     children: React.ReactNode;
+    open?: boolean;
 }
 
-export default function NavLinkGroup({ title, icon, children }: NavLinkGroupProps) {
+export default function NavLinkGroup({ title, icon, children, open }: NavLinkGroupProps) {
 
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(open || false);
 
     function toggle() {
         setIsOpen(!isOpen);

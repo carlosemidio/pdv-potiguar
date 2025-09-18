@@ -66,6 +66,11 @@ class User extends Authenticatable
         return $this->morphTo();
     }
 
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
     public function store(): HasOne
     {
         return $this->hasOne(Store::class, 'user_id', 'id')->where('is_default', true);

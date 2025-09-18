@@ -13,6 +13,8 @@ class UserResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'tenant_id' => $this->tenant_id,
+            'tenant' => new TenantResource($this->whenLoaded('tenant')),
             'uuid' => $this->uuid,
             'name' => $this->name,
             'email' => $this->email,

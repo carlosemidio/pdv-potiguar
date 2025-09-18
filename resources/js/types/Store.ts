@@ -1,9 +1,10 @@
 import { City } from "./City";
 import { Image } from "./image";
-import { User } from "./user";
+import { User } from "./User";
 
 export type Store = {
     id: number;
+    user_id: number;
     user: User;
     city: City;
     image: Image | null;

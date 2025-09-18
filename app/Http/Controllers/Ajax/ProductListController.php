@@ -21,11 +21,9 @@ class ProductListController extends Controller
     public function index(Request $request)
     {
         $search = $request->search ?? '';
-        $user = User::with('store')->find($request->user()->id);
+        $user = User::find($request->user()->id);
 
-        $productsQuery = $this->product->query()
-            ->with(['variants.attributes', 'productAddons.addon'])
-            ->where('store_id', $user->store->id);
+        $productsQuery = $this->product->query();
 
         if ($search != '') {
             $productsQuery->where('name', 'like', "%$search%");

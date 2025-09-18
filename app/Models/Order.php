@@ -12,6 +12,7 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'tenant_id',
         'store_id',
         'table_id',
         'customer_id',

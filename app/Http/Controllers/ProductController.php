@@ -5,15 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProductCreateFormRequest;
 use App\Http\Requests\ProductUpdateFormRequest;
 use App\Http\Resources\ProductResource;
-use App\Models\AttributeValue;
-use App\Models\File;
 use App\Models\Product;
-use App\Models\ProductVariant;
 use App\Models\User;
-use App\Models\VariantAttribute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -24,15 +19,9 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $this->authorize('products_view');
-        $user = User::with('store')->find(Auth::id());
+        $user = User::find(Auth::id());
 
-        if (!$user->store) {
-            return redirect()->route('store.create')
-                ->with('fail', 'Você precisa criar uma loja antes de cadastrar produtos.');
-        }
-
-        $productsQuery = Product::with(['user', 'store', 'image', 'variants.image', 'variants.attributes'])
-            ->where('store_id', $user->store->id);
+        $productsQuery = Product::with(['category', 'brand']);
 
         if (!$user->hasPermission('products_view', true)) {
             $productsQuery->where('user_id', $user->id);
@@ -69,62 +58,18 @@ class ProductController extends Controller
     public function store(ProductCreateFormRequest $request)
     {
         $this->authorize('create', Product::class);
-        $user = User::with('store')->find(Auth::id());
         $dataForm = $request->all();
-        $dataForm['user_id'] = $user->id;
-        $dataForm['store_id'] = $user->store->id;
+        $dataForm['user_id'] = Auth::id();
+        $dataForm['tenant_id'] = Auth::user()->tenant_id;
 
         try {
-            $product = Product::create($dataForm);
-
-            if ($product instanceof Product) {
-                // Add product variants
-                if (isset($dataForm['variants'])) {
-                    foreach ($dataForm['variants'] as $variantData) {
-                        $productVariant = ProductVariant::create([
-                            'store_id' => $user->store->id,
-                            'product_id' => $product->id,
-                            'sku' => $variantData['sku'] ?? null,
-                            'cost_price' => $variantData['cost_price'] ?? null,
-                            'price' => $variantData['price'],
-                            'stock_quantity' => $variantData['stock_quantity'],
-                            'featured' => $variantData['featured'] ?? 0,
-                        ]);
-
-                        // Handle variant images
-                        if (isset($variantData['files']) && is_array($variantData['files'])) {
-                            foreach ($variantData['files'] as $file) {
-                                $filePath = Storage::disk('public')
-                                    ->put('/products/' . $product->slug, $file);
-                                $uploadedFile = new File([  
-                                    'user_id' => $request->user()->id,
-                                    'name' => $file->getClientOriginalName(),
-                                    'size' => $file->getSize(),
-                                    'url' => $filePath,
-                                    'extension' => $file->extension(),
-                                ]);
-                                $productVariant->images()->save($uploadedFile);
-                            }
-                        }
-                    }
-                }
-
-                // Add product addons
-                if (isset($dataForm['product_addons']) && is_array($dataForm['product_addons'])) {
-                    foreach ($dataForm['product_addons'] as $addonData) {
-                        $product->productAddons()->create([
-                            'addon_id' => $addonData['addon_id'],
-                            'price' => $addonData['price'],
-                        ]);
-                    }
-                }
-
+            if (Product::create($dataForm)) {
                 return redirect()->route('product.index')
                     ->with('success', 'Produto cadastrado com sucesso.');
             }
 
             return redirect()->back()
-                ->with('fail', 'Erro ao cadastrar produto.');
+                ->with('fail', 'Erro ao cadastrar produto.');   
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao cadastrar produto: ' . $e->getMessage());
@@ -140,15 +85,8 @@ class ProductController extends Controller
         $this->authorize('view', $product);
 
         $product->load([
-            'user',
             'category',
-            'brand',
-            'store',
-            'image',
-            'images',
-            'variants.images',
-            'variants.attributes',
-            'addons',
+            'brand'
         ]);
 
         return Inertia::render('Product/Show', [
@@ -165,16 +103,8 @@ class ProductController extends Controller
         $this->authorize('update', $product);
 
         $product->load([
-            'user',
             'category',
-            'brand',
-            'store',
-            'image',
-            'images',
-            'variants.image',
-            'variants.images',
-            'variants.attributes',
-            'productAddons.addon',
+            'brand'
         ]);
 
         return Inertia::render('Product/Edit', [
@@ -192,113 +122,13 @@ class ProductController extends Controller
         $dataForm = $request->all();
 
         try {
-            $product->update($dataForm);
-
-            // Add/Update product variants
-            if (isset($dataForm['variants'])) {
-                foreach ($dataForm['variants'] as $variantData) {
-                    $productVariant = ProductVariant::where('id', $variantData['id'] ?? null)
-                        ->where('product_id', $product->id)
-                        ->first();
-
-                    if ($productVariant instanceof ProductVariant) {
-                        // Update existing variant
-                        $productVariant->update([
-                            'sku' => $variantData['sku'] ?? null,
-                            'cost_price' => $variantData['cost_price'] ?? null,
-                            'price' => $variantData['price'],
-                            'stock_quantity' => $variantData['stock_quantity'],
-                            'featured' => $variantData['featured'] ?? 0,
-                        ]);
-                    } else {
-                        // Create new variant
-                        $productVariant = ProductVariant::create([
-                            'store_id' => $product->store_id,
-                            'product_id' => $product->id,
-                            'sku' => $variantData['sku'] ?? null,
-                            'cost_price' => $variantData['cost_price'] ?? null,
-                            'price' => $variantData['price'],
-                            'stock_quantity' => $variantData['stock_quantity'],
-                            'featured' => $variantData['featured'] ?? 0,
-                        ]);
-                    }
-
-                    // Sync attributes if provided
-                    if (isset($variantData['attributes']) && is_array($variantData['attributes']) && count($variantData['attributes']) > 0) {
-                        $attributeNames = [];
-                        foreach ($variantData['attributes'] as $attribute) {
-                            // Ensure the attribute exists
-                            $attributeNames[] = $attribute['value'];
-                            $attributeAux = VariantAttribute::where('name', $attribute['name'])->first();
-
-                            if (!($attributeAux instanceof VariantAttribute)) {
-                                $attributeAux = VariantAttribute::create([
-                                    'name' => $attribute['name'],
-                                ]);
-                            }
-
-                            AttributeValue::updateOrCreate([
-                                    'product_variant_id' => $productVariant->id,
-                                    'variant_attribute_id' => $attributeAux->id
-                                ],
-                                ['value' => $attribute['value']]
-                            );
-                        }
-                        
-                        // Generate and update the slug based on attributes
-                        $slug = $productVariant->generateSlugFromAttributes($product->name, $attributeNames);
-                        $productVariant->slug = $slug;
-                        $productVariant->save();
-                    }
-
-                    // Handle variant images
-                    if (isset($variantData['files']) && is_array($variantData['files']) && count($variantData['files']) > 0) {
-                        foreach ($variantData['files'] as $file) {
-                            $filePath = Storage::disk('public')
-                                ->put('/products/' . $product->slug, $file);
-
-                            $uploadedFile = new File([
-                                'user_id' => $request->user()->id,
-                                'name' => $file->getClientOriginalName(),
-                                'size' => $file->getSize(),
-                                'url' => $filePath,
-                                'extension' => $file->extension(),
-                            ]);
-                            
-                            $productVariant->images()->save($uploadedFile);
-                        }
-                    }
-                }
+            if ($product->update($dataForm)) {
+                return redirect()->route('product.index')
+                    ->with('success', 'Produto atualizado com sucesso.');
             }
 
-            if (isset($dataForm['product_addons']) && is_array($dataForm['product_addons'])) {
-                $addonIds = [];
-                foreach ($dataForm['product_addons'] as $addonData) {
-                    if (isset($addonData['id'])) {
-                        $productAddon = $product->productAddons()->where('id', $addonData['id'])->first();
-                        if ($productAddon instanceof \App\Models\ProductAddon) {
-                            $productAddon->update([
-                                'addon_id' => $addonData['addon_id'],
-                                'price' => $addonData['price'],
-                            ]);
-                            $addonIds[] = $productAddon->id;
-                        }
-                    } else {
-                        $newProductAddon = $product->productAddons()->create([
-                            'addon_id' => $addonData['addon_id'],
-                            'price' => $addonData['price'],
-                        ]);
-                        if ($newProductAddon instanceof \App\Models\ProductAddon) {
-                            $addonIds[] = $newProductAddon->id;
-                        }
-                    }
-                }
-                // Remove addons that were not included in the update request
-                $product->productAddons()->whereNotIn('id', $addonIds)->delete();
-            }
-        
-            return redirect()->route('product.index')
-                ->with('success', 'Produto atualizado com sucesso.');
+            return redirect()->back()
+                ->with('fail', 'Erro ao atualizar produto.');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao atualizar produto: ' . $e->getMessage());

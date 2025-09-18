@@ -33,7 +33,7 @@ export default function Index({
     const handleDeleteItem = (item: OrderItem) => {
         Swal.fire({
             title: 'Remover item',
-            text: `Remover ${item.quantity}x ${item.variant ? item.variant.name : item.product.name}?`,
+            text: `Remover ${item.quantity}x ${item.store_product_variant?.product_variant.name} do pedido?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Sim, remover',
@@ -123,7 +123,7 @@ export default function Index({
                                             <Card className="flex flex-col md:flex-row md:items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm relative">
                                                 <div>
                                                     <div className="font-medium text-gray-800 dark:text-gray-200 text-sm">
-                                                        {item.quantity}x {item.variant ? item.variant.name : item.product.name}
+                                                        {item.quantity}x {item.store_product_variant?.product_variant.name || 'N/A'}
                                                     </div>
                                                     <div className="text-xs text-gray-600 dark:text-gray-400">
                                                         {item.unit_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} cada = {item.unit_price * item.quantity}

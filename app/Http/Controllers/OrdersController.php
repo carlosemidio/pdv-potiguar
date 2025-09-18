@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\TableResource;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Table;
 use App\Models\User;
@@ -24,27 +25,49 @@ class OrdersController extends Controller
     public function index(Request $request)
     {
         $this->authorize('orders_view');
-
-        $search = $request->search ?? '';
         $ordersQuery = $this->order->query();
         $user = User::find(Auth::user()->id);
 
-        if ($search != '') {
-            $ordersQuery->where('name', 'like', "%$search%");
+        $status = $request->input('status');
+        $customer_id = $request->input('customer_id');
+        $date_from = $request->input('date_from');
+        $date_to = $request->input('date_to');
+        $customer = null;
+
+        if ($status) {
+            $ordersQuery->where('status', $status);
+        }
+
+        if ($customer_id) {
+            $ordersQuery->where('customer_id', $customer_id);
+            $customer = Customer::find($customer_id);
+        }
+
+        if ($date_from) {
+            $ordersQuery->whereDate('created_at', '>=', $date_from);
+        }
+
+        if ($date_to) {
+            $ordersQuery->whereDate('created_at', '<=', $date_to);
         }
 
         if (!$user->hasPermission('orders_view', true)) {
             $ordersQuery->where('user_id', $user->id);
         }
 
-        $orders = $ordersQuery->with(['store', 'table', 'customer', 'items.variant'])
+        $orders = $ordersQuery->with(['store', 'table', 'customer', 'items.storeProductVariant.productVariant'])
             ->orderBy('id', 'desc')
             ->paginate(12)
             ->withQueryString();
 
         return Inertia::render('Orders/Index', [
             'orders' => OrderResource::collection($orders),
-            'search' => $search,
+            'filters' => [
+                'status' => $status,
+                'customer' => $customer,
+                'date_from' => $date_from,
+                'date_to' => $date_to,
+            ],
         ]);
     }
 
@@ -84,6 +107,7 @@ class OrdersController extends Controller
             $user = User::with('store')->find(Auth::user()->id);
 
             $data['user_id'] = Auth::user()->id;
+            $data['tenant_id'] = $user->tenant_id;
             $data['store_id'] = $user->store->id;
 
             $order = DB::transaction(function () use ($data) {
@@ -134,7 +158,7 @@ class OrdersController extends Controller
 
         $this->authorize('view', $order);
 
-        $order->load(['store', 'table', 'items.variant', 'items.itemAddons.addon', 'payments']);
+        $order->load(['store', 'table', 'items.storeProductVariant.productVariant', 'items.itemAddons.addon', 'customer', 'payments']);
 
         return Inertia::render('Orders/Show', [
             'order' => new OrderResource($order),

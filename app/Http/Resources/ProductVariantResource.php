@@ -32,6 +32,8 @@ class ProductVariantResource extends JsonResource
             }),
             'image' => $this->image ? new FileResource($this->image) : null,
             'images' => $this->images && $this->images->isNotEmpty() ? FileResource::collection($this->images) : [],
+            'created_at'     => $this->created_at,
+            'updated_at'     => $this->updated_at,
         ];
     }
 }

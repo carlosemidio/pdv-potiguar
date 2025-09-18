@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('store_settings', function (Blueprint $table) {
+        Schema::create('tenants', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('store_id')->constrained()->onDelete('cascade');
-            $table->string('key');
-            $table->string('value')->nullable();
+            $table->string('name');
+            $table->string('domain')->unique();
+            $table->boolean('status')->default(true);
             $table->softDeletes();
             $table->timestamps();
         });
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('store_settings');
+        Schema::dropIfExists('tenants');
     }
 };

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Addon;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\ProductVariant;
+use App\Models\StoreProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -27,12 +27,12 @@ class OrderItemsController extends Controller
         try {
             $request->validate([
                 'order_id' => 'required|exists:orders,id',
-                'product_variant_id' => 'required|exists:product_variants,id',
+                'store_product_variant_id' => 'nullable|exists:store_product_variants,id',
                 'quantity' => 'required|integer|min:1',
                 'unit_price' => 'required|numeric|min:0',
             ]);
 
-            $data = $request->only(['order_id', 'product_variant_id', 'quantity', 'addons']);
+            $data = $request->only(['order_id', 'store_product_variant_id', 'quantity', 'addons']);
 
             $order = $this->order->findOrFail($data['order_id']);
 
@@ -45,20 +45,20 @@ class OrderItemsController extends Controller
             }
 
             $orderItem = DB::transaction(function () use ($data, $order) {
-                $productVariant = null;
-                if (isset($data['product_variant_id']) && $data['product_variant_id'] > 0) {
-                    $productVariant = ProductVariant::find($data['product_variant_id']);
+                $storeProductVariant = null;
+                if (isset($data['store_product_variant_id']) && $data['store_product_variant_id'] > 0) {
+                    $storeProductVariant = StoreProductVariant::find($data['store_product_variant_id']);
                  
-                    if (!$productVariant) {
+                    if (!$storeProductVariant) {
                         throw new \Exception('Variante de produto não encontrada.');
                     }
                 }
 
                 $orderItem = $order->items()->create([
-                    'product_variant_id' => $productVariant ? $productVariant->id : null,
+                    'store_product_variant_id' => $data['store_product_variant_id'] ?? null,
                     'quantity' => $data['quantity'],
-                    'unit_price' => $productVariant->price,
-                    'total_price' => ($productVariant->price * $data['quantity']),
+                    'unit_price' => $storeProductVariant->price,
+                    'total_price' => ($storeProductVariant->price * $data['quantity']),
                 ]);
 
                 if (!empty($data['addons'])) {

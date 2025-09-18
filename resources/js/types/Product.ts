@@ -2,7 +2,7 @@ import { Brand } from "./Brand";
 import { Category } from "./Category";
 import { ProductAddon } from "./ProductAddon";
 import { Store } from "./Store";
-import { User } from "./user";
+import { User } from "./User";
 import { Variant } from "./Variant";
 
 export type Product = {

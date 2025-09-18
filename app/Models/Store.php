@@ -14,6 +14,7 @@ class Store extends Model
     use HasFactory, SoftDeletes, HasSlug;
     protected $fillable = [
         'user_id',
+        'tenant_id',
         'city_id',
         'name',
         'email',

@@ -2,6 +2,10 @@
 
 return [
     [
+        'name' => 'tenants',
+        'display_name' => 'Empresas',
+    ],
+    [
         'name' => 'permissions',
         'display_name' => 'Permissões',
     ],
@@ -30,6 +34,14 @@ return [
         'display_name' => 'Produtos',
     ],
     [
+        'name' => 'product-variants',
+        'display_name' => 'Variantes de Produtos',
+    ],
+    [
+        'name' => 'store-product-variants',
+        'display_name' => 'Variantes de Produtos da Loja',
+    ],
+    [
         'name' => 'notifications',
         'display_name' => 'Notificações',
     ],
@@ -52,5 +64,13 @@ return [
     [
         'name' => 'orders',
         'display_name' => 'Pedidos',
-    ]
+    ],
+    [
+        'name' => 'payments',
+        'display_name' => 'Pagamentos',
+    ],
+    [
+        'name' => 'stock-movements',
+        'display_name' => 'Movimentações de Estoque',
+    ],
 ];

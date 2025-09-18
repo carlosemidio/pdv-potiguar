@@ -62,9 +62,11 @@ class StoreController extends Controller
     public function store(StoreCreateFormRequest $request)
     {
         $this->authorize('create', Store::class);
-        $user = User::find(Auth::id());
         $dataForm = $request->all();
+
+        $user = User::find($dataForm['user_id']);
         $dataForm['user_id'] = $user->id;
+        $dataForm['tenant_id'] = $user->tenant_id;
 
         try {
             $store = Store::create($dataForm);

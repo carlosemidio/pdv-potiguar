@@ -1,5 +1,5 @@
 import { Config } from 'ziggy-js';
-import { User } from './user';
+import { User } from './User';
 
 export type PaginatedData<T> = {
     data: T[];

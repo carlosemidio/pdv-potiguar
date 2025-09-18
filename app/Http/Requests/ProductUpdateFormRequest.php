@@ -23,32 +23,12 @@ class ProductUpdateFormRequest extends FormRequest
      */
     public function rules(): array
     {
-        $productId = $this->route('produto') ?? $this->get('produto');
-        $product = Product::findOrFail($productId);
-
         return [
             'category_id' => 'sometimes|exists:categories,id',
             'brand_id' => 'nullable|exists:brands,id',
-            'name' => [
-                'required',
-                'string',
-                Rule::unique('products')
-                ->where(fn ($query) =>
-                $query->where('store_id', $product->store_id)
-                )
-                ->ignore($product->id),
-            ],
-            'name' => 'sometimes|string|max:255',
+            'name' => 'required|string|max:255',
             'description' => 'sometimes|string',
             'short_description' => 'nullable|string|max:500',
-            'sku' => 'nullable|string|unique:products,sku,' . $productId,
-            'price' => 'nullable|numeric|min:0',
-            'stock_quantity' => 'nullable|integer|min:0',
-            'status' => 'boolean',
-            'featured' => 'boolean',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string',
-            'meta_keywords' => 'nullable|string',
         ];
     }
 
@@ -67,17 +47,6 @@ class ProductUpdateFormRequest extends FormRequest
             'slug.string' => 'O slug do produto deve ser uma string.',
             'category_id.exists' => 'A categoria selecionada não existe.',
             'brand_id.exists' => 'A marca selecionada não existe.',
-            'sku.required' => 'O SKU do produto é obrigatório.',
-            'sku.unique' => 'O SKU do produto já está em uso.',
-            'price.required' => 'O preço do produto é obrigatório.',
-            'price.numeric' => 'O preço do produto deve ser um número.',
-            'stock_quantity.integer' => 'A quantidade em estoque deve ser um número inteiro.',
-            'stock_quantity.min' => 'A quantidade em estoque não pode ser negativa.',
-            'status.boolean' => 'O status do produto deve ser verdadeiro ou falso.',
-            'featured.boolean' => 'O campo destacado deve ser verdadeiro ou falso.',
-            'meta_title.max' => 'O título meta não pode ter mais de 255 caracteres.',
-            'meta_description.string' => 'A descrição meta deve ser uma string.',
-            'meta_keywords.string' => 'As palavras-chave meta devem ser uma string.'
         ];
     }
 }

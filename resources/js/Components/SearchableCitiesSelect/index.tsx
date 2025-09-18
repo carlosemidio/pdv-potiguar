@@ -27,7 +27,7 @@ const SearchableCitiesSelect: React.FC<SearchableCitiesSelectProps> = ({
 
   // Fetch options from the API
   const fetchOptions = async (inputValue: string): Promise<OptionType[]> => {
-    if (!inputValue) return []; // Return empty array if no input
+    if (!inputValue) return [];
 
     try {
       const response = await fetch(
@@ -38,7 +38,6 @@ const SearchableCitiesSelect: React.FC<SearchableCitiesSelectProps> = ({
 
       setCities(data);
 
-      // Map the API response to the format required by react-select
       return data.map((city: City) => ({
         value: city.id,
         label: city.name

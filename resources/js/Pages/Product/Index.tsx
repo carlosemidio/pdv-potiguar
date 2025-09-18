@@ -79,37 +79,9 @@ export default function Index({
                         {
                             products.data.map((item) => (
                                 <Card key={item.id} className='relative flex flex-col justify-between'>
-                                    {item?.image && (
-                                        <img src={item?.image?.file_url} alt={item.name} className='w-full h-32 object-cover rounded-t-lg' />
-                                    )}
-
-                                    {item?.variants && item.variants.length > 0 && (
-                                        // Only show the first variant with an image
-                                        (() => {
-                                            const firstVariantWithImage = item.variants.find((variant: any) => variant?.image);
-                                            return firstVariantWithImage ? (
-                                                <img
-                                                    key={firstVariantWithImage.id}
-                                                    src={firstVariantWithImage.image?.file_url}
-                                                    alt={item.name}
-                                                    className='w-full h-32 object-cover rounded-t-lg'
-                                                />
-                                            ) : null;
-                                        })()
-                                    )}
-
                                     <p className='font-semibold'>{item.name}</p>
-                                    <div className='mt-4 flex justify-end absolute top-0 right-2'>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.status ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                                            {item.status ? 'Ativo' : 'Inativo'}
-                                        </span>
-                                    </div>
 
                                     <div className='flex-1'>
-                                        <p className='text-sm text-gray-700 dark:text-gray-300'>
-                                            {item?.user?.name} - {item?.store?.name}
-                                        </p>
-
                                         <p className='text-sm text-gray-600 dark:text-gray-400'>
                                             {item.short_description || 'Sem descrição'}
                                         </p>

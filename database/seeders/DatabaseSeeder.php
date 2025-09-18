@@ -16,10 +16,10 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             UserSeeder::class,
             CitySeeder::class,
-            StoresSeeder::class,
-            CategoriesSeeder::class,
-            BrandsSeeder::class,
-            ProductVariantSeeder::class,
+            // StoresSeeder::class,
+            // CategoriesSeeder::class,
+            // BrandsSeeder::class,
+            // ProductVariantSeeder::class,
         ]);
     }
 }

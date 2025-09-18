@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class OrderPaymentsController extends Controller
@@ -29,6 +30,8 @@ class OrderPaymentsController extends Controller
 
         $data = $request->only(['order_id', 'method', 'amount', 'notes']);
         $order = $this->order->findOrFail($data['order_id']);
+        $data['user_id'] = Auth::id();
+        $data['tenant_id'] = $order->tenant_id;
 
         $this->authorize('update', $order);
 
@@ -42,11 +45,7 @@ class OrderPaymentsController extends Controller
             }
 
             $payment = DB::transaction(function () use ($data, $order) {
-                $payment = $order->payments()->create([
-                    'method' => $data['method'],
-                    'amount' => $data['amount'],
-                    'notes' => $data['notes'] ?? null,
-                ]);
+                $payment = $order->payments()->create($data);
 
                 // Update order's paid amount
                 $order->paid_amount = Payment::where('order_id', $order->id)->sum('amount');

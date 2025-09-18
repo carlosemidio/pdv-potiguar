@@ -5,7 +5,7 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
-import { User } from '@/types/user';
+import { User } from '@/types/User';
 import { Textarea, Transition } from '@headlessui/react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import React, { FormEventHandler, useEffect } from 'react';

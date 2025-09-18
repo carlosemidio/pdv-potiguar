@@ -14,19 +14,17 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('store_id')->constrained('stores')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->foreignId('brand_id')->nullable()->constrained('brands')->onDelete('cascade');
 
             $table->string('name');
             $table->string('slug');
+
+            $table->unique(['tenant_id', 'name']);
+
             $table->text('description')->nullable();
             $table->text('short_description')->nullable();
-
-            $table->unique(['name', 'store_id']);
-            $table->unique(['slug', 'store_id']);
-
-            $table->bigInteger('view_count')->default(0);
 
             $table->softDeletes();
             $table->timestamps();

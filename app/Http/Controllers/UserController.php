@@ -122,9 +122,11 @@ class UserController extends Controller
      */
     public function edit($uuid)
     {
-        $user = User::where('uuid', $uuid)->with('roles')->first();
+        $user = User::where('uuid', $uuid)->firstOrFail();
         $this->authorize('update', $user);
-        $this->authorize('create', User::class);
+
+        $user->load('roles.permissions', 'tenant');
+
         $authUser = User::findOrFail(Auth::user()->id);
     
         $viewAllRoles = $authUser->hasPermission('roles_view', true);

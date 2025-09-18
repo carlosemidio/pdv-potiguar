@@ -63,6 +63,14 @@ class UserSeeder extends Seeder
             'products_create',
             'products_edit',
             'products_delete',
+            'product-variants_view',
+            'product-variants_create',
+            'product-variants_edit',
+            'product-variants_delete',
+            'store-product-variants_view',
+            'store-product-variants_create',
+            'store-product-variants_edit',
+            'store-product-variants_delete',
             'cities_view',
             'categories_view',
             'categories_create',
@@ -80,10 +88,18 @@ class UserSeeder extends Seeder
             'orders_create',
             'orders_edit',
             'orders_delete',
+            'payments_view',
+            'payments_create',
+            'payments_edit',
+            'payments_delete',
+            'stock-movements_view',
+            'stock-movements_create',
+            'stock-movements_edit',
+            'stock-movements_delete',
         ];
 
         foreach ($store_permissions as $permissionName) {
-            $permission = Permission::firstOrCreate(['name' => $permissionName]);
+            $permission = Permission::where('name', $permissionName)->first();
             $role_lojista->permissions()->attach($permission->id);
         }
 
@@ -93,10 +109,6 @@ class UserSeeder extends Seeder
             'stores_view',
             'stores_create',
             'stores_edit',
-            'products_view',
-            'products_create',
-            'products_edit',
-            'products_delete',
             'cities_view',
             'categories_view',
             'categories_create',
@@ -106,6 +118,18 @@ class UserSeeder extends Seeder
             'brands_create',
             'brands_edit',
             'brands_delete',
+            'products_view',
+            'products_create',
+            'products_edit',
+            'products_delete',
+            'product-variants_view',
+            'product-variants_create',
+            'product-variants_edit',
+            'product-variants_delete',
+            'store-product-variants_view',
+            'store-product-variants_create',
+            'store-product-variants_edit',
+            'store-product-variants_delete',
             'addons_view',
             'addons_create',
             'addons_edit',
@@ -122,11 +146,19 @@ class UserSeeder extends Seeder
             'orders_create',
             'orders_edit',
             'orders_delete',
+            'payments_view',
+            'payments_create',
+            'payments_edit',
+            'payments_delete',
+            'stock-movements_view',
+            'stock-movements_create',
+            'stock-movements_edit',
+            'stock-movements_delete',
         ];
 
         // Permissions for Restaurant
         foreach ($restorant_permissions as $permissionName) {
-            $permission = Permission::firstOrCreate(['name' => $permissionName]);
+            $permission = Permission::where('name', $permissionName)->first();
             $role_restaurant->permissions()->attach($permission->id);
         }
 

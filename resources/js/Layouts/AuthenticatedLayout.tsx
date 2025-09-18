@@ -1,12 +1,14 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
-import { User } from '@/types/user';
+import NavLinkGroup from '@/Components/NavLinkGroup';
+import { User } from '@/types/User';
 import { can } from '@/utils/authorization';
 import { Button } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { ChevronDown, Gauge, KeySquare, Mail, Menu, MonitorCog, Store, Table, UserCircle2, X } from 'lucide-react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
+import { AiFillProduct } from 'react-icons/ai';
 import { CgProductHunt } from 'react-icons/cg';
 import { MdAddCircle, MdBrandingWatermark, MdCategory } from 'react-icons/md';
 import { TbMenuOrder } from 'react-icons/tb';
@@ -71,6 +73,33 @@ export default function Authenticated({
                                 </NavLink>
                             )}
 
+                            {can('tenants_view') && (
+                                <NavLink href={route('tenant.index')} active={route().current('tenant.index')}>
+                                    <div className='flex gap-2 items-center'>
+                                        <Store className="w-6 h-6" />
+                                        <p>Empresas</p>
+                                    </div>
+                                </NavLink>
+                            )}
+
+                            {can('roles_view') && (
+                                <NavLink href={route('role.index')} active={route().current('role.index')}>
+                                    <div className='flex gap-2 items-center'>
+                                        <MonitorCog className="w-6 h-6" />
+                                        <p>Funções</p>
+                                    </div>
+                                </NavLink>
+                            )}
+
+                            {can('users_view') && (
+                                <NavLink href={route('user.index')} active={route().current('user.index')}>
+                                    <div className='flex gap-2 items-center'>
+                                        <UserCircle2 className="w-6 h-6" />
+                                        <p>Usuários</p>
+                                    </div>
+                                </NavLink>
+                            )}
+
                             {can('orders_view') && (
                                 <NavLink href={route('orders.index')} active={route().current('orders.index')}>
                                     <div className='flex gap-2 items-center'>
@@ -125,13 +154,34 @@ export default function Authenticated({
                                 </NavLink>
                             )}
 
-                            {can('products_view') && (
-                                <NavLink href={route('product.index')} active={route().current('product.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <CgProductHunt className="w-6 h-6" />
-                                        <p>Produtos</p>
-                                    </div>
-                                </NavLink>
+                            {(can('products_view') || can('store-product-variants_view') || can('product-variants_view')) && (
+                                <NavLinkGroup title="Produtos" icon={<AiFillProduct />} open={route().current('product.*') || route().current('store-product-variant.*') || route().current('product-variant.*')}>
+                                    {can('products_view') && (
+                                        <NavLink href={route('product.index')} active={route().current('product.index')}>
+                                            <div className='flex gap-2 items-center'>
+                                                <CgProductHunt className="w-5 h-5" />
+                                                <p>Produtos base</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+                                    {can('product-variants_view') && (
+                                        <NavLink href={route('product-variant.index')} active={route().current('product-variant.index')}>
+                                            <div className='flex gap-2 items-center'>
+                                                <CgProductHunt className="w-5 h-5" />
+                                                <p>Variantes</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+                                    
+                                    {can('store-product-variants_view') && (
+                                        <NavLink href={route('store-product-variant.index')} active={route().current('store-product-variant.index')}>
+                                            <div className='flex gap-2 items-center'>
+                                                <CgProductHunt className="w-5 h-5" />
+                                                <p>Produtos da loja</p>
+                                            </div>
+                                        </NavLink>
+                                    )}                                    
+                                </NavLinkGroup>
                             )}
 
                             {can('addons_view') && (
@@ -143,38 +193,11 @@ export default function Authenticated({
                                 </NavLink>
                             )}
 
-                            {can('roles_view') && (
-                                <NavLink href={route('role.index')} active={route().current('role.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <MonitorCog className="w-6 h-6" />
-                                        <p>Funções</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('users_view') && (
-                                <NavLink href={route('user.index')} active={route().current('user.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <UserCircle2 className="w-6 h-6" />
-                                        <p>Usuários</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
                             {can('clients_view') && (
                                 <NavLink href={route('clientes.index')} active={route().current('clientes.index')}>
                                     <div className='flex gap-2 items-center'>
                                         <UserCircle2 className="w-6 h-6" />
                                         <p>Clientes</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('projects_view') && (
-                                <NavLink href={route('project.index')} active={route().current('project.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <UserCircle2 className="w-6 h-6" />
-                                        <p>Projetos</p>
                                     </div>
                                 </NavLink>
                             )}

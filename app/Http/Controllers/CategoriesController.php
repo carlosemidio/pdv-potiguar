@@ -68,6 +68,7 @@ class CategoriesController extends Controller
             ]);
 
             $data['user_id'] = Auth::user()->id;
+            $data['tenant_id'] = Auth::user()->tenant_id;
 
             $category = $this->category->create($data);
 

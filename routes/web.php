@@ -8,7 +8,10 @@ use App\Http\Controllers\Ajax\CategoryListController;
 use App\Http\Controllers\Ajax\CustomersListController;
 use App\Http\Controllers\Ajax\ProductListController;
 use App\Http\Controllers\Ajax\ProductVariantListController;
+use App\Http\Controllers\Ajax\StoreProductVariantListController;
 use App\Http\Controllers\Ajax\TableListController;
+use App\Http\Controllers\Ajax\TenantListController;
+use App\Http\Controllers\Ajax\UserListController;
 use App\Http\Controllers\BrandsController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\CityController;
@@ -20,9 +23,12 @@ use App\Http\Controllers\OrderPaymentsController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\StoreProductVariantController;
+use App\Http\Controllers\TenantsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::resource('/profile', ProfileController::class)->only(['update', 'destroy']);
 
+    Route::resource('/empresas', TenantsController::class)->names('tenant');
     Route::resource('/funcoes', RoleController::class)->names('role');
     Route::resource('/permissoes', PermissionController::class)->names('permission');
     Route::resource('/usuarios', UserController::class)->only(['index', 'create', 'store', 'update'])->names('user');
@@ -70,6 +77,12 @@ Route::middleware('auth')->group(function () {
         
     Route::resource('/produtos', ProductController::class)
         ->names('product');
+
+    Route::resource('/variantes-produto', ProductVariantController::class)
+        ->names('product-variant');
+
+    Route::resource('/variantes-loja', StoreProductVariantController::class)
+        ->names('store-product-variant');
 
     Route::resource('/complementos', AddonsController::class)
         ->names('addons');
@@ -127,11 +140,24 @@ Route::middleware('auth')->group(function () {
     Route::get('search-products-select', [ProductListController::class, 'index'])
         ->name('products-select.search');
 
+    // rota usada no componente select de variantes de produto
+    Route::get('search-product-variants-select', [ProductVariantListController::class, 'index'])
+        ->name('product-variants-select.search');
+
+    Route::get('search-store-product-variants-select', [StoreProductVariantListController::class, 'index'])
+        ->name('store-product-variants-select.search');
+
     Route::get('search-addons-select', [AddonsListController::class, 'index'])
         ->name('addons-select.search');
 
     Route::get('search-customers-select', [CustomersListController::class, 'index'])
         ->name('customers-select.search');
+
+    Route::get('search-tenants-select', [TenantListController::class, 'index'])
+        ->name('tenants-select.search');
+
+    Route::get('search-users-select', [UserListController::class, 'index'])
+        ->name('users-select.search');
 
     Route::resource('/notificacoes', NotificationController::class)->names('notification');
     Route::patch('/notificacoes/{id}/ler', [NotificationController::class, 'markAsRead'])->name('notification.markAsRead');

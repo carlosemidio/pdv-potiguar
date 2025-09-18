@@ -64,7 +64,7 @@ class CustomersController extends Controller
                 'doc' => 'nullable|string|max:20',
             ]);
 
-            $user = User::with('store')->find(Auth::user()->id);
+            $user = User::find(Auth::user()->id);
             
             if (!$user || !$user->store) {
                 return redirect()->back()
@@ -72,7 +72,7 @@ class CustomersController extends Controller
             }
 
             $data['user_id'] = $user->id;
-            $data['store_id'] = $user->store->id;
+            $data['tenant_id'] = $user->tenant_id;
 
             $customer = $this->customer->create($data);
 

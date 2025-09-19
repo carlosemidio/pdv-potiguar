@@ -11,6 +11,7 @@ import { can } from '@/utils/authorization';
 import { formatCustomDateTime } from '@/utils/date-format';
 import Pagination from '@/Components/Pagination/Pagination';
 import { StoreProductVariant } from '@/types/StoreProductVariant';
+import Image from '@/Components/Image';
 
 export default function Index({
     auth,
@@ -56,55 +57,71 @@ export default function Index({
         >
             <Head title="Variantes de Produto da Loja" />
 
-            <section className='py-12 px-4 text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto lg:px-8">
+            <section className='px-3 text-gray-800 dark:text-gray-200'>
+                <div className="mx-auto lg:px-2">
 
                     {can('store-product-variants_create') && (
-                        <Link href={route('store-product-variant.create')} className="fixed bottom-6 right-6 z-10">
-                            <PrimaryButton className="rounded-full w-12 h-12 p-0 flex items-center justify-center shadow-lg">
+                        <Link href={route('store-product-variant.create')}>
+                            <button
+                                aria-label="Nova variante da loja"
+                                className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                            >
                                 <Plus className="w-6 h-6" />
-                            </PrimaryButton>
+                            </button>
                         </Link>
                     )}
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-4'>
+                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3'>
                         {
                             data.map((item) => (
-                                <div key={item.id} className='relative flex flex-col justify-between rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-sm'>
-                                    {item?.product_variant?.image && (
-                                        <img src={item?.product_variant?.image?.file_url} alt={item.product_variant.name} className='w-full h-32 object-contain rounded-t-lg' />
+                                <div key={item.id} className='relative flex flex-col justify-between rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm'>
+                                    {!!item?.featured && (
+                                        <span className='absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200'>Destaque</span>
                                     )}
 
-                                    <p className='font-semibold'>{item.product_variant.name}</p>
+                                    <Image src={item?.product_variant?.image?.file_url} alt={item?.product_variant?.name || 'Variante'} className='w-full h-64 object-cover rounded-md mb-2' />
 
-                                    <div className='flex-1'>
-                                        <p className='text-sm text-gray-600 dark:text-gray-400'>
-                                            {item.product_variant.product.description}
+                                    <p className='font-semibold text-base truncate'>{item?.product_variant?.name || '—'}</p>
+
+                                    <div className='mt-1'>
+                                        <p className='text-sm text-gray-700 dark:text-gray-300'>
+                                            <span className='text-gray-600 dark:text-gray-400'>SKU: </span>{item?.product_variant?.sku || '—'}
                                         </p>
 
-                                        <p className='text-xs text-gray-500 dark:text-gray-300 mt-2'>
-                                            Criado em: { formatCustomDateTime(item.created_at) }
+                                        <div className='mt-1 flex items-center gap-2 text-sm'>
+                                            <span className='inline-flex items-center rounded-md bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 px-2 py-0.5 text-xs border border-green-200 dark:border-green-800'>
+                                                {Number.isFinite(Number((item as any)?.price))
+                                                    ? Number((item as any).price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                                                    : '—'}
+                                            </span>
+                                            <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs border ${(item?.stock_quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-800' : 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/40 dark:text-red-200 dark:border-red-800'}`}>
+                                                Estoque: {item?.stock_quantity ?? 0}
+                                            </span>
+                                        </div>
+
+                                        <p className='text-[11px] text-gray-500 dark:text-gray-400 mt-2'>
+                                            Criado: { formatCustomDateTime(item.created_at) }
                                         </p>
-                                        <p className='text-xs text-gray-500 dark:text-gray-300'>
-                                            Atualizado em: { formatCustomDateTime(item.updated_at)}
+                                        <p className='text-[11px] text-gray-500 dark:text-gray-400'>
+                                            Atualizado: { formatCustomDateTime(item.updated_at)}
                                         </p>
                                     </div>
 
-                                    <div className='flex gap-2 mt-2 justify-end'>
+                                    <div className='flex gap-1.5 mt-2 justify-end'>
                                         {can('store-product-variants_delete') && (
-                                            <DangerButton onClick={() => handleDeleteClick(item)} disabled={processingDelete} size="sm" title="Deletar">
+                                            <DangerButton onClick={() => handleDeleteClick(item)} disabled={processingDelete} size="sm" title="Deletar variante da loja">
                                                 <Trash className='w-4 h-4' />
                                             </DangerButton>
                                         )}
                                         {can('store-product-variants_edit') && (
                                             <Link href={route('store-product-variant.edit', { id: item.id })}>
-                                                <SecondaryButton size="sm" title="Editar">
+                                                <SecondaryButton size="sm" title="Editar variante da loja">
                                                     <Edit className='w-4 h-4' />
                                                 </SecondaryButton>
                                             </Link>
                                         )}
                                         {can('store-product-variants_view') && (
                                             <Link href={route('store-product-variant.show', { id: item.id })}>
-                                                <PrimaryButton size="sm" title="Visualizar">
+                                                <PrimaryButton size="sm" title="Visualizar variante da loja">
                                                     <Eye className='w-4 h-4' />
                                                 </PrimaryButton>
                                             </Link>
@@ -121,15 +138,13 @@ export default function Index({
                         )}
                     </div>
 
-                    <div className="mt-6">
-                        <Pagination links={meta.links} />
-                    </div>
+                    <Pagination links={meta.links} />
                 </div>
             </section>
             <Modal show={showModal} onClose={closeModal}>
                 <form onSubmit={(e) => { e.preventDefault(); deleteVariant(); }} className="p-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                        Tem certeza que deseja deletar {variant?.product_variant.name}?
+                        Tem certeza que deseja deletar {variant?.product_variant?.name ?? 'esta variante'}?
                     </h2>
 
                     <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">

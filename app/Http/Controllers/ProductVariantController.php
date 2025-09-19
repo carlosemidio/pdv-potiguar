@@ -6,6 +6,7 @@ use App\Http\Requests\ProductVariantFormRequest;
 use App\Http\Resources\ProductVariantResource;
 use App\Models\AttributeValue;
 use App\Models\File;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
 use App\Models\VariantAttribute;
@@ -69,6 +70,24 @@ class ProductVariantController extends Controller
         $dataForm['user_id'] = Auth::id();
         $dataForm['tenant_id'] = Auth::user()->tenant_id;
 
+        $product = Product::where('tenant_id', $dataForm['tenant_id'])
+            ->where('id', $dataForm['product_id'])
+            ->first();
+
+        if (!($product instanceof Product)) {
+            return redirect()->back()
+                ->with('fail', 'Produto associado à variante não encontrado.');
+        }
+
+        $dataForm['name'] = '';
+        $attributeNames = [];
+        foreach ($dataForm['attributes'] as $attribute) {
+            // Ensure the attribute exists
+            $attributeNames[] = $attribute['value'];
+        }
+
+        $dataForm['name'] = $product->name . ' - ' . implode(', ', $attributeNames);
+
         try {
             $productVariant = ProductVariant::create($dataForm);
 
@@ -94,17 +113,6 @@ class ProductVariantController extends Controller
                             ['value' => $attribute['value']]
                         );
                     }
-
-                    $product = $productVariant->product;
-
-                    if (!($product)) {
-                        throw new \Exception('Produto associado à variante não encontrado.');
-                    }
-
-                    // Generate and update the slug based on attributes
-                    $slug = $productVariant->generateSlugFromAttributes($product->name, $attributeNames);
-                    $productVariant->slug = $slug;
-                    $productVariant->save();
                 }
 
                 // Handle variant images

@@ -16,7 +16,9 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->string('slug')->nullable();
+            $table->string('name');
+            $table->string('slug');
+            $table->unique(['tenant_id', 'slug']);
             $table->string('sku')->nullable();
             $table->softDeletes();
             $table->timestamps();

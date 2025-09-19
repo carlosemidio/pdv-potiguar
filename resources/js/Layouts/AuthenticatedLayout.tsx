@@ -50,9 +50,14 @@ export default function Authenticated({
                                     <h1 className='tracking-wide uppercase'>{user?.store?.name}</h1>
                                 </div>
                             </Link>
-                            <X onClick={() => setSidebarOpen(!sidebarOpen)}
-                                className='dark:text-gray-300 text-gray-800 lg:hidden'
-                            ></X>
+                            <button
+                                type="button"
+                                aria-label="Fechar menu"
+                                onClick={() => setSidebarOpen(false)}
+                                className='p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 text-gray-800 lg:hidden focus:outline-none focus:ring-2 focus:ring-blue-500'
+                            >
+                                <X className='w-6 h-6' />
+                            </button>
                         </div>
 
                         {/* Navigation links */}
@@ -226,14 +231,25 @@ export default function Authenticated({
                 </nav>
             </div>
 
+            {/* Mobile overlay for sidebar */}
+            <div
+                className={`fixed inset-0 bg-black/40 z-30 lg:hidden transition-opacity ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                onClick={() => setSidebarOpen(false)}
+                aria-hidden={!sidebarOpen}
+            />
+
             {/* Main content area */}
             <div className={`flex-1 transition-all duration-300`}>
                 {header && (
-                    <header className="flex justify-between lg:justify-end items-center px-8 py-4  bg-white shadow dark:bg-gray-800 text-gray-800 dark:text-gray-200">
-                        <Menu
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
-                            className='lg:hidden'
-                        ></Menu>
+                    <header className="flex justify-between lg:justify-end items-center px-4 py-3 lg:px-8 lg:py-4 bg-white shadow dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                        <button
+                            type="button"
+                            aria-label="Abrir menu"
+                            onClick={() => setSidebarOpen(true)}
+                            className='p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden focus:outline-none focus:ring-2 focus:ring-blue-500'
+                        >
+                            <Menu className='w-6 h-6' />
+                        </button>
                         <div className="flex flex-row">
                             {(storesNumber() == 0) && (
                                 <div className="flex items-center gap-2">
@@ -310,7 +326,7 @@ export default function Authenticated({
                         </div>
                     </header>
                 )}
-                <main className="bg-gray-100 dark:bg-gray-900 h-full">
+                <main className="bg-gray-100 dark:bg-gray-900 h-full pb-20 lg:pb-0">
                     <div className="uppercase tracking-widest px-2 pt-2 pb-2 lg:px-8 lg:pt-2 lg:pb-2">
                         <div className='flex items-center gap-2'>
                             {header}
@@ -339,19 +355,19 @@ export default function Authenticated({
                 {/* Bottom Navigation (mobile) */}
                 <nav className="fixed bottom-0 inset-x-0 z-40 bg-white/90 dark:bg-gray-800/90 backdrop-blur border-t border-gray-200 dark:border-gray-700 lg:hidden">
                     <div className="grid grid-cols-4 text-xs">
-                        <Link href={route('dashboard')} className={`flex flex-col items-center py-2 ${route().current('dashboard') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                        <Link href={route('dashboard')} className={`flex flex-col items-center py-3 ${route().current('dashboard') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
                             <Gauge className="w-5 h-5" />
                             <span>Home</span>
                         </Link>
-                        <Link href={route('orders.index')} className={`flex flex-col items-center py-2 ${route().current('orders.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                        <Link href={route('orders.index')} className={`flex flex-col items-center py-3 ${route().current('orders.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
                             <TbMenuOrder className="w-5 h-5" />
                             <span>Pedidos</span>
                         </Link>
-                        <Link href={route('stock-movement.index')} className={`flex flex-col items-center py-2 ${route().current('stock-movement.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                        <Link href={route('stock-movement.index')} className={`flex flex-col items-center py-3 ${route().current('stock-movement.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
                             <TbArrowsRightLeft className="w-5 h-5" />
                             <span>Estoque</span>
                         </Link>
-                        <Link href={route('product-variant.index')} className={`flex flex-col items-center py-2 ${route().current('product-variant.*') || route().current('store-product-variant.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                        <Link href={route('product-variant.index')} className={`flex flex-col items-center py-3 ${route().current('product-variant.*') || route().current('store-product-variant.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
                             <CgProductHunt className="w-5 h-5" />
                             <span>Produtos</span>
                         </Link>

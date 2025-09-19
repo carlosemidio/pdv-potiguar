@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Traits\GeneratesSku;
 use App\Traits\GeneratesVariantSlug;
+use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -11,32 +13,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductVariant extends Model
 {
-    use HasFactory, SoftDeletes, GeneratesVariantSlug;
+    use HasFactory, SoftDeletes, HasSlug, GeneratesSku;
 
     protected $fillable = [
         'user_id',
         'tenant_id',
         'product_id',
+        'name',
         'sku',
     ];
-
-    protected $appends = [
-        'name'
-    ];
-
-    public function getNameAttribute()
-    {
-        $attributes = $this->attributes()->pluck('name', 'value')->toArray();
-        $nameParts = [];
-        
-        foreach ($attributes as $value => $name) {
-            $nameParts[] = "$value";
-        }
-
-        $name = $this->product ? $this->product->name . ' - ' : '';
-
-        return $name . implode(', ', $nameParts);
-    }
 
     public function product()
     {

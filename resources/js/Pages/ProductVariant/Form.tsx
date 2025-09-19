@@ -139,7 +139,6 @@ export default function EditVariant({
                                         className="mt-1 block w-full"
                                         value={data.sku}
                                         onChange={e => setData('sku', e.target.value)}
-                                        required
                                         autoFocus
                                     />
                                     <InputError className="mt-2" message={errors.sku} />

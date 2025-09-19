@@ -61,7 +61,7 @@ export default function Edit({ auth, storeProductVariant }: PageProps<{ storePro
         >
             <Head title={isEdit ? 'Editar produto' : 'Criar produto'} />
             
-            <section className='py-12 px-4 text-gray-800 dark:text-gray-200'>
+            <section className='px-2 text-gray-800 dark:text-gray-200'>
                 <div className="mx-auto">
 
                     <div className="mb-4">
@@ -116,15 +116,15 @@ export default function Edit({ auth, storeProductVariant }: PageProps<{ storePro
                                         <InputError className="mt-2" message={errors.price} />
                                     </div>
 
-                                    <div className='w-full'>
-                                        <InputLabel htmlFor="stock_quantity" value="Estoque" />
+                                    <div className='w-full opacity-60'>
+                                        <InputLabel htmlFor="stock_quantity" value="Estoque (desabilitado)" />
                                         <TextInput
                                             id="stock_quantity"
                                             type="number"
                                             className="mt-1 w-full"
                                             value={data.stock_quantity}
-                                            onChange={(e) => setData('stock_quantity', Number(e.target.value))}
-                                            required
+                                            readOnly
+                                            disabled
                                             autoComplete="off"
                                         />
                                         <InputError className="mt-2" message={errors.stock_quantity} />

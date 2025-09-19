@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { formatCustomDateTime } from '@/utils/date-format';
 import Pagination from '@/Components/Pagination/Pagination';
+import Image from '@/Components/Image';
 
 export default function Index({
     auth,
@@ -68,9 +69,7 @@ export default function Index({
                         {
                             data.map((item) => (
                                 <Card key={item.id} className='relative flex flex-col justify-between p-3 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'>
-                                    {item?.image && (
-                                        <img src={item?.image?.file_url} alt={item.name} className='w-full h-80 object-cover rounded-md mb-2' />
-                                    )}
+                                    <Image src={item?.image?.file_url} alt={item.name} className='w-full h-64 object-cover rounded-md mb-2' />
 
                                     <p className='font-semibold text-base truncate'>{item.name}</p>
 

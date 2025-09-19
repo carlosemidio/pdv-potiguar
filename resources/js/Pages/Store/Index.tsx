@@ -11,6 +11,7 @@ import { Edit, Eye, Trash, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { formatCustomDateTime } from '@/utils/date-format';
+import Image from '@/Components/Image';
 
 export default function Index({
     auth,
@@ -66,9 +67,7 @@ export default function Index({
                         {
                             stores.data.map((item) => (
                                 <Card key={item.id} className='relative flex flex-col justify-between p-3 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'>
-                                    {item.image && (
-                                        <img src={item.image.file_url} alt={item.name} className='w-full h-32 object-cover rounded-t-lg' />
-                                    )}
+                                    <Image src={item?.image?.file_url} alt={item.name} className='w-full h-64 object-cover rounded-md mb-2' />
 
                                     <p className='font-semibold text-base truncate mt-2'>{item.name}</p>
                                     <div className='flex justify-end absolute top-2 right-2'>

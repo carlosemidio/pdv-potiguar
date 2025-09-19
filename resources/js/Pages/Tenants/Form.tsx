@@ -36,13 +36,13 @@ export default function Edit({
             user={auth.user}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    { isEdit ? `Editar Inquilino - ${tenant!.data.name}` : 'Novo Inquilino' }
+                    { isEdit ? `Editar Inquilino` : 'Novo Inquilino' }
                 </h2>
             }
         >
             <Head title={ isEdit ? 'Editar Inquilino' : 'Criar Inquilino' } />
 
-            <section className='py-12 px-4 text-gray-800 dark:text-gray-200'>
+            <section className='px-4 text-gray-800 dark:text-gray-200'>
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="mb-4">
                         <Link href={ route('tenant.index') }>

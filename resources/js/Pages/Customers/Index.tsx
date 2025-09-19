@@ -1,12 +1,11 @@
 import Card from '@/Components/Card';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
-import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash } from 'lucide-react';
+import { Edit, Trash, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Customer } from '@/types/Customer';
@@ -66,47 +65,37 @@ export default function Index({
         >
             <Head title="Clientes" />
 
-            <section className='py-12 px-4 text-gray-800 dark:text-gray-200 bg-gradient-to-b from-gray-50 dark:from-gray-900 to-white dark:to-gray-800 min-h-screen'>
-                <div className="mx-auto max-w-7xl lg:px-8">
-
-                    <div className='flex justify-end mb-6'>
-                        {can('customers_create') && (
-                            <Link href={route('customers.create')}>
-                                <PrimaryButton className="flex items-center gap-2 shadow-md hover:scale-105 transition-transform">
-                                    <span className="font-semibold">+ Adicionar cliente</span>
-                                </PrimaryButton>
-                            </Link>
-                        )}
-                    </div>
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+            <section className='px-2 text-gray-800 dark:text-gray-200 bg-gradient-to-b from-gray-50 dark:from-gray-900 to-white dark:to-gray-800 min-h-screen'>
+                <div className="mx-auto lg:px-2">
+                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'>
                         {
                             customers?.data?.map((costumer) => (
-                                <Card key={costumer.id} className="p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-xl transition-shadow">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className='font-bold text-lg'>{costumer.name}</p>
+                                <Card key={costumer.id} className="p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-md transition-shadow">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <p className='font-semibold text-base truncate'>{costumer.name}</p>
                                         {costumer.type === 'pj' ? (
-                                            <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full dark:bg-blue-800 dark:text-blue-100">PJ</span>
+                                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full dark:bg-blue-800 dark:text-blue-100">PJ</span>
                                         ) : (
-                                            <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full dark:bg-green-800 dark:text-green-100">PF</span>
+                                            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full dark:bg-green-800 dark:text-green-100">PF</span>
                                         )}
                                     </div>
-                                    <div className='flex gap-2 mt-4 justify-end'>
+                                    <div className='flex gap-1.5 mt-2 justify-end'>
                                         {can('customers_delete') && (
-                                            <DangerButton
+                                            <DangerButton size="sm"
                                                 onClick={() => confirmCustomerDeletion(costumer.id)}
-                                                className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                                                className="flex items-center gap-1"
                                                 title="Deletar cliente"
                                             >
-                                                <Trash className='w-5 h-5' />
+                                                <Trash className='w-4 h-4' />
                                             </DangerButton>
                                         )}
                                         {can('customers_edit') && (
                                             <Link href={route('customers.edit', { id: costumer.id })}>
-                                                <SecondaryButton
-                                                    className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                                <SecondaryButton size="sm"
+                                                    className="flex items-center gap-1"
                                                     title="Editar cliente"
                                                 >
-                                                    <Edit className='w-5 h-5' />
+                                                    <Edit className='w-4 h-4' />
                                                 </SecondaryButton>
                                             </Link>
                                         )}
@@ -122,6 +111,17 @@ export default function Index({
                         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                             Nenhum cliente cadastrado.
                         </div>
+                    )}
+
+                    {can('customers_create') && (
+                        <Link href={route('customers.create')}>
+                            <button
+                                aria-label="Novo cliente"
+                                className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                            >
+                                <Plus className="h-6 w-6" />
+                            </button>
+                        </Link>
                     )}
                 </div>
             </section>

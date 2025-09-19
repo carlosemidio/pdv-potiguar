@@ -1,13 +1,12 @@
 import Card from '@/Components/Card';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
-import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Permission } from '@/types/Permission';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash } from 'lucide-react';
+import { Edit, Trash, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import Pagination from '@/Components/Pagination/Pagination';
@@ -64,62 +63,55 @@ export default function Index({
         >
             <Head title="Permissões" />
 
-            <section className='py-12 px-4 text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto lg:px-8">
+            <section className='px-3 text-gray-800 dark:text-gray-200'>
+                <div className="mx-auto lg:px-2">
+                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3'>
+                        {permissions.data.map((permission) => (
+                            <Card key={permission.id} className='p-3 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'>
+                                <p className='font-semibold text-base truncate'>{permission.display_name}</p>
+                                <div className='mt-1 text-sm text-gray-700 dark:text-gray-300'>
+                                    <span className='text-gray-600 dark:text-gray-400'>Código: </span>
+                                    <span className='bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs'>
+                                        {permission.name}
+                                    </span>
+                                </div>
 
-                    <div className='flex justify-end'>
-                        {can('permission_create') && (
-                            <Link href={route('permission.create')}>
-                                <PrimaryButton>
-                                    Nova Permissão
-                                </PrimaryButton>
-                            </Link>
-                        )}
+                                <div className='flex gap-1.5 mt-2 justify-end'>
+                                    {can('permission_delete') && (
+                                        <DangerButton size='sm' onClick={() => confirmPermissionDeletion(permission.id)} title='Excluir permissão'>
+                                            <Trash className='w-4 h-4' />
+                                        </DangerButton>
+                                    )}
+                                    {can('permission_edit') && (
+                                        <Link href={route('permission.edit', { id: permission.id })}>
+                                            <SecondaryButton size='sm' title='Editar permissão'>
+                                                <Edit className='w-4 h-4' />
+                                            </SecondaryButton>
+                                        </Link>
+                                    )}
+                                </div>
+                            </Card>
+                        ))}
                     </div>
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-4'>
-                        {
-                            permissions.data.map((permission) => (
-                                <Card key={permission.id}>
-                                    <p className='font-semibold'>{permission.display_name}</p>
-                                    <div className='mt-4'>
-                                        <p className='text-sm mb-1'>Código</p>
-                                        <span className="bg-gray-100 rounded-lg p-1 text-sm dark:bg-gray-700">
-                                            {permission.name}
-                                        </span>
-                                    </div>
-                                    <div className='flex  gap-2 mt-2 justify-end'>
-                                        {can('permission_delete') && (
-                                            <DangerButton onClick={() => confirmPermissionDeletion(permission.id)}>
-                                                <Trash className='w-5 h-5' />
-                                            </DangerButton>
-                                        )}
-                                        {can('permission_edit') && (
-                                            <Link href={route('permission.edit', { id: permission.id })}>
-                                                <SecondaryButton>
-                                                    <Edit className='w-5 h-5' />
-                                                </SecondaryButton>
-                                            </Link>
-                                        )}
-                                        {/* {can('permission_view') && (
-                                            <Link href={route('permission.show', { id: permission.id })}>
-                                                <PrimaryButton>
-                                                    Detalhes
-                                                </PrimaryButton>
-                                            </Link>
-                                        )} */}
-                                    </div>
-                                </Card>
-                            ))
-                        }
 
-                        <Pagination links={links} />
+                    <Pagination links={links} />
 
-                        {permissions.data.length === 0 && (
-                            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                                Nenhuma permissão encontrada.
-                            </div>
-                        )}
-                    </div>
+                    {permissions.data.length === 0 && (
+                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                            Nenhuma permissão encontrada.
+                        </div>
+                    )}
+
+                    {can('permission_create') && (
+                        <Link href={route('permission.create')}>
+                            <button
+                                aria-label="Nova permissão"
+                                className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                            >
+                                <Plus className='w-6 h-6' />
+                            </button>
+                        </Link>
+                    )}
                 </div>
             </section>
 
@@ -127,11 +119,11 @@ export default function Index({
                 <Modal show={confirmingPermissionDeletion} onClose={closeModal}>
                     <form onSubmit={(e) => { e.preventDefault(); deletePermission(); }} className="p-6">
                         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                            Tem certeza que deseja deletar a função {permissionToDelete.display_name}?
+                            Tem certeza que deseja deletar a permissão {permissionToDelete.display_name}?
                         </h2>
 
                         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            Uma vez que a função é deletada, todos os seus recursos e dados serão permanentemente deletados.
+                            Uma vez que a permissão é deletada, todos os seus recursos e dados serão permanentemente deletados.
                         </p>
 
                         <div className="mt-6 flex justify-end">
@@ -140,7 +132,7 @@ export default function Index({
                             </SecondaryButton>
 
                             <DangerButton className="ms-3" disabled={processing}>
-                                Deletar Função
+                                Deletar permissão
                             </DangerButton>
                         </div>
                     </form>

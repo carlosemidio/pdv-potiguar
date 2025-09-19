@@ -14,6 +14,8 @@ import OrderPaymentsForm from '@/Components/OrderPaymentsForm';
 import { formatDateTime } from '@/utils/date-format';
 import OrderStatusColors from '@/utils/OrderStatusColors';
 import { MdWhatsapp } from 'react-icons/md';
+import OrderDiscountFormModal from '@/Components/OrderDiscountFormModal';
+import { BiEdit } from 'react-icons/bi';
 
 export default function Index({
     auth,
@@ -23,6 +25,7 @@ export default function Index({
     const { delete: destroy, reset, patch } = useForm();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPaymentsModalOpen, setIsPaymentsModalOpen] = useState(false);
+    const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
 
     const orderCanBeModified = order?.data.status !== 'completed' && order?.data.status !== 'canceled';
 
@@ -199,6 +202,54 @@ export default function Index({
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 mt-3">
                             <div className="flex flex-col bg-gray-50 dark:bg-gray-800 rounded-lg p-1.5 shadow-sm">
+                                <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Valor Bruto</span>
+                                <span className="text-sm md:text-base text-gray-800 dark:text-gray-200 font-medium truncate">
+                                    {order?.data.items.length
+                                        ? order.data.items.reduce((acc, item) => acc + (Number(item.total_price) || 0), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                                        : 'R$ 0,00'}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <div className="flex flex-col bg-gray-50 dark:bg-gray-800 rounded-lg p-1 shadow-sm">
+                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Desconto</span>
+                                    <div className="flex items-center gap-2">
+                                        <div>
+                                            <span className="text-xs text-gray-800 dark:text-gray-200 font-medium ml-1">
+                                                {order?.data.discount_type === 1 ? '(%)' : '(R$)'}
+                                            </span>
+                                            <span className="text-xs text-gray-800 dark:text-gray-200 font-medium ml-1">
+                                                {(order?.data.discount_value ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-gray-800 dark:text-gray-200 font-medium ml-1">
+                                                R$ {(order?.data.discount ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {orderCanBeModified && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                                            onClick={() => setIsDiscountModalOpen(true)}
+                                        >
+                                            <BiEdit className="inline w-8 h-8 mr-1" />
+                                        </button>
+
+                                        <OrderDiscountFormModal
+                                            isOpen={isDiscountModalOpen}
+                                            onClose={() => setIsDiscountModalOpen(false)}
+                                            order={order?.data ?? null}
+                                        />
+                                    </>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col bg-gray-50 dark:bg-gray-800 rounded-lg p-1.5 shadow-sm">
                                 <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Valor Total</span>
                                 <span className="text-sm md:text-base text-gray-800 dark:text-gray-200 font-medium truncate">{(order?.data.total_amount ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                             </div>
@@ -323,7 +374,7 @@ export default function Index({
                         <button
                             aria-label="Adicionar item"
                             onClick={() => setIsModalOpen(true)}
-                            className="fixed bottom-24 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                            className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />

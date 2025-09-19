@@ -1,12 +1,11 @@
 import Card from '@/Components/Card';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
-import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash } from 'lucide-react';
+import { Edit, Trash, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Category } from '@/types/Category';
@@ -59,83 +58,59 @@ export default function Index({
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <h2 className="text-2xl font-bold leading-tight text-gray-800 dark:text-gray-200">
+                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Categorias
                 </h2>
             }
         >
             <Head title="Categorias" />
 
-            <section className='py-12 px-4 text-gray-800 dark:text-gray-200 bg-gradient-to-b from-gray-50 dark:from-gray-900 to-white dark:to-gray-800 min-h-screen'>
-                <div className="mx-auto max-w-7xl lg:px-8">
-
-                    <div className='flex justify-end mb-6'>
-                        {can('categories_create') && (
-                            <Link href={route('categories.create')}>
-                                <PrimaryButton className="flex items-center gap-2 shadow-md hover:scale-105 transition-transform">
-                                    <span className="font-semibold">+ Adicionar categoria</span>
-                                </PrimaryButton>
-                            </Link>
-                        )}
-                    </div>
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+            <section className='px-3 text-gray-800 dark:text-gray-200'>
+                <div className="mx-auto lg:px-2">
+                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3'>
                         {
                             categories?.data?.map((category) => (
-                                <Card key={category.id} className="p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-xl transition-shadow">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className='font-bold text-lg'>{category.name}</p>
+                                <Card key={category.id} className="relative p-3 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <p className='font-semibold text-base truncate'>{category.name}</p>
+                                        <div className='flex justify-end'>
+                                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${category.status === 1 ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                                                {category.status === 1 ? 'Ativo' : 'Inativo'}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div className='mt-2'>
-                                        <p className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-1'>Categoria Pai</p>
-                                        <span className="block bg-gray-100 rounded-lg p-2 text-sm dark:bg-gray-800 dark:text-gray-200 min-h-[40px]">
-                                            {category.parent && typeof category.parent === 'object' && 'name' in category.parent
-                                                ? (
-                                                    <Link
-                                                        href={route('categories.edit', { id: category.parent.id })}
-                                                        className="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300"
-                                                    >
-                                                        {category.parent.name || `ID: ${category.parent_id}`}
-                                                    </Link>
-                                                )
-                                                : <span className="italic text-gray-400">Nenhuma</span>
-                                            }
-                                        </span>
+
+                                    <div className='mt-1 text-sm text-gray-700 dark:text-gray-300'>
+                                        <span className='text-gray-600 dark:text-gray-400'>Pai: </span>
+                                        {category.parent && typeof category.parent === 'object' && 'name' in category.parent ? (
+                                            <Link
+                                                href={route('categories.edit', { id: (category.parent as any).id })}
+                                                className="text-blue-600 dark:text-blue-400 hover:underline"
+                                            >
+                                                {(category.parent as any).name || `ID: ${category.parent_id}`}
+                                            </Link>
+                                        ) : (
+                                            <span className="italic text-gray-400">Nenhuma</span>
+                                        )}
                                     </div>
-                                    <div className='mt-2'>
-                                        <p className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-1'>Status</p>
-                                        <span className="block bg-gray-100 rounded-lg p-2 text-sm dark:bg-gray-800 dark:text-gray-200 min-h-[40px]">
-                                            {category.status === 1
-                                                ? <span className="text-green-600 dark:text-green-400 font-semibold">Ativo</span>
-                                                : <span className="text-red-600 dark:text-red-400 font-semibold">Inativo</span>
-                                            }
-                                        </span>
+
+                                    <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                                        Criado em: {category.created_at ? new Date(category.created_at).toLocaleDateString('pt-BR') : '-'}
                                     </div>
-                                    <div className='mt-2'>
-                                        <p className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-1'>Criado em</p>
-                                        <span className="block bg-gray-100 rounded-lg p-2 text-sm dark:bg-gray-800 dark:text-gray-200 min-h-[40px]">
-                                            {category.created_at
-                                                ? new Date(category.created_at).toLocaleDateString('pt-BR')
-                                                : <span className="italic text-gray-400">-</span>
-                                            }
-                                        </span>
-                                    </div>
-                                    <div className='flex gap-2 mt-4 justify-end'>
+
+                                    <div className='flex gap-1.5 mt-2 justify-end'>
                                         {(can('categories_delete') && (category.user_id != null)) && (
-                                            <DangerButton
+                                            <DangerButton size='sm'
                                                 onClick={() => confirmCategoryDeletion(category.id)}
-                                                className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-red-600 transition-colors"
                                                 title="Deletar categoria"
                                             >
-                                                <Trash className='w-5 h-5' />
+                                                <Trash className='w-4 h-4' />
                                             </DangerButton>
                                         )}
                                         {(can('categories_edit') &&  (category.user_id != null)) && (
                                             <Link href={route('categories.edit', { id: category.id })}>
-                                                <SecondaryButton
-                                                    className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                                                    title="Editar categoria"
-                                                >
-                                                    <Edit className='w-5 h-5' />
+                                                <SecondaryButton size='sm' title="Editar categoria">
+                                                    <Edit className='w-4 h-4' />
                                                 </SecondaryButton>
                                             </Link>
                                         )}
@@ -153,14 +128,25 @@ export default function Index({
                 </div>
             </section>
 
+            {can('categories_create') && (
+                <Link href={route('categories.create')}>
+                    <button
+                        aria-label="Nova categoria"
+                        className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                    >
+                        <Plus className='w-6 h-6' />
+                    </button>
+                </Link>
+            )}
+
             {categoryToDelete && (
                 <Modal show={confirmingCategoryDeletion} onClose={closeModal}>
-                    <form onSubmit={(e) => { e.preventDefault(); deleteCategory(); }} className="p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                    <form onSubmit={(e) => { e.preventDefault(); deleteCategory(); }} className="p-6">
+                        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                             Tem certeza que deseja deletar a categoria <span className="font-bold">{categoryToDelete.name}</span>?
                         </h2>
 
-                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 mb-6">
+                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                             Uma vez que a categoria é deletada, todos os seus recursos e dados serão permanentemente deletados.
                         </p>
 

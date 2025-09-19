@@ -54,8 +54,8 @@ export default function Edit({
         >
             <Head title={ isEdit ? 'Editar Categoria' : 'Criar Categoria' } />
 
-            <section className='py-12 px-4 text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <section className='px-4 text-gray-800 dark:text-gray-200'>
+                <div className="mx-auto sm:px-2 lg:px-2">
                     <div className="mb-4">
                         <Link href={ route('categories.index') }>
                             <SecondaryButton>Voltar</SecondaryButton>

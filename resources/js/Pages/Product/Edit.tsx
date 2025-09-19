@@ -83,13 +83,13 @@ export default function Edit({
             user={auth.user}
             header={
                 <h2 className="">
-                    {isEdit ? `Editar produto: ${product.data.name}` : 'Criar produto'}
+                    {isEdit ? `Editar produto` : 'Criar produto'}
                 </h2>
             }
         >
             <Head title={isEdit ? 'Editar produto' : 'Criar produto'} />
             
-            <section className='py-12 px-4 text-gray-800 dark:text-gray-200'>
+            <section className='px-2 text-gray-800 dark:text-gray-200'>
                 <div className="mx-auto">
 
                     <div className="mb-4">
@@ -99,9 +99,9 @@ export default function Edit({
                     </div>
 
                     <div className='bg-white border p-3 rounded dark:border-gray-600 dark:bg-slate-800'>
-                        <form onSubmit={submit} className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">                            
+                        <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">                            
                             <div className="w-full col-span-1 md:col-span-2 lg:col-span-3">
-                                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <div className='w-full'>
                                         <InputLabel htmlFor="name" value="Nome" />
 

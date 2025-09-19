@@ -36,7 +36,7 @@ class OrderPaymentsController extends Controller
         $this->authorize('update', $order);
 
         try {
-            if (!in_array($order->status, ['pending', 'in_progress'])) {
+            if (in_array($order->status, ['completed', 'canceled'])) {
                 $orderStatuses = [ 'pending' => 'Pendente', 'in_progress' => 'Em andamento', 'completed' => 'Finalizado', 'canceled' => 'Cancelado' ];
                 $currentStatus = $orderStatuses[$order->status] ?? $order->status;
 

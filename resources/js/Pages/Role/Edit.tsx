@@ -6,7 +6,7 @@ import SecondaryButton from "@/Components/SecondaryButton";
 import TextInput from "@/Components/TextInput";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
-import { Permission } from "@/types/permission";
+import { Permission } from "@/types/Permission";
 import { Role } from "@/types/Role";
 import { Transition } from "@headlessui/react";
 import { Head, Link, useForm } from "@inertiajs/react";
@@ -112,14 +112,14 @@ export default function Edit({
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     {isEdit
-                        ? `Editar Função - ${role.data.display_name}`
+                        ? `Editar Função`
                         : "Nova Função"}
                 </h2>
             }
         >
-            <Head title={isEdit ? "Editar Município" : "Criar Município"} />
+            <Head title={isEdit ? "Editar Função" : "Criar Função"} />
 
-            <section className="py-12 px-4 text-gray-800 dark:text-gray-200">
+            <section className="px-4 text-gray-800 dark:text-gray-200">
                 <div className="mx-auto lg:px-8">
                     <div className="mb-4">
                         <Link href={route("role.index")}>

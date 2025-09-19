@@ -54,8 +54,8 @@ export default function Page({ auth }: PageProps) {
                 </h2>
             }>
             <Head title={isEdit ? 'Editar Usuário' : 'Criar Usuário'} />
-            <section className='py-8 px-4 text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto lg:px-8">
+            <section className='px-2 text-gray-800 dark:text-gray-200'>
+                <div className="mx-auto lg:px-2">
                     <div className="mb-4">
                         <Link href={'/usuarios'}>
                             <SecondaryButton>Voltar</SecondaryButton>

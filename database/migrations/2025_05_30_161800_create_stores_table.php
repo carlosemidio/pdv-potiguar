@@ -19,10 +19,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug');
             $table->string('email')->nullable();
-            $table->unique(['user_id', 'email'], 'user_email_unique');
             $table->string('phone')->nullable();
             $table->string('domain')->unique();
-            $table->unique(['city_id', 'domain'], 'city_domain_unique');
             $table->string('description')->nullable();
             $table->text('content')->nullable();
             $table->string('latitude');

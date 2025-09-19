@@ -40,8 +40,8 @@ export default function Edit({
         >
             <Head title={ isEdit ? 'Editar Marca' : 'Criar Marca' } />
 
-            <section className='py-12 px-4 text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <section className='px-2 text-gray-800 dark:text-gray-200'>
+                <div className="mx-auto">
                     <div className="mb-4">
                         <Link href={ route('brands.index') }>
                             <SecondaryButton>Voltar</SecondaryButton>

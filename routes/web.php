@@ -19,6 +19,7 @@ use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OrderDiscountController;
 use App\Http\Controllers\OrderPaymentsController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\PermissionController;
@@ -118,6 +119,9 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('/pedidos/{id}/finish', [OrdersController::class, 'finish'])
         ->name('orders.finish');
+
+    Route::patch('/pedidos/{id}/desconto', [OrderDiscountController::class, 'applyDiscount'])
+        ->name('orders.applyDiscount');
 
     Route::resource('/itens-pedido', App\Http\Controllers\OrderItemsController::class)
         ->only(['store', 'destroy'])

@@ -142,7 +142,7 @@ class OrdersController extends Controller
                     ->with('fail', 'Erro ao criar pedido.');
             }
 
-            return redirect()->route('orders.index')
+            return redirect()->route('orders.show', $order->id)
                 ->with('success', 'Pedido criado com sucesso!');
         } catch (\Exception $e) {
             return redirect()->back()
@@ -260,9 +260,9 @@ class OrdersController extends Controller
         $this->authorize('update', $order);
 
         try {
-            if (!in_array($order->status, [OrderStatus::COMPLETED->value, OrderStatus::IN_PROGRESS->value])) {
+            if (in_array($order->status, [OrderStatus::COMPLETED->value, OrderStatus::CANCELED->value])) {
                 return redirect()->back()
-                    ->with('fail', 'Apenas pedidos pendentes ou em andamento podem ser finalizados.');
+                    ->with('fail', 'Não é possível finalizar um pedido que já está finalizado ou cancelado.');
             }
 
             if ($order->items->isEmpty()) {

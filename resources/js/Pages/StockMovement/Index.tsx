@@ -66,7 +66,7 @@ export default function Index({
             <Head title="Movimentação de Estoque" />
 
             <section className='py-2 px-4 text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto lg:px-8">
+                <div className="mx-auto lg:px-2">
                     <div className="mb-6">
                         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 flex flex-col md:flex-row md:items-end gap-4 border border-gray-200 dark:border-gray-700">
                             <form className="flex flex-col md:flex-row gap-4 w-full" onSubmit={(e) => { e.preventDefault(); getFilters(route('stock-movement.index'), { preserveState: true }); }}>
@@ -118,18 +118,19 @@ export default function Index({
                     </div>
 
                     {can('stock-movements_create') && (
-                        <Link href={route('stock-movement.create')} className="fixed bottom-6 right-6 z-10">
+                        <Link href={route('stock-movement.create')} className="fixed bottom-14 right-6 z-10">
                             <PrimaryButton className="rounded-full w-12 h-12 p-0 flex items-center justify-center shadow-lg">
                                 <Plus className="w-6 h-6" />
                             </PrimaryButton>
                         </Link>
                     )}
+                    
                     <div className="mt-4">
                         {items.length > 0 ? (
-                            <div className="relative border-l border-gray-200 dark:border-gray-700">
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                                 {items.map((item) => (
-                                    <div key={item.id} className="relative pl-4 sm:pl-6 pb-6">
-                                        <span className={`absolute -left-1.5 top-2 w-3 h-3 rounded-full border border-white dark:border-gray-800 ${item.type === 'in' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                    <div key={item.id} className="relative p-3 pl-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                                        <span className={`absolute left-0 top-0 h-full w-1 ${item.type === 'in' ? 'bg-green-500' : 'bg-red-500'}`} />
 
                                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                                             <div>

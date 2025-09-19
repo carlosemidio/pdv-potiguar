@@ -7,7 +7,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { User } from '@/types/User';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Edit, LogIn, ShieldCheck, ShieldX } from 'lucide-react';
+import { Edit, LogIn, ShieldCheck, ShieldX, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import Pagination from '@/Components/Pagination/Pagination';
@@ -72,64 +72,53 @@ export default function Page({ auth }: PageProps) {
         >
             <Head title="Usuários" />
 
-            <section className='py-12 px-4 text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto max-w-7xl lg:px-8">
-
-                    <div className='flex justify-end'>
-                        {can('users_create') && (
-                            <Link href={route('user.create')}>
-                                <PrimaryButton>
-                                    Novo Usuário
-                                </PrimaryButton>
-                            </Link>
-                        )}
-                    </div>
-                    
-                    <div className="mb-6 mt-4">
+            <section className='px-3 text-gray-800 dark:text-gray-200'>
+                <div className="mx-auto lg:px-2">
+                    <div className="mb-3 mt-3">
                         <UsersFilterBar filters={{ ...filters }} />
                     </div>
 
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-4'>
+                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3'>
                         {
                             users?.data?.map((user) => (
-                                <Card key={user.uuid} className='relative min-h-40 flex flex-col justify-between'>
-                                    <p className='font-semibold'>{user.name}</p>
-                                    <p className='text-sm'>{user.email}</p>
-                                    <div className='mt-4 flex justify-end absolute top-0 right-2'>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${user.status ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                                <Card key={user.uuid} className='relative flex flex-col justify-between p-3 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'>
+                                    <p className='font-semibold text-base truncate'>{user.name}</p>
+                                    <p className='text-sm text-gray-700 dark:text-gray-300 truncate'>{user.email}</p>
+                                    <div className='flex justify-end absolute top-2 right-2'>
+                                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${user.status ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
                                             {user.status ? 'Ativo' : 'Inativo'}
                                         </span>
                                     </div>
-                                    <div className='mt-4'>
-                                        <p className='text-sm mb-1'>Funções</p>
-                                        <div className='flex gap-1'>
+                                    <div className='mt-1'>
+                                        <p className='text-sm mb-1 text-gray-600 dark:text-gray-400'>Funções</p>
+                                        <div className='flex gap-1.5 flex-wrap'>
                                             {user.roles?.map((role) => (
-                                                <span key={role.id} className="bg-gray-100 rounded-lg p-1 text-sm dark:bg-gray-700">
+                                                <span key={role.id} className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs">
                                                     {role.display_name}
                                                 </span>
                                             ))}
                                         </div>
                                     </div>
-                                    <div className='flex gap-2 mt-2 justify-end'>
+                                    <div className='flex gap-1.5 mt-2 justify-end'>
                                         {can('users_edit') && (
                                             <>
-                                                <SecondaryButton>
-                                                    <LogIn className='w-5 h-5' onClick={() => loginAsUser(user.uuid)} />
+                                                <SecondaryButton size='sm' title='Entrar como usuário' onClick={() => loginAsUser(user.uuid)}>
+                                                    <LogIn className='w-4 h-4' />
                                                 </SecondaryButton>
 
                                                 {user.status ? (
-                                                    <DangerButton onClick={() => changeUserStatus(user.uuid)}>
-                                                        { <ShieldX className='w-5 h-5' /> }
+                                                    <DangerButton size='sm' title='Desabilitar usuário' onClick={() => changeUserStatus(user.uuid)}>
+                                                        { <ShieldX className='w-4 h-4' /> }
                                                     </DangerButton>
                                                 ): (
-                                                    <PrimaryButton onClick={() => changeUserStatus(user.uuid)} >
-                                                        <ShieldCheck className='w-5 h-5' />
+                                                    <PrimaryButton size='sm' title='Habilitar usuário' onClick={() => changeUserStatus(user.uuid)} >
+                                                        <ShieldCheck className='w-4 h-4' />
                                                     </PrimaryButton> 
                                                 )}
 
                                                 <Link href={route('user.edit',  { uuid: user?.uuid })}>
-                                                    <SecondaryButton>
-                                                        <Edit className='w-5 h-5' />
+                                                    <SecondaryButton size='sm' title='Editar usuário'>
+                                                        <Edit className='w-4 h-4' />
                                                     </SecondaryButton>
                                                 </Link>
                                             </>
@@ -144,11 +133,22 @@ export default function Page({ auth }: PageProps) {
                 </div>
             </section>
 
+            {can('users_create') && (
+                <Link href={route('user.create')}>
+                    <button
+                        aria-label="Novo usuário"
+                        className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                    >
+                        <Plus className='w-6 h-6' />
+                    </button>
+                </Link>
+            )}
+
             {userToChangeStatus && (
                 <Modal show={confirmingUserDeletion} onClose={closeModal}>
                     <form onSubmit={(e) => { e.preventDefault(); changeStatus(); }} className="p-6">
                         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                            Tem certeza que deseja {userToChangeStatus.status ? 'desabilitar' : 'habiliar'} {userToChangeStatus.name}?
+                            Tem certeza que deseja {userToChangeStatus.status ? 'desabilitar' : 'habilitar'} {userToChangeStatus.name}?
                         </h2>
 
                         <div className="mt-6 flex justify-end">

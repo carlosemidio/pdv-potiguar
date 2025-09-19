@@ -151,10 +151,9 @@ export default function Edit({
         >
             <Head title={isEdit ? 'Editar loja' : 'Criar Loja'} />
             
-            <section className='py-12 px-4 text-gray-800 dark:text-gray-200'>
+            <section className='py-2 px-4 text-gray-800 dark:text-gray-200'>
                 <div className="mx-auto">
-
-                    <div className="mb-4">
+                    <div className="mb-1">
                         <Link href={route('store.index')}>
                             <SecondaryButton>Voltar</SecondaryButton>
                         </Link>

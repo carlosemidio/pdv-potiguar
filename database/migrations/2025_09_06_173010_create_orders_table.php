@@ -23,6 +23,9 @@ return new class extends Migration
             $table->string('status')->default('pending')
                 ->comment('Ex: pending, in_progress, completed, cancelled');
             $table->decimal('amount', 10, 2)->default(0);
+            $table->boolean('discount_type')->default(false)
+                ->comment('false = fixed amount, true = percentage');
+            $table->decimal('discount_value', 10, 2)->default(0);
             $table->decimal('discount', 10, 2)->default(0);
             $table->decimal('service_fee', 10, 2)->default(0);
             $table->decimal('total_amount', 10, 2)->default(0);

@@ -7,6 +7,7 @@ use App\Models\StoreProductVariant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class StoreProductVariantController extends Controller
@@ -17,14 +18,14 @@ class StoreProductVariantController extends Controller
     public function index(Request $request)
     {
         $this->authorize('store-product-variants_view');
-        $user = User::with('store')->find(Auth::id());
+        $user = User::find(Auth::id());
 
-        if (!$user->store) {
+        if ($user->store_id === null) {
             return redirect(route('dashboard'))
                 ->with('fail', 'Usuário não está associado a nenhuma loja. Por favor, crie uma loja primeiro.');
         }
 
-        $query = StoreProductVariant::where('store_id', $user->store->id)
+        $query = StoreProductVariant::where('store_id', $user->store_id)
             ->with(['productVariant.image', 'productVariant.product', 'store']);
 
         if (!request()->user()->hasPermission('store-product-variants_view', true)) {
@@ -35,8 +36,8 @@ class StoreProductVariantController extends Controller
             $query->where('tenant_id', request()->user()->tenant_id);
         }
 
-        if ($user->store != null) {
-            $query->where('store_id', $user->store->id);
+        if ($user->store_id != null) {
+            $query->where('store_id', $user->store_id);
         }
 
         if ($request->has('search') && !empty($request->search)) {
@@ -95,9 +96,9 @@ class StoreProductVariantController extends Controller
             'stock_quantity.min' => 'A quantidade em estoque deve ser no mínimo 0.',
         ]);
 
-        $user = User::with('store')->find(Auth::id());
+        $user = User::find(Auth::id());
 
-        if (!$user->store) {
+        if ($user->store_id === null) {
             return redirect()->back()
                 ->with('fail', 'Usuário não está associado a nenhuma loja.');
         }
@@ -105,10 +106,24 @@ class StoreProductVariantController extends Controller
         $dataForm = $request->all();
         $dataForm['user_id'] = $user->id;
         $dataForm['tenant_id'] = $user->tenant_id;
-        $dataForm['store_id'] = $user->store->id;
+        $dataForm['store_id'] = $user->store_id;
 
         try {
-            $storeProductVariant = StoreProductVariant::create($dataForm);
+            $storeProductVariant = DB::transaction(function () use ($dataForm) {
+                $storeProductVariant = StoreProductVariant::create($dataForm);
+
+                if ($dataForm['addons'] ?? false) {
+                    foreach ($dataForm['addons'] as $addon) {
+                        $storeProductVariant->addons()->create([
+                            'user_id' => $dataForm['user_id'],
+                            'name' => $addon['name'],
+                            'price' => $addon['price'] ?? 0,
+                        ]);
+                    }
+                }
+
+                return $storeProductVariant;
+            });
 
             if ($storeProductVariant instanceof StoreProductVariant) {
                 return redirect()->back()
@@ -133,7 +148,7 @@ class StoreProductVariantController extends Controller
 
         $this->authorize('update', $storeProductVariant);
 
-        $storeProductVariant->load(['productVariant.product', 'store']);
+        $storeProductVariant->load(['productVariant.product', 'store', 'addons']);
 
         return Inertia::render('StoreProductVariant/Form', [
             'storeProductVariant' => new StoreProductVariantResource($storeProductVariant),
@@ -178,6 +193,37 @@ class StoreProductVariantController extends Controller
 
         try {
             if ($storeProductVariant->update($dataForm)) {
+                if (isset($dataForm['addons'])) {
+                    // Atualiza os addons
+                    $existingAddonIds = $storeProductVariant->addons()->pluck('id')->toArray();
+                    $submittedAddonIds = array_filter(array_column($dataForm['addons'], 'id'));
+
+                    // Deleta os addons que foram removidos
+                    $addonsToDelete = array_diff($existingAddonIds, $submittedAddonIds);
+
+                    if (count($addonsToDelete) > 0) {
+                        $storeProductVariant->addons()->whereIn('id', $addonsToDelete)->delete();
+                    }
+
+                    // Adiciona ou atualiza os addons enviados
+                    foreach ($dataForm['addons'] as $addon) {
+                        if (isset($addon['id']) && in_array($addon['id'], $existingAddonIds)) {
+                            // Atualiza o addon existente
+                            $storeProductVariant->addons()->where('id', $addon['id'])->update([
+                                'name' => $addon['name'],
+                                'price' => $addon['price'] ?? 0,
+                            ]);
+                        } else {
+                            // Cria um novo addon
+                            $storeProductVariant->addons()->create([
+                                'user_id' => Auth::id(),
+                                'name' => $addon['name'],
+                                'price' => $addon['price'] ?? 0,
+                            ]);
+                        }
+                    }
+                }
+
                 return redirect()->back()
                     ->with('success', 'Variante de produto atualizada com sucesso.');
             }

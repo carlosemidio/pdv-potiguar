@@ -33,6 +33,17 @@ class Store extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_store')
+            ->withPivot('is_default');
+    }
+
     public function city()
     {
         return $this->belongsTo(City::class);

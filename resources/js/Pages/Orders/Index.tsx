@@ -20,7 +20,7 @@ export default function Index({
     orders,
     tables,
     filters,
-}: PageProps<{ orders: PaginatedData<Order>, tables: Table[], filters: { status?: string; date_from?: string; date_to?: string; customer?: Customer  } }>) {
+}: PageProps<{ orders: PaginatedData<Order>, tables: { data: Table[] }, filters: { status?: string; date_from?: string; date_to?: string; customer?: Customer  } }>) {
     // Initialize form data
     const { data, setData, get, errors, processing } = useForm({
         status: filters.status || 'pending',
@@ -255,7 +255,7 @@ export default function Index({
 
                     {can('orders_create') && (
                         <>
-                            <OrderFormModal isOpen={isOpen} onClose={() => setIsOpen(false)} tables={tables} order={order} />
+                            <OrderFormModal isOpen={isOpen} onClose={() => setIsOpen(false)} tables={tables.data} order={order} />
 
                             <button
                                 aria-label="Novo pedido"

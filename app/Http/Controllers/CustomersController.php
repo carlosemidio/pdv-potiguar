@@ -68,7 +68,7 @@ class CustomersController extends Controller
 
             $user = User::find(Auth::user()->id);
             
-            if (!$user || !$user->store) {
+            if (!$user || !$user->store_id) {
                 return redirect()->back()
                     ->with('fail', 'Usuário não está associado a uma loja válida.');
             }

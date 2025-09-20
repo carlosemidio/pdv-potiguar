@@ -6,6 +6,7 @@ use App\Http\Requests\UserFormRequest;
 use App\Http\Resources\TenantResource;
 use App\Http\Resources\UserResource;
 use App\Models\Role;
+use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
@@ -31,6 +32,11 @@ class UserController extends Controller
             $query->where('user_id', $user->id);
         }
 
+        if ($user->tenant_id != null) {
+            $query->where('tenant_id', $user->tenant_id)
+                ->where('id', '!=', $user->id);
+        }
+
         if (($request_data['status'] != null) && in_array($request_data['status'], [1, 0])) {
             $query->where('status', $request_data['status']);
         }
@@ -39,7 +45,7 @@ class UserController extends Controller
             $query->where($request_data['field'], 'like', '%' . $request_data['search'] . '%');
         }
 
-        $users = $query->with(['roles'])
+        $users = $query->with('roles')
             ->orderBy('created_at', 'asc')
             ->paginate(12)
             ->withQueryString();
@@ -57,17 +63,31 @@ class UserController extends Controller
     {
         $this->authorize('create', User::class);
         $authUser = User::findOrFail(Auth::user()->id);
-    
-        $viewAllRoles = $authUser->hasPermission('roles_view', true);
+        $rolesQuery = Role::query();
+        $storesQuery = Store::query();
 
-        if ($viewAllRoles) {
-            $roles = Role::all();
-        } else {
-            $roles = $authUser->roles;
+        if (!$authUser->hasPermission('roles_view', true)) {
+            $rolesQuery->where('user_id', $authUser->id);
         }
+
+        if ($authUser->tenant_id != null) {
+            $rolesQuery->where('tenant_id', $authUser->tenant_id);
+        }
+
+        if (!$authUser->hasPermission('stores_view', true)) {
+            $storesQuery->where('user_id', $authUser->id);
+        }
+
+        if ($authUser->tenant_id != null) {
+            $storesQuery->where('tenant_id', $authUser->tenant_id);
+        }
+
+        $roles = $rolesQuery->get();
+        $stores = $storesQuery->get();
 
         return Inertia::render('User/Edit', [
             'roles' => $roles,
+            'stores' => $stores,
         ]);
     }
 
@@ -83,11 +103,28 @@ class UserController extends Controller
         $formData['user_id'] = $loggedUser->id;
         $user = User::create($formData);
         
-        if ($loggedUser->hasPermission('roles_view', true)) {
-            $loggedUserRoles = Role::all();
-        } else {
-            $loggedUserRoles = Role::where('user_id', $loggedUser->id)->get();
+        $authUser = User::findOrFail(Auth::user()->id);
+        $rolesQuery = Role::query();
+        $storesQuery = Store::query();
+
+        if (!$authUser->hasPermission('roles_view', true)) {
+            $rolesQuery->where('user_id', $authUser->id);
         }
+
+        if ($authUser->tenant_id != null) {
+            $rolesQuery->where('tenant_id', $authUser->tenant_id);
+        }
+
+        if (!$authUser->hasPermission('stores_view', true)) {
+            $storesQuery->where('user_id', $authUser->id);
+        }
+
+        if ($authUser->tenant_id != null) {
+            $storesQuery->where('tenant_id', $authUser->tenant_id);
+        }
+
+        $loggedUserRoles = $rolesQuery->get();
+        $loggedUserStores = $storesQuery->get();
 
         $roles = [];
 
@@ -97,7 +134,16 @@ class UserController extends Controller
             }
         }
 
+        $stores = [];
+
+        foreach ($loggedUserStores as $store) {
+            if (in_array($store->id, $request->stores)) {
+                $stores[] = $store->id;
+            }
+        }
+
         $user->roles()->sync($roles);
+        $user->stores()->sync($stores);
 
         event(new Registered($user));
 
@@ -125,21 +171,40 @@ class UserController extends Controller
         $user = User::where('uuid', $uuid)->firstOrFail();
         $this->authorize('update', $user);
 
-        $user->load('roles.permissions', 'tenant');
+        $user->load('roles.permissions', 'tenant', 'stores');
 
         $authUser = User::findOrFail(Auth::user()->id);
-    
-        $viewAllRoles = $authUser->hasPermission('roles_view', true);
+        $rolesQuery = Role::query();
+        $storesQuery = Store::query();
 
-        if ($viewAllRoles) {
-            $roles = Role::all();
-        } else {
-            $roles = $authUser->roles;
+        if (($authUser->id == $user->id) && ($authUser->tenant_id != null)) {
+            return redirect()->back()
+                ->with('fail', 'Você não pode editar este usuário!');
         }
+
+        if (!$authUser->hasPermission('roles_view', true)) {
+            $rolesQuery->where('user_id', $authUser->id);
+        }
+
+        if ($authUser->tenant_id != null) {
+            $rolesQuery->where('tenant_id', $authUser->tenant_id);
+        }
+
+        if (!$authUser->hasPermission('stores_view', true)) {
+            $storesQuery->where('user_id', $authUser->id);
+        }
+
+        if ($authUser->tenant_id != null) {
+            $storesQuery->where('tenant_id', $authUser->tenant_id);
+        }
+
+        $roles = $rolesQuery->get();
+        $stores = $storesQuery->get();
 
         return Inertia::render('User/Edit', [
             'user' => new UserResource($user),
-            'roles' => $roles
+            'roles' => $roles,
+            'stores' => $stores
         ]);
     }
 
@@ -163,24 +228,45 @@ class UserController extends Controller
 
         $user->update($formData);
 
-        $loggedUserRoles = [];
+        $rolesQuery = Role::query();
+        $storesQuery = Store::query();
 
-        if ($loggedUser->hasPermission('roles_view', true)) {
-            $loggedUserRoles = Role::all();
-        } else {
-            $loggedUserRoles = Role::where('user_id', $loggedUser->id)->get();
+        if (!$loggedUser->hasPermission('roles_view', true)) {
+            $rolesQuery->where('user_id', $loggedUser->id);
         }
 
-        $rolesIds = [];
+        if ($loggedUser->tenant_id != null) {
+            $rolesQuery->where('tenant_id', $loggedUser->tenant_id);
+        }
+
+        if (!$loggedUser->hasPermission('stores_view', true)) {
+            $storesQuery->where('user_id', $loggedUser->id);
+        }
+
+        if ($loggedUser->tenant_id != null) {
+            $storesQuery->where('tenant_id', $loggedUser->tenant_id);
+        }
+
+        $loggedUserRoles = $rolesQuery->get();
+        $loggedUserStores = $storesQuery->get();
+
+        $roles = [];
+        $stores = [];
      
         foreach ($loggedUserRoles as $role) {
             if (in_array($role->id, $request->roles)) {
-                $rolesIds[] = $role->id;
+                $roles[] = $role->id;
             }
         }
-     
-        $user->roles()->sync($rolesIds);
-        event(new Registered($user));
+
+        foreach ($loggedUserStores as $store) {
+            if (in_array($store->id, $request->stores)) {
+                $stores[] = $store->id;
+            }
+        }
+
+        $user->stores()->sync($stores);
+        $user->roles()->sync($roles);
      
         if ($user->save()) {
             return redirect()->route('user.index')

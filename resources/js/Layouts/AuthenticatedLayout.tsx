@@ -198,15 +198,6 @@ export default function Authenticated({
                                 </NavLinkGroup>
                             )}
 
-                            {can('addons_view') && (
-                                <NavLink href={route('addons.index')} active={route().current('addons.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <MdAddCircle className="w-6 h-6" />
-                                        <p>Complementos</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
                             {can('clients_view') && (
                                 <NavLink href={route('clientes.index')} active={route().current('clientes.index')}>
                                     <div className='flex gap-2 items-center'>

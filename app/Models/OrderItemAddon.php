@@ -12,7 +12,7 @@ class OrderItemAddon extends Model
 
     protected $fillable = [
         'order_item_id',
-        'addon_id',
+        'sp_variant_addon_id',
         'quantity',
         'unit_price',
         'total_price',
@@ -25,6 +25,6 @@ class OrderItemAddon extends Model
 
     public function addon()
     {
-        return $this->belongsTo(Addon::class);
+        return $this->belongsTo(StoreProductVariantAddon::class, 'sp_variant_addon_id');
     }
 }

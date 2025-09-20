@@ -16,28 +16,54 @@ class UserSeeder extends Seeder
     {       
         // Dev User
         $user_dev = User::updateOrCreate([
+            'user_id' => 1, // Assuming the first user is the dev user
             'name' => 'dev',
             'email' => 'carlosemidiopereira@gmail.com',
-            'user_id' => 1, // Assuming the first user is the dev user
         ], [ 'password' => bcrypt('123') ]);
 
-        // Lojista
-        $user_lojista = User::updateOrCreate([
-            'name' => 'lojista',
-            'email' => 'teste1@email.com',
-            'user_id' => 1, // Assuming the second user is the lojista
+        $byRenataPlusTenant = \App\Models\Tenant::firstOrCreate([
+            'name' => 'By Renata plus',
+            'domain' => 'byrenataplus',
+            'status' => 1
+        ]);
+
+        $kalineModasTenant = \App\Models\Tenant::firstOrCreate([
+            'name' => 'Kaline Modas',
+            'domain' => 'kalinemodas',
+            'status' => 1
+        ]);
+
+        $pizariaImperialTenant = \App\Models\Tenant::firstOrCreate([
+            'name' => 'Pizaria Imperial',
+            'domain' => 'pizariaimperial',
+            'status' => 1
+        ]);
+
+        $byRenataPlusUser = User::updateOrCreate([
+            'user_id' => $user_dev->id,
+            'tenant_id' => $byRenataPlusTenant->id,
+            'name' => 'Renata Pinheiro',
+            'email' => 'renatapinheiro@email.com',
         ], [ 'password' => bcrypt('123') ]);
 
-        $user_restaurant = User::updateOrCreate([
-            'name' => 'restaurant',
-            'email' => 'teste2@email.com',
-            'user_id' => 1, // Assuming the third user is the restaurant
+        $kalineModasUser = User::updateOrCreate([
+            'user_id' => $user_dev->id,
+            'tenant_id' => $kalineModasTenant->id,
+            'name' => 'Kaline Modas',
+            'email' => 'kalinemodas@email.com',
+        ], [ 'password' => bcrypt('123') ]);
+
+        $pizariaImperialUser = User::updateOrCreate([
+            'user_id' => $user_dev->id,
+            'tenant_id' => $pizariaImperialTenant->id,
+            'name' => 'Ricardo',
+            'email' => 'ricardo@email.com',
         ], [ 'password' => bcrypt('123') ]);
 
         // Dev role
         $role_dev = Role::create([
-            'name' => 'Dev',
             'user_id' => $user_dev->id,
+            'name' => 'Dev',
         ]);
 
         $user_dev->roles()->attach($role_dev->id);
@@ -45,123 +71,41 @@ class UserSeeder extends Seeder
         // Lojista role
         $role_lojista = Role::create([
             'name' => 'Lojista',
-            'user_id' => $user_lojista->id,
+            'user_id' => $user_dev->id,
         ]);
 
         // Restaurant role
         $role_restaurant = Role::create([
             'name' => 'Restaurant',
-            'user_id' => $user_restaurant->id,
+            'user_id' => $user_dev->id,
         ]);
 
         // Permissions for Lojista
-        $store_permissions = [
-            'stores_view',
-            'stores_create',
-            'stores_edit',
-            'products_view',
-            'products_create',
-            'products_edit',
-            'products_delete',
-            'product-variants_view',
-            'product-variants_create',
-            'product-variants_edit',
-            'product-variants_delete',
-            'store-product-variants_view',
-            'store-product-variants_create',
-            'store-product-variants_edit',
-            'store-product-variants_delete',
-            'cities_view',
-            'categories_view',
-            'categories_create',
-            'categories_edit',
-            'categories_delete',
-            'brands_view',
-            'brands_create',
-            'brands_edit',
-            'brands_delete',
-            'customers_view',
-            'customers_create',
-            'customers_edit',
-            'customers_delete',
-            'orders_view',
-            'orders_create',
-            'orders_edit',
-            'orders_delete',
-            'payments_view',
-            'payments_create',
-            'payments_edit',
-            'payments_delete',
-            'stock-movements_view',
-            'stock-movements_create',
-            'stock-movements_edit',
-            'stock-movements_delete',
-        ];
+        $store_role_permissions = config('store_role_permissions');
 
-        foreach ($store_permissions as $permissionName) {
-            $permission = Permission::where('name', $permissionName)->first();
-            $role_lojista->permissions()->attach($permission->id);
+        foreach ($store_role_permissions as $permissionData) {
+            foreach ($permissionData['actions'] as $action) {
+                $permission = Permission::where('name', "{$permissionData['name']}_{$action['action']}")->first();
+                if ($permission) {
+                    $role_lojista->permissions()->attach($permission->id, ['total_access' => $action['total_access']]);
+                }
+            }
         }
 
-        $user_lojista->roles()->attach($role_lojista->id);
+        $byRenataPlusUser->roles()->attach($role_lojista->id);
+        $kalineModasUser->roles()->attach($role_lojista->id);
 
-        $restorant_permissions = [
-            'stores_view',
-            'stores_create',
-            'stores_edit',
-            'cities_view',
-            'categories_view',
-            'categories_create',
-            'categories_edit',
-            'categories_delete',
-            'brands_view',
-            'brands_create',
-            'brands_edit',
-            'brands_delete',
-            'products_view',
-            'products_create',
-            'products_edit',
-            'products_delete',
-            'product-variants_view',
-            'product-variants_create',
-            'product-variants_edit',
-            'product-variants_delete',
-            'store-product-variants_view',
-            'store-product-variants_create',
-            'store-product-variants_edit',
-            'store-product-variants_delete',
-            'addons_view',
-            'addons_create',
-            'addons_edit',
-            'addons_delete',
-            'tables_view',
-            'tables_create',
-            'tables_edit',
-            'tables_delete',
-            'customers_view',
-            'customers_create',
-            'customers_edit',
-            'customers_delete',
-            'orders_view',
-            'orders_create',
-            'orders_edit',
-            'orders_delete',
-            'payments_view',
-            'payments_create',
-            'payments_edit',
-            'payments_delete',
-            'stock-movements_view',
-            'stock-movements_create',
-            'stock-movements_edit',
-            'stock-movements_delete',
-        ];
+        $restorant_role_permissions = config('restaurant_role_permissions');
 
-        // Permissions for Restaurant
-        foreach ($restorant_permissions as $permissionName) {
-            $permission = Permission::where('name', $permissionName)->first();
-            $role_restaurant->permissions()->attach($permission->id);
+        foreach ($restorant_role_permissions as $permissionData) {
+            foreach ($permissionData['actions'] as $action) {
+                $permission = Permission::where('name', "{$permissionData['name']}_{$action['action']}")->first();
+                if ($permission) {
+                    $role_restaurant->permissions()->attach($permission->id, ['total_access' => $action['total_access']]);
+                }
+            }
         }
 
-        $user_restaurant->roles()->attach($role_restaurant->id);
+        $pizariaImperialUser->roles()->attach([$role_lojista->id, $role_restaurant->id]);
     }
 }

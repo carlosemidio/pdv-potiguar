@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('order_item_addons', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_item_id')->constrained()->onDelete('cascade');
-            $table->foreignId('addon_id')->constrained()->onDelete('cascade');
+            $table->foreignId('sp_variant_addon_id')->constrained('store_product_variant_addons')->onDelete('cascade');
             $table->integer('quantity')->default(1);
             $table->decimal('unit_price', 10, 2);
             $table->decimal('total_price', 10, 2);

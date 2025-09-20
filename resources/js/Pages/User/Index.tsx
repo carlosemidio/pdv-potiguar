@@ -72,7 +72,7 @@ export default function Page({ auth }: PageProps) {
         >
             <Head title="Usuários" />
 
-            <section className='px-3 text-gray-800 dark:text-gray-200'>
+            <section className='text-gray-800 dark:text-gray-200'>
                 <div className="mx-auto lg:px-2">
                     <div className="mb-3 mt-3">
                         <UsersFilterBar filters={{ ...filters }} />
@@ -94,7 +94,7 @@ export default function Page({ auth }: PageProps) {
                                         <div className='flex gap-1.5 flex-wrap'>
                                             {user.roles?.map((role) => (
                                                 <span key={role.id} className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs">
-                                                    {role.display_name}
+                                                    {role.name}
                                                 </span>
                                             ))}
                                         </div>

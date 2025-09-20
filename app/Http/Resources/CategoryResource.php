@@ -17,6 +17,7 @@ class CategoryResource extends JsonResource
             'parent' => $this->whenLoaded('parent', function () {
                 return new CategoryResource($this->parent);
             }),
+            'status' => $this->status,
             'created_at' => $this->created_at,
         ];
     }

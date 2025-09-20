@@ -8,10 +8,10 @@ import { useForm } from "@inertiajs/react";
 import { Order } from "@/types/Order";
 import { useState } from "react";
 import { OrderItem } from "@/types/OrderItem";
-import { ProductAddon } from "@/types/ProductAddon";
 import OrderItemAddonsForm from "../OrderItemAddonsForm";
 import SearchableStoreProductVariantsSelect from "../SearchableStoreProductVariantsSelect";
 import { StoreProductVariant } from "@/types/StoreProductVariant";
+import { Addon } from "@/types/Addon";
 
 interface OrderItemFormModalProps {
     isOpen: boolean;
@@ -30,7 +30,7 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
         addons: orderItem?.item_addons || [],
     });
 
-    const [productAddons, setProductAddons] = useState<ProductAddon[]>([]);
+    const [addons, setAddons] = useState<Addon[]>([]);
     const [storeProductVariant, setStoreProductVariant] = useState<StoreProductVariant | null>(null);
 
     const handleQuantityChange = (quantity: number) => {
@@ -39,6 +39,7 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
 
     const handleVariantChange = (storeProductVariant: StoreProductVariant | null) => {
         setStoreProductVariant(storeProductVariant);
+        setAddons(storeProductVariant ? storeProductVariant.addons ?? [] : []);
         setData({
             ...data,
             store_product_variant_id: storeProductVariant ? storeProductVariant.id : null,
@@ -64,7 +65,7 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
         // Torna obrigatório selecionar uma variação
         let addons = data.addons || [];
         addons = addons.map(addon => ({
-            addon_id: addon.addon_id,
+            sp_variant_addon_id: addon.sp_variant_addon_id,
             quantity: addon.quantity,
             unit_price: addon.unit_price,
             total_price: addon.total_price,
@@ -105,11 +106,11 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                             {errors.store_product_variant_id && <p className="text-red-600 text-sm mt-1">{errors.store_product_variant_id}</p>}
                         </div>
 
-                        {productAddons.length > 0 && (
+                        {addons.length > 0 && (
                             <div>
                                 <OrderItemAddonsForm
                                     orderItemAddons={data.addons}
-                                    productAddons={productAddons}
+                                    productAddons={addons}
                                     onChange={(newAddons) => setData('addons', newAddons)}
                                 />
                             </div>

@@ -1,7 +1,5 @@
 import { Order } from "./Order";
 import { OrderItemAddon } from "./OrderItemAddon";
-import { Product } from "./Product";
-import { ProductVariant } from "./ProductVariant";
 import { StoreProductVariant } from "./StoreProductVariant";
 
 export type OrderItem = {

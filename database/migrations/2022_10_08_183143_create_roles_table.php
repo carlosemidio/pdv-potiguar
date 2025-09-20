@@ -14,9 +14,11 @@ return new class extends Migration
         if (!Schema::hasTable('roles')) {
             Schema::create('roles', function (Blueprint $table) {
                 $table->id();
+                $table->foreignId('tenant_id')->nullable()->constrained('tenants')->onDelete('set null');
                 $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
                 $table->string('name');
                 $table->string('slug')->unique();
+                $table->softDeletes();
                 $table->timestamps();
             });
         }

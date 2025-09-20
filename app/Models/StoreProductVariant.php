@@ -31,4 +31,9 @@ class StoreProductVariant extends Model
     {
         return $this->belongsTo(ProductVariant::class);
     }
+
+    public function addons()
+    {
+        return $this->hasMany(StoreProductVariantAddon::class, 'sp_variant_id');
+    }
 }

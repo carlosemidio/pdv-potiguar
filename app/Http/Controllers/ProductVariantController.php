@@ -170,6 +170,15 @@ class ProductVariantController extends Controller
         $dataForm = $request->all();
 
         try {
+            $dataForm['name'] = '';
+            $attributeNames = [];
+            foreach ($dataForm['attributes'] as $attribute) {
+                // Ensure the attribute exists
+                $attributeNames[] = $attribute['value'];
+            }
+
+            $dataForm['name'] = $productVariant->product->name . ' - ' . implode(', ', $attributeNames);
+
             if ($productVariant->update($dataForm)) {
                 if (isset($dataForm['attributes']) && is_array($dataForm['attributes']) && count($dataForm['attributes']) > 0) {
                     $attributeNames = [];
@@ -197,21 +206,6 @@ class ProductVariantController extends Controller
                     if (!($product)) {
                         throw new \Exception('Produto associado à variante não encontrado.');
                     }
-
-                    // Generate and update the slug based on attributes
-                    $slug = $productVariant->generateSlugFromAttributes($product->name, $attributeNames);
-
-                    if ($slug !== $productVariant->slug) {
-                        // mover os arquivos antigos para o novo diretório
-                        foreach ($productVariant->images as $image) {
-                            $oldPath = $image->url;
-                            $newPath = str_replace($productVariant->slug, $slug, $oldPath);
-                            Storage::disk('public')->move($oldPath, $newPath);
-                        }
-                    }
-
-                    $productVariant->slug = $slug;
-                    $productVariant->save();
                 }
 
                 // Handle variant images

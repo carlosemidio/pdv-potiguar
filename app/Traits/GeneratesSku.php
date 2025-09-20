@@ -42,7 +42,7 @@ trait GeneratesSku
             }
 
             // SKU final
-            $variant->sku = "{$productPrefix}-{$variantPrefix}-" . str_pad($nextSeq, 3, '0', STR_PAD_LEFT);
+            $variant->sku = "{$productPrefix}-{$variantPrefix}-" . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
         });
     }
 }

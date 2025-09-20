@@ -41,8 +41,8 @@ class OrdersController extends Controller
             $ordersQuery->where('tenant_id', $user->tenant_id);
         }
 
-        if ($user->store != null) {
-            $ordersQuery->where('store_id', $user->store->id);
+        if ($user->store_id != null) {
+            $ordersQuery->where('store_id', $user->store_id);
         }
 
         $status = $request->input('status');
@@ -74,7 +74,7 @@ class OrdersController extends Controller
             ->withQueryString();
 
         if ($user->hasPermission('tables_view')) {
-            $tables = Table::where('store_id', $user->store->id)
+            $tables = Table::where('store_id', $user->store_id)
                 ->where('status', 'available')
                 ->get();
         }
@@ -101,11 +101,16 @@ class OrdersController extends Controller
                 'customer_id' => 'nullable|exists:customers,id',
             ]);
 
-            $user = User::with('store')->find(Auth::user()->id);
+            $user = User::find(Auth::user()->id);
+
+            if ($user->store_id == null) {
+                return redirect()->back()
+                    ->with('fail', 'Usuário não está associado a uma loja.');
+            }
 
             $data['user_id'] = Auth::user()->id;
             $data['tenant_id'] = $user->tenant_id;
-            $data['store_id'] = $user->store->id;
+            $data['store_id'] = $user->store_id;
             $data['status'] = OrderStatus::IN_PROGRESS->value;
 
             $order = DB::transaction(function () use ($data) {

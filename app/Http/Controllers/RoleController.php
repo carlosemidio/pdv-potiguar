@@ -28,6 +28,10 @@ class RoleController extends Controller
             $rolesQuery->where('user_id', $user->id);
         }
 
+        if ($user->tenant_id != null) {
+            $rolesQuery->where('tenant_id', $user->tenant_id);
+        }
+
         $roles = $rolesQuery->paginate(10);
 
         return Inertia::render('Role/Index', [
@@ -59,6 +63,7 @@ class RoleController extends Controller
         $user = User::find(Auth::id());
         $dataForm = $request->all();
         $dataForm['user_id'] = $user->id;
+        $dataForm['tenant_id'] = $user->tenant_id;
         $role = Role::create($dataForm);
 
         $permissions = Permission::filterByUserRoles($user)->pluck('id');

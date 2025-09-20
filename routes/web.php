@@ -89,9 +89,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('/movimentacoes-estoque', StockMovementController::class)
         ->names('stock-movement');
 
-    Route::resource('/complementos', AddonsController::class)
-        ->names('addons');
-
     Route::resource('/categorias', CategoriesController::class)
         ->names('categories');
 

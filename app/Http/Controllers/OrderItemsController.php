@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
-use App\Models\Addon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\StoreProductVariant;
+use App\Models\StoreProductVariantAddon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -55,6 +55,7 @@ class OrderItemsController extends Controller
                 $orderItem = $order->items()->create([
                     'store_product_variant_id' => $data['store_product_variant_id'] ?? null,
                     'quantity' => $data['quantity'],
+                    'cost_price' => $storeProductVariant->cost_price,
                     'unit_price' => $storeProductVariant->price,
                     'total_price' => ($storeProductVariant->price * $data['quantity']),
                 ]);
@@ -63,18 +64,18 @@ class OrderItemsController extends Controller
                     $addonsTotal = 0;
 
                     foreach ($data['addons'] as $addonData) {
-                        if (!isset($addonData['addon_id'])) {
+                        if (!isset($addonData['sp_variant_addon_id'])) {
                             continue;
                         }
 
-                        $addon = Addon::find($addonData['addon_id']);
+                        $addon = StoreProductVariantAddon::find($addonData['sp_variant_addon_id'] ?? 0);
 
                         if (!$addon) {
                             continue;
                         }
 
                         $orderItem->itemAddons()->create([
-                            'addon_id' => $addon->id,
+                            'sp_variant_addon_id' => $addon->id,
                             'quantity' => $addonData['quantity'] ?? 1, // Default to 1 if not specified
                             'unit_price' => $addon->price,
                             'total_price' => ($addon->price * ($addonData['quantity'] ?? 1)),

@@ -23,9 +23,9 @@ class StoreProductVariantListController extends Controller
     {
         $search = $request->search ?? '';
         $storeProductVariantsQuery = $this->storeProductVariant->query()
-            ->with(['productVariant.product']);
+            ->with(['productVariant', 'addons']);
 
-        $user = User::with('store')->find(Auth::id());
+        $user = User::find(Auth::id());
         
         if (!$user->hasPermission('store-product-variants_view', true)) {
             $storeProductVariantsQuery->where('user_id', Auth::id());
@@ -35,8 +35,8 @@ class StoreProductVariantListController extends Controller
             $storeProductVariantsQuery->where('tenant_id', $user->tenant_id);
         }
 
-        if ($user->store->id != null) {
-            $storeProductVariantsQuery->where('store_id', $user->store->id);
+        if ($user->store_id != null) {
+            $storeProductVariantsQuery->where('store_id', $user->store_id);
         }
 
         if ($search != '') {

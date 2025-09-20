@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('addons', function (Blueprint $table) {
+        Schema::create('store_product_variant_addons', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('sp_variant_id')->constrained('store_product_variants')->onDelete('cascade');
             $table->string('name');
-            $table->text('description')->nullable();
-            $table->decimal('price', 8, 2);
+            $table->decimal('price', 10, 2);
+            $table->unique(['sp_variant_id', 'name']);
             $table->softDeletes();
             $table->timestamps();
         });
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('addons');
+        Schema::dropIfExists('store_product_variant_addons');
     }
 };

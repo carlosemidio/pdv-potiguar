@@ -50,12 +50,12 @@ class HandleInertiaRequests extends Middleware
 
             $user->load('roles', 'store.image', 'stores');
 
-            if (!($user->store instanceof \App\Models\Store)) {
+            if ($user->store_id == null) {
                 $store = $user->stores()->first();
                 
                 if (($store instanceof \App\Models\Store)) {
-                    $store->is_default = 1;
-                    $store->save();
+                    $user->store_id = $store->id;
+                    $user->save();
                     $user->load('store.image');
                 }
             }

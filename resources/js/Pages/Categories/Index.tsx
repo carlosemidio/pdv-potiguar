@@ -65,7 +65,7 @@ export default function Index({
         >
             <Head title="Categorias" />
 
-            <section className='px-3 text-gray-800 dark:text-gray-200'>
+            <section className='text-gray-800 dark:text-gray-200'>
                 <div className="mx-auto lg:px-2">
                     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3'>
                         {

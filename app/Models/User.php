@@ -73,12 +73,12 @@ class User extends Authenticatable
 
     public function store(): HasOne
     {
-        return $this->hasOne(Store::class, 'user_id', 'id')->where('is_default', true);
+        return $this->hasOne(Store::class, 'id', 'store_id');
     }
 
-    public function stores(): HasMany
+    public function stores(): BelongsToMany
     {
-        return $this->hasMany(Store::class);
+        return $this->belongsToMany(Store::class, 'user_store', 'user_id', 'store_id');
     }
 
     public function roles(): BelongsToMany

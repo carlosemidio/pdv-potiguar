@@ -1,3 +1,4 @@
+import { Addon } from "./Addon";
 import { Product } from "./Product";
 import { ProductVariant } from "./ProductVariant";
 
@@ -6,8 +7,9 @@ export type StoreProductVariant = {
     tenant_id: number;
     store_id: number;
     product_variant_id: number;
-    product_variant: ProductVariant;
     product: Product;
+    product_variant: ProductVariant;
+    addons?: Addon[];
     cost_price: number;
     price: number;
     stock_quantity: number;

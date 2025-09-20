@@ -9,12 +9,14 @@ import { Role } from '@/types/Role';
 import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
-import Select, { MultiValue, MultiValueProps } from 'react-select';
+import Select, { MultiValue } from 'react-select';
 import { User } from '@/types/User';
 import SearchableTenantsSelect from '@/Components/SearchableTenantsSelect';
+import { can } from '@/utils/authorization';
+import { Store } from '@/types/Store';
 
 export default function Page({ auth }: PageProps) {
-    const { user, roles } = usePage<PageProps<{ user: { data: User }, roles: Role[] }>>().props;
+    const { user, roles, stores } = usePage<PageProps<{ user: { data: User }, roles: Role[], stores: Store[] }>>().props;
     const isEdit = !!user;
 
     const [tenant, setTenant] = useState(user ? user.data.tenant : null);
@@ -26,13 +28,17 @@ export default function Page({ auth }: PageProps) {
         password: '',
         password_confirmation: '',
         roles: user ? user.data.roles?.map((role: Role) => role.id) : [] as number[],
+        stores: user ? user.data.stores?.map((store: Store) => store.id) : [] as number[],
     });
 
-    const handleRoleSelection = (
-        selectedOptions: MultiValue<{ label: any; value: number; }>
-    ) => {
+    const handleRoleSelection = ( selectedOptions: MultiValue<{ label: any; value: number; }> ) => {
         const selectedRoleIds = selectedOptions ? selectedOptions.map(option => option.value) : [];
         setData('roles', selectedRoleIds);
+    };
+
+    const handleStoreSelection = ( selectedOptions: MultiValue<{ label: any; value: number; }> ) => {
+        const selectedStoreIds = selectedOptions ? selectedOptions.map(option => option.value) : [];
+        setData('stores', selectedStoreIds);
     };
 
     const submit: FormEventHandler = (e) => {
@@ -64,14 +70,37 @@ export default function Page({ auth }: PageProps) {
 
                     <div className='bg-white dark:bg-slate-800 p-4 rounded'>
                         <form onSubmit={submit} className="space-y-6">
-                            <SearchableTenantsSelect
-                                selectedTenant={tenant}
-                                setTenant={t => {
-                                    setTenant(t);
-                                    setData('tenant_id', t ? t.id : 0);
-                                }}
-                                isDisabled={processing}
-                            />
+                            {can('tenants_show') && (
+                                <SearchableTenantsSelect
+                                    selectedTenant={tenant}
+                                    setTenant={t => {
+                                        setTenant(t);
+                                        setData('tenant_id', t ? t.id : 0);
+                                    }}
+                                    isDisabled={processing}
+                                />
+                            )}
+
+                            {can('stores_view') && (
+                                <div>
+                                    <InputLabel htmlFor="stores" value="Lojas" />
+                                    <Select
+                                        options={stores?.map((store: Store) => ({
+                                            label: store.name,
+                                            value: store.id,
+                                        })) || []}
+                                        value={data?.stores?.map((storeId: number) => ({
+                                            label: stores.find((store: Store) => store.id === storeId)?.name || '',
+                                            value: storeId,
+                                        }))}
+                                        onChange={handleStoreSelection}
+                                        isMulti
+                                        className="mt-1"
+                                        classNamePrefix="react-select"
+                                    />
+                                    <InputError message={errors.stores} className="mt-2" />
+                                </div>
+                            )}
 
                             <div>
                                 <InputLabel htmlFor="roles" value="Funções" />

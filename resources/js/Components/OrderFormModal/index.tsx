@@ -29,6 +29,7 @@ export default function OrderFormModal({ isOpen, onClose, tables, order }: Order
     // Keep local state and form data in sync when opening for edit or switching orders
     useEffect(() => {
         setSelectedCustomer(order?.customer ?? null);
+        console.log(order);
         setData((prevData) => ({...prevData, customer_id: order?.customer_id ?? '', table_id: order?.table_id ?? ''})); 
     }, [order]);
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\StoreProductVariantAddon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,7 +13,7 @@ class OrderItemAddonResource extends JsonResource
         return [
             'id' => $this->id,
             'order_item_id' => $this->order_item_id,
-            'addon' => new AddonResource($this->whenLoaded('addon')),
+            'addon' => new StoreProductVariantAddonResource($this->whenLoaded('addon')),
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
             'total_price' => $this->total_price,

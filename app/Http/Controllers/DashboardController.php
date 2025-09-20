@@ -26,26 +26,26 @@ class DashboardController extends Controller
 
         $user = User::with('store')->find($request->user()->id);
 
-        if ($user && $user->store) {
+        if ($user && ($user->store_id  != null)) {
             $incomesToday = Payment::whereHas('order', function ($query) use ($user) {
-                $query->where('store_id', $user->store->id)
+                $query->where('store_id', $user->store_id)
                       ->where('status', 'completed');
             })->whereDate('created_at', now()->toDateString())
             ->sum('amount');
 
-            $pendingIncomes = Order::where('store_id', $user->store->id)
+            $pendingIncomes = Order::where('store_id', $user->store_id)
                 ->where('status', 'pending')
                 ->sum('total_amount');
 
-            $pendingIncomes -= Order::where('store_id', $user->store->id)
+            $pendingIncomes -= Order::where('store_id', $user->store_id)
                 ->where('status', 'pending')
                 ->sum('paid_amount');
 
-            $inProgressOrders = Order::where('store_id', $user->store->id)
+            $inProgressOrders = Order::where('store_id', $user->store_id)
                 ->whereIn('status', ['pending', 'in_progress'])
                 ->count();
 
-            $finishedOrdersToday = Order::where('store_id', $user->store->id)
+            $finishedOrdersToday = Order::where('store_id', $user->store_id)
                 ->where('status', 'completed')
                 ->whereDate('updated_at', now()->toDateString())
                 ->count();

@@ -24,7 +24,7 @@ class TablesController extends Controller
 
         $search = $request->search ?? '';
         $tablesQuery = $this->table->query();
-        $user = User::with('store')->find(Auth::id());
+        $user = User::find(Auth::id());
 
         if (!$user->hasPermission('tables_view', true)) {
             $tablesQuery->where('user_id', Auth::id());
@@ -34,8 +34,8 @@ class TablesController extends Controller
             $tablesQuery->where('tenant_id', $user->tenant_id);
         }
 
-        if ($user->store != null) {
-            $tablesQuery->where('store_id', $user->store->id);
+        if ($user->store_id != null) {
+            $tablesQuery->where('store_id', $user->store_id);
         }
 
         if ($search != '') {
@@ -69,10 +69,11 @@ class TablesController extends Controller
                 'name' => 'required|string|max:255'
             ]);
 
-            $user = User::with('store')->find(Auth::user()->id);
+            $user = User::find(Auth::user()->id);
 
             $data['user_id'] = $user->id;
-            $data['store_id'] = $user->store->id;
+            $data['store_id'] = $user->store_id;
+            $data['tenant_id'] = $user->tenant_id;
 
             $table = $this->table->create($data);
 

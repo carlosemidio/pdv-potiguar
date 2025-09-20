@@ -22,7 +22,7 @@ class TableListController extends Controller
     {
         $search = $request->search ?? '';
         $tablesQuery = $this->table->query();
-        $user = User::with('store')->find($request->user()->id);
+        $user = User::find($request->user()->id);
 
         if (!$user->hasPermission('tables_view', true)) {
             $tablesQuery->where('user_id', $user->id);
@@ -32,8 +32,8 @@ class TableListController extends Controller
             $tablesQuery->where('tenant_id', $user->tenant_id);
         }
 
-        if ($user->store->id != null) {
-            $tablesQuery->where('store_id', $user->store->id);
+        if ($user->store_id != null) {
+            $tablesQuery->where('store_id', $user->store_id);
         }
 
         if ($search != '') {

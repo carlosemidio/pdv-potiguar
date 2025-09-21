@@ -36,9 +36,6 @@ export default function CategoryFormModal({ isOpen, onClose, category }: Categor
 
     const handleCategoryChange = (selectedCategory: Category | null) => {
         setParentCategory(selectedCategory);
-
-        console.log('Selected Category:', selectedCategory);
-
         setData('parent_id', selectedCategory ? selectedCategory.id : null);
     };
 

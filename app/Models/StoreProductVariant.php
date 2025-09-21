@@ -18,6 +18,7 @@ class StoreProductVariant extends Model
         'cost_price',
         'price',
         'stock_quantity',
+        'is_produced',
         'featured',
         'view_count',
     ];
@@ -32,13 +33,13 @@ class StoreProductVariant extends Model
         return $this->belongsTo(ProductVariant::class);
     }
 
-    public function addons()
+    public function ingredients()
     {
-        return $this->hasMany(StoreProductVariantAddon::class, 'sp_variant_id');
+        return $this->hasMany(VariantIngredient::class, 'sp_variant_id');
     }
 
-    public function stockMovements()
+    public function variantAddons()
     {
-        return $this->morphMany(StockMovement::class, 'stockable');
+        return $this->hasMany(VariantAddon::class, 'sp_variant_id');
     }
 }

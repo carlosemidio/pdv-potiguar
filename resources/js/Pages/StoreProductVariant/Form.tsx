@@ -12,43 +12,53 @@ import { StoreProductVariant } from '@/types/StoreProductVariant';
 import { ProductVariant } from '@/types/ProductVariant';
 import SearchableProductVariantsSelect from '@/Components/SearchableProductVariantsSelect';
 import Checkbox from '@/Components/Checkbox';
-import { Addon } from '@/types/Addon';
 import { XSquare } from 'lucide-react';
 import { GrAdd } from 'react-icons/gr';
 import Swal from 'sweetalert2';
+import { VariantIngredient } from '@/types/VariantIngredient';
+import SearchableIngredientsSelect from '@/Components/SearchableIngredientsSelect';
+import { Unit } from '@/types/Unit';
 
-export default function Edit({ auth, storeProductVariant }: PageProps<{ storeProductVariant?: { data: StoreProductVariant } }>) {
+export default function Edit({ auth, storeProductVariant, units }: PageProps<{ storeProductVariant?: { data: StoreProductVariant }, units: { data: Unit[] } }>) {
     const isEdit = !!storeProductVariant;
     const { data, setData, post, errors, processing, recentlySuccessful } = useForm({
         _method: isEdit ? 'patch' : 'post',
         store_id: storeProductVariant ? storeProductVariant.data.store_id : null,
         product_variant_id: storeProductVariant ? storeProductVariant.data.product_variant_id : null,
-        cost_price: storeProductVariant ? storeProductVariant.data.cost_price : 0,
-        price: storeProductVariant ? storeProductVariant.data.price : 0,
-        stock_quantity: storeProductVariant ? storeProductVariant.data.stock_quantity : 0,
+        price: storeProductVariant ? storeProductVariant.data.price : null,
+        is_produced: storeProductVariant ? storeProductVariant.data.is_produced : false,
         featured: storeProductVariant ? storeProductVariant.data.featured : false,
-        addons: storeProductVariant ? storeProductVariant.data.addons : [],
+        ingredients: storeProductVariant ? storeProductVariant.data.ingredients : [],
     });
 
     const [variant, setVariant] = useState<ProductVariant | null>(
         storeProductVariant ? storeProductVariant.data.product_variant : null
     );
 
-    const [addons, setAddons] = useState<Addon[] | undefined>(storeProductVariant ? storeProductVariant.data.addons : []);
+    const [ingredients, setIngredients] = useState<VariantIngredient[]>(
+        storeProductVariant && storeProductVariant.data.ingredients ? storeProductVariant.data.ingredients : []
+    );
 
-    const handleAddAddon = () => {
-        let newAddon: Addon = {
-            name: '',
-            price: '0.00',
-            sp_variant_id: storeProductVariant ? storeProductVariant.data.id : 0
+    const [unitList, setUnitList] = useState<Unit[]>(
+        units && Array.isArray(units.data) ? units.data : []
+    );
+
+    const handleAddIngredient = () => {
+        let newIngredient: VariantIngredient = {
+            id: undefined,
+            sp_variant_id: storeProductVariant ? storeProductVariant.data.id : 0,
+            ingredient_id: null,
+            ingredient: null,
+            unit_id: null,
+            unit: null,
+            quantity: null
         };
-        
-        const updatedAddons = addons ? [...addons, newAddon] : [newAddon];
-        setAddons(updatedAddons);
-        setData('addons', updatedAddons);
+        const updatedIngredients = ingredients ? [...ingredients, newIngredient] : [newIngredient];
+        setIngredients(updatedIngredients);
+        setData('ingredients', updatedIngredients);
     }
 
-    const handleRemoveAddon = (addon: Addon) => {
+    const handleRemoveIngredient = (ingredient: VariantIngredient) => {
         Swal.fire({
             title: 'Remover complemento?',
             text: 'Tem certeza que deseja remover este complemento?',
@@ -58,9 +68,9 @@ export default function Edit({ auth, storeProductVariant }: PageProps<{ storePro
             cancelButtonText: 'Cancelar',
         }).then((result) => {
             if (result.isConfirmed) {
-                const updatedAddons = addons ? addons.filter(a => a.id !== addon.id) : [];
-                setAddons(updatedAddons);
-                setData('addons', updatedAddons);
+                const updatedIngredients = ingredients ? ingredients.filter(i => i.id !== ingredient.id) : [];
+                setIngredients(updatedIngredients);
+                setData('ingredients', updatedIngredients);
             }
         });
     }
@@ -76,11 +86,10 @@ export default function Edit({ auth, storeProductVariant }: PageProps<{ storePro
                     _method: 'patch',
                     store_id: null,
                     product_variant_id: null,
-                    cost_price: 0,
                     price: 0,
-                    stock_quantity: 0,
+                    is_produced: false,
                     featured: false,
-                    addons: [],
+                    ingredients: []
                 }),
             });
         } else {
@@ -127,27 +136,6 @@ export default function Edit({ auth, storeProductVariant }: PageProps<{ storePro
                                 <InputError className="mt-2" message={errors.product_variant_id} />
                             </div>
                             <div>
-                                <InputLabel htmlFor="cost_price" value="Preço de custo" />
-                                <div className="flex gap-2 items-center">
-                                    <TextInput
-                                        id="cost_price"
-                                        type="number"
-                                        step="0.01"
-                                        className="mt-1 w-full"
-                                        value={data.cost_price}
-                                        onChange={(e) => setData('cost_price', Number(e.target.value))}
-                                        autoComplete="off"
-                                    />
-                                    {data.cost_price !== 0 && (
-                                        <button type="button" className="text-xs text-gray-500 hover:text-red-600" onClick={() => setData('cost_price', 0)}>
-                                            Limpar
-                                        </button>
-                                    )}
-                                </div>
-                                <InputError className="mt-2" message={errors.cost_price} />
-                                <span className="text-xs text-gray-500 dark:text-gray-400">Valor de compra do produto na loja.</span>
-                            </div>
-                            <div>
                                 <InputLabel htmlFor="price" value="Preço de venda" />
                                 <div className="flex gap-2 items-center">
                                     <TextInput
@@ -155,7 +143,7 @@ export default function Edit({ auth, storeProductVariant }: PageProps<{ storePro
                                         type="number"
                                         step="0.01"
                                         className="mt-1 w-full"
-                                        value={data.price}
+                                        value={data.price ?? ''}
                                         onChange={(e) => setData('price', Number(e.target.value))}
                                         required
                                         autoComplete="off"
@@ -169,98 +157,25 @@ export default function Edit({ auth, storeProductVariant }: PageProps<{ storePro
                                 <InputError className="mt-2" message={errors.price} />
                                 <span className="text-xs text-gray-500 dark:text-gray-400">Valor de venda ao cliente.</span>
                             </div>
-                            <div className='opacity-60'>
-                                <InputLabel htmlFor="stock_quantity" value="Estoque (desabilitado)" />
-                                <TextInput
-                                    id="stock_quantity"
-                                    type="number"
-                                    className="mt-1 w-full"
-                                    value={data.stock_quantity}
-                                    readOnly
-                                    disabled
-                                    autoComplete="off"
-                                />
-                                <InputError className="mt-2" message={errors.stock_quantity} />
-                            </div>
+
                             <div className='flex items-end'>
                                 <label className="inline-flex items-center">
                                     <Checkbox
-                                        checked={data.featured}
+                                        checked={data.is_produced ?? false}
+                                        onChange={(e: any) => setData('is_produced', e.target.checked)}
+                                    />
+                                    <span className="ml-2">Produto pronto (ex: coca-cola, água mineral)</span>
+                                </label>
+                            </div>        
+
+                            <div className='flex items-end'>
+                                <label className="inline-flex items-center">
+                                    <Checkbox
+                                        checked={data.featured ?? false}
                                         onChange={(e: any) => setData('featured', e.target.checked)}
                                     />
                                     <span className="ml-2">Destaque</span>
                                 </label>
-                            </div>
-                        </div>
-
-                        {/* Complementos */}
-                        <div className="bg-white dark:bg-slate-800 border rounded p-4 space-y-4">                            
-                            <div className="flex items-center justify-between">
-                                <span className="font-semibold text-base">Complementos</span>
-                            </div>
-                            {data.addons && data.addons.length > 0 ? (
-                                <div className="grid sm:grid-cols-2 gap-4">
-                                    {data.addons.map((addon, index) => (
-                                        <div key={index} className='bg-gray-50 dark:bg-gray-900 rounded p-3 flex flex-col gap-2 border border-gray-200 dark:border-gray-800 relative'>
-                                            <div className="flex gap-2 items-center">
-                                                <InputLabel htmlFor={`addon_name_${index}`} value="Nome" />
-                                                <TextInput
-                                                    id={`addon_name_${index}`}
-                                                    type="text"
-                                                    className="mt-1 w-full"
-                                                    value={addon.name}
-                                                    onChange={(e) => {
-                                                        const updatedAddons = [...(data.addons ?? [])];
-                                                        updatedAddons[index].name = e.target.value;
-                                                        setData('addons', updatedAddons);
-                                                        setAddons(updatedAddons);
-                                                    }}
-                                                    required
-                                                    autoComplete="off"
-                                                />
-                                            </div>
-                                            <div className="flex gap-2 items-center">
-                                                <InputLabel htmlFor={`addon_price_${index}`} value="Preço" />
-                                                <TextInput
-                                                    id={`addon_price_${index}`}
-                                                    type="number"
-                                                    step="0.01"
-                                                    className="mt-1 w-full"
-                                                    value={addon.price}
-                                                    onChange={(e) => {
-                                                        const updatedAddons = [...(data.addons ?? [])];
-                                                        updatedAddons[index].price = e.target.value;
-                                                        setData('addons', updatedAddons);
-                                                        setAddons(updatedAddons);
-                                                    }}
-                                                    required
-                                                    autoComplete="off"
-                                                />
-                                            </div>
-                                            <div className="absolute top-0 right-0">
-                                                <button
-                                                    type="button"
-                                                    className="absolute top-0 right-0 text-red-600 hover:underline text-xs"
-                                                    onClick={() => handleRemoveAddon(addon)}
-                                                >
-                                                    <XSquare className='w-5 h-5' />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className='text-gray-500 dark:text-gray-400'>Nenhum complemento adicionado.</div>
-                            )}
-                            <div className="flex items-center justify-between">
-                                <PrimaryButton
-                                    type="button"
-                                    className="flex items-center gap-2"
-                                    onClick={handleAddAddon}
-                                >
-                                    <GrAdd className="w-4 h-4" />
-                                    Adicionar complemento
-                                </PrimaryButton>
                             </div>
                         </div>
 

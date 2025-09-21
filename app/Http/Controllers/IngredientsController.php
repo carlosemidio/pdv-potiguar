@@ -43,7 +43,7 @@ class IngredientsController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        $units = \App\Models\Unit::orderBy('name')->get();
+        $units = \App\Models\Unit::all( );
 
         return Inertia::render('Ingredients/Index', [
             'ingredients' => IngredientResource::collection($ingredients),

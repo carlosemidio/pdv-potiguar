@@ -64,7 +64,7 @@ export default function Index({
                         <Link href={route('store-product-variant.create')}>
                             <button
                                 aria-label="Nova variante da loja"
-                                className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                                className="fixed bottom-16 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
                             >
                                 <Plus className="w-6 h-6" />
                             </button>
@@ -99,10 +99,10 @@ export default function Index({
                                         </div>
 
                                         <p className='text-[11px] text-gray-500 dark:text-gray-400 mt-2'>
-                                            Criado: { formatCustomDateTime(item.created_at) }
+                                            Criado: { formatCustomDateTime(item.created_at ?? '') }
                                         </p>
                                         <p className='text-[11px] text-gray-500 dark:text-gray-400'>
-                                            Atualizado: { formatCustomDateTime(item.updated_at)}
+                                            Atualizado: { formatCustomDateTime(item.updated_at ?? '')}
                                         </p>
                                     </div>
 

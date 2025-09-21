@@ -10,7 +10,7 @@ import { ChevronDown, Gauge, KeySquare, Mail, Menu, MonitorCog, Store, Table, Us
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import { AiFillProduct } from 'react-icons/ai';
 import { CgProductHunt } from 'react-icons/cg';
-import { MdAddCircle, MdBrandingWatermark, MdCategory, MdOutlineKitchen } from 'react-icons/md';
+import { MdAddCircle, MdBrandingWatermark, MdCategory, MdOutlineExtension, MdOutlineKitchen } from 'react-icons/md';
 import { TbArrowsRightLeft, TbMenuOrder } from 'react-icons/tb';
 
 export default function Authenticated({
@@ -173,6 +173,15 @@ export default function Authenticated({
                                     <div className='flex gap-2 items-center'>
                                         <MdOutlineKitchen className="w-6 h-6" />
                                         <p>Ingredientes</p>
+                                    </div>
+                                </NavLink>
+                            )}
+
+                            {can('addons_view') && (
+                                <NavLink href={route('addons.index')} active={route().current('addons.index')}>
+                                    <div className='flex gap-2 items-center'>
+                                        <MdOutlineExtension className="w-6 h-6" />
+                                        <p>Complementos</p>
                                     </div>
                                 </NavLink>
                             )}

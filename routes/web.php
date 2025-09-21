@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\AddonIngredientsController;
 use App\Http\Controllers\AddonsController;
 use App\Http\Controllers\Ajax\AddonsListController;
 use App\Http\Controllers\Ajax\BrandListController;
 use App\Http\Controllers\AttibuteController;
 use App\Http\Controllers\Ajax\CategoryListController;
 use App\Http\Controllers\Ajax\CustomersListController;
+use App\Http\Controllers\Ajax\IngredientsListController;
 use App\Http\Controllers\Ajax\ProductListController;
 use App\Http\Controllers\Ajax\ProductVariantListController;
 use App\Http\Controllers\Ajax\StoreProductVariantListController;
@@ -33,6 +35,8 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\StoreProductVariantController;
 use App\Http\Controllers\TenantsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VariantAddonsController;
+use App\Http\Controllers\VariantIngredientsController;
 use App\Models\Ingredient;
 use Illuminate\Support\Facades\Route;
 
@@ -86,6 +90,13 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/ingredientes', IngredientsController::class)
         ->names('ingredients');
+
+    Route::resource('/complementos', AddonsController::class)
+        ->names('addons');
+
+    Route::resource('/complemento-ingredientes', AddonIngredientsController::class)
+        ->only(['store', 'destroy'])
+        ->names('addon-ingredients');
         
     Route::resource('/produtos', ProductController::class)
         ->names('product');
@@ -95,6 +106,13 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/variantes-loja', StoreProductVariantController::class)
         ->names('store-product-variant');
+
+    Route::resource('/variante-ingredientes', VariantIngredientsController::class)
+        ->names('variant-ingredients');
+
+    Route::resource('/variante-complementos', VariantAddonsController::class)
+        ->only(['store', 'destroy'])
+        ->names('variant-addons');
 
     Route::resource('/movimentacoes-estoque', StockMovementController::class)
         ->names('stock-movement');
@@ -161,6 +179,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('search-store-product-variants-select', [StoreProductVariantListController::class, 'index'])
         ->name('store-product-variants-select.search');
+
+    Route::get('search-ingredients-select', [IngredientsListController::class, 'index'])
+        ->name('ingredients-select.search');
 
     Route::get('search-addons-select', [AddonsListController::class, 'index'])
         ->name('addons-select.search');

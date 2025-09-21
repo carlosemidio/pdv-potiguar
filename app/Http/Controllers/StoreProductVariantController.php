@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\StoreProductVariantResource;
+use App\Http\Resources\UnitResource;
 use App\Models\StoreProductVariant;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -62,7 +64,11 @@ class StoreProductVariantController extends Controller
     {
         $this->authorize('create', StoreProductVariant::class);
 
-        return Inertia::render('StoreProductVariant/Form');
+        $unitList = Unit::all();
+
+        return Inertia::render('StoreProductVariant/Form', [
+            'units' => UnitResource::collection($unitList),
+        ]);
     }
 
     /**
@@ -78,9 +84,7 @@ class StoreProductVariantController extends Controller
                 'exists:product_variants,id',
                 'unique:store_product_variants,product_variant_id,NULL,id,store_id,' . (User::with('store')->find(Auth::id())->store->id ?? 'NULL'),
             ],
-            'cost_price' => 'nullable|numeric|min:0',
             'price' => 'required|numeric|min:0',
-            'stock_quantity' => 'required|integer|min:0',
             'featured' => 'boolean',
         ], [
             'product_variant_id.required' => 'A variante do produto é obrigatória.',
@@ -89,11 +93,7 @@ class StoreProductVariantController extends Controller
             'price.required' => 'O preço é obrigatório.',
             'price.numeric' => 'O preço deve ser um valor numérico.',
             'price.min' => 'O preço deve ser no mínimo 0.',
-            'cost_price.numeric' => 'O preço de custo deve ser um valor numérico.',
-            'cost_price.min' => 'O preço de custo deve ser no mínimo 0.',
-            'stock_quantity.required' => 'A quantidade em estoque é obrigatória.',
-            'stock_quantity.integer' => 'A quantidade em estoque deve ser um número inteiro.',
-            'stock_quantity.min' => 'A quantidade em estoque deve ser no mínimo 0.',
+            'featured.boolean' => 'O campo em destaque deve ser verdadeiro ou falso.',
         ]);
 
         $user = User::find(Auth::id());
@@ -112,12 +112,13 @@ class StoreProductVariantController extends Controller
             $storeProductVariant = DB::transaction(function () use ($dataForm) {
                 $storeProductVariant = StoreProductVariant::create($dataForm);
 
-                if ($dataForm['addons'] ?? false) {
-                    foreach ($dataForm['addons'] as $addon) {
-                        $storeProductVariant->addons()->create([
-                            'user_id' => $dataForm['user_id'],
-                            'name' => $addon['name'],
-                            'price' => $addon['price'] ?? 0,
+                if ($dataForm['ingredients'] ?? false) {
+                    // Adiciona os ingredientes
+                    foreach ($dataForm['ingredients'] as $ingredient) {
+                        $storeProductVariant->ingredients()->create([
+                            'ingredient_id' => $ingredient['ingredient_id'],
+                            'unit_id' => $ingredient['unit_id'],
+                            'quantity' => $ingredient['quantity']
                         ]);
                     }
                 }
@@ -126,7 +127,7 @@ class StoreProductVariantController extends Controller
             });
 
             if ($storeProductVariant instanceof StoreProductVariant) {
-                return redirect()->back()
+                return redirect(route('store-product-variant.show', $storeProductVariant->id))
                     ->with('success', 'Variante de produto cadastrada com sucesso.');
             }
 
@@ -136,6 +137,31 @@ class StoreProductVariantController extends Controller
             return redirect()->back()
                 ->with('fail', 'Erro ao cadastrar variante de produto: ' . $e->getMessage());
         }
+    }
+
+    public function show($id)
+    {
+        $storeProductVariant = StoreProductVariant::where('id', $id)
+            ->firstOrFail();
+
+        $this->authorize('view', $storeProductVariant);
+
+        $storeProductVariant->load([
+            'store',
+            'productVariant.product.category',
+            'productVariant.product.brand',
+            'productVariant.image',
+            'ingredients.ingredient',
+            'ingredients.unit',
+            'variantAddons.addon'
+        ]);
+
+        $unitList = Unit::all();
+
+        return Inertia::render('StoreProductVariant/Show', [
+            'storeProductVariant' => new StoreProductVariantResource($storeProductVariant),
+            'units' => UnitResource::collection($unitList),
+        ]);
     }
 
     /**
@@ -148,10 +174,13 @@ class StoreProductVariantController extends Controller
 
         $this->authorize('update', $storeProductVariant);
 
-        $storeProductVariant->load(['productVariant.product', 'store', 'addons']);
+        $storeProductVariant->load(['productVariant.product', 'store', 'ingredients.ingredient', 'ingredients.unit']);
+
+        $unitList = Unit::all();
 
         return Inertia::render('StoreProductVariant/Form', [
             'storeProductVariant' => new StoreProductVariantResource($storeProductVariant),
+            'units' => UnitResource::collection($unitList),
         ]);
     }
 
@@ -166,9 +195,7 @@ class StoreProductVariantController extends Controller
                 'exists:product_variants,id',
                 'unique:store_product_variants,product_variant_id,' . $id . ',id,store_id,' . (User::with('store')->find(Auth::id())->store->id ?? 'NULL'),
             ],
-            'cost_price' => 'nullable|numeric|min:0',
             'price' => 'required|numeric|min:0',
-            'stock_quantity' => 'required|integer|min:0',
             'featured' => 'boolean',
         ], [
             'product_variant_id.required' => 'A variante do produto é obrigatória.',
@@ -177,11 +204,7 @@ class StoreProductVariantController extends Controller
             'price.required' => 'O preço é obrigatório.',
             'price.numeric' => 'O preço deve ser um valor numérico.',
             'price.min' => 'O preço deve ser no mínimo 0.',
-            'cost_price.numeric' => 'O preço de custo deve ser um valor numérico.',
-            'cost_price.min' => 'O preço de custo deve ser no mínimo 0.',
-            'stock_quantity.required' => 'A quantidade em estoque é obrigatória.',
-            'stock_quantity.integer' => 'A quantidade em estoque deve ser um número inteiro.',
-            'stock_quantity.min' => 'A quantidade em estoque deve ser no mínimo 0.',
+            'featured.boolean' => 'O campo em destaque deve ser verdadeiro ou falso.',
         ]);
 
         $storeProductVariant = StoreProductVariant::where('id', $id)
@@ -193,32 +216,32 @@ class StoreProductVariantController extends Controller
 
         try {
             if ($storeProductVariant->update($dataForm)) {
-                if (isset($dataForm['addons'])) {
-                    // Atualiza os addons
-                    $existingAddonIds = $storeProductVariant->addons()->pluck('id')->toArray();
-                    $submittedAddonIds = array_filter(array_column($dataForm['addons'], 'id'));
+                if (isset($dataForm['ingredients'])) {
+                    // Sincroniza os ingredientes
+                    $existingIngredientIds = $storeProductVariant->ingredients()->pluck('id')->toArray();
+                    $submittedIngredientIds = array_filter(array_map(fn($ing) => $ing['id'] ?? null, $dataForm['ingredients']));
 
-                    // Deleta os addons que foram removidos
-                    $addonsToDelete = array_diff($existingAddonIds, $submittedAddonIds);
-
-                    if (count($addonsToDelete) > 0) {
-                        $storeProductVariant->addons()->whereIn('id', $addonsToDelete)->delete();
+                    // Ingredientes a serem removidos
+                    $ingredientsToRemove = array_diff($existingIngredientIds, $submittedIngredientIds);
+                    if (!empty($ingredientsToRemove)) {
+                        $storeProductVariant->ingredients()->whereIn('id', $ingredientsToRemove)->delete();
                     }
 
-                    // Adiciona ou atualiza os addons enviados
-                    foreach ($dataForm['addons'] as $addon) {
-                        if (isset($addon['id']) && in_array($addon['id'], $existingAddonIds)) {
-                            // Atualiza o addon existente
-                            $storeProductVariant->addons()->where('id', $addon['id'])->update([
-                                'name' => $addon['name'],
-                                'price' => $addon['price'] ?? 0,
+                    // Adiciona ou atualiza os ingredientes
+                    foreach ($dataForm['ingredients'] as $ingredient) {
+                        if (isset($ingredient['id']) && in_array($ingredient['id'], $existingIngredientIds)) {
+                            // Atualiza o ingrediente existente
+                            $storeProductVariant->ingredients()->where('id', $ingredient['id'])->update([
+                                'ingredient_id' => $ingredient['ingredient_id'],
+                                'unit_id' => $ingredient['unit_id'],
+                                'quantity' => $ingredient['quantity']
                             ]);
                         } else {
-                            // Cria um novo addon
-                            $storeProductVariant->addons()->create([
-                                'user_id' => Auth::id(),
-                                'name' => $addon['name'],
-                                'price' => $addon['price'] ?? 0,
+                            // Adiciona um novo ingrediente
+                            $storeProductVariant->ingredients()->create([
+                                'ingredient_id' => $ingredient['ingredient_id'],
+                                'unit_id' => $ingredient['unit_id'],
+                                'quantity' => $ingredient['quantity']
                             ]);
                         }
                     }

@@ -1,19 +1,24 @@
-import { Addon } from "./Addon";
 import { Product } from "./Product";
 import { ProductVariant } from "./ProductVariant";
+import { Store } from "./Store";
+import { VariantAddon } from "./VariantAddon";
+import { VariantIngredient } from "./VariantIngredient";
 
 export type StoreProductVariant = {
     id: number;
     tenant_id: number;
     store_id: number;
     product_variant_id: number;
-    product: Product;
-    product_variant: ProductVariant;
-    addons?: Addon[];
-    cost_price: number;
-    price: number;
-    stock_quantity: number;
-    featured: boolean;
-    created_at: string;
-    updated_at: string;
+    store: Store | null;
+    product: Product | null;
+    product_variant: ProductVariant | null;
+    ingredients?: VariantIngredient[] | null;
+    variant_addons?: VariantAddon[] | null;
+    cost_price: number | null;
+    price: number | null;
+    stock_quantity: number | null;
+    featured: boolean | null;
+    is_produced: boolean | null;
+    created_at: string | null;
+    updated_at: string | null;
 };

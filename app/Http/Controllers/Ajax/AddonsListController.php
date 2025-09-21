@@ -38,7 +38,7 @@ class AddonsListController extends Controller
         }
 
         $addons = $addonsQuery->orderBy('name')->take(100)
-            ->get(['id', 'name', 'price']);
+            ->get(['id', 'name']);
 
         return response()->json($addons);
     }

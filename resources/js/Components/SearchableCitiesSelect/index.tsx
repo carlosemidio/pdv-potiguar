@@ -1,5 +1,5 @@
 import { City } from '@/types/City';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 
 // Define the shape of the options
@@ -22,6 +22,10 @@ const SearchableCitiesSelect: React.FC<SearchableCitiesSelectProps> = ({
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(
     selectedCity ? { value: selectedCity.id, label: selectedCity.name } : null
   );
+
+  useEffect(() => {
+    setSelectedOption(selectedCity ? { value: selectedCity.id, label: selectedCity.name } : null);
+  }, [selectedCity]);
   
   const [cities, setCities] = useState<City[]>([]);
 

@@ -13,10 +13,9 @@ import { ProductVariant } from '@/types/ProductVariant';
 import SearchableProductVariantsSelect from '@/Components/SearchableProductVariantsSelect';
 import Checkbox from '@/Components/Checkbox';
 import { Addon } from '@/types/Addon';
-import { MdDelete, MdRemove } from 'react-icons/md';
-import { X, XSquare } from 'lucide-react';
-import { IoRemoveOutline } from 'react-icons/io5';
+import { XSquare } from 'lucide-react';
 import { GrAdd } from 'react-icons/gr';
+import Swal from 'sweetalert2';
 
 export default function Edit({ auth, storeProductVariant }: PageProps<{ storeProductVariant?: { data: StoreProductVariant } }>) {
     const isEdit = !!storeProductVariant;
@@ -50,9 +49,20 @@ export default function Edit({ auth, storeProductVariant }: PageProps<{ storePro
     }
 
     const handleRemoveAddon = (addon: Addon) => {
-        const updatedAddons = addons ? addons.filter(a => a.id !== addon.id) : [];
-        setAddons(updatedAddons);
-        setData('addons', updatedAddons);
+        Swal.fire({
+            title: 'Remover complemento?',
+            text: 'Tem certeza que deseja remover este complemento?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, remover',
+            cancelButtonText: 'Cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const updatedAddons = addons ? addons.filter(a => a.id !== addon.id) : [];
+                setAddons(updatedAddons);
+                setData('addons', updatedAddons);
+            }
+        });
     }
 
     const submit: FormEventHandler = (e) => {

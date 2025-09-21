@@ -18,6 +18,10 @@ return [
         'display_name' => 'Usuários',
     ],
     [
+        'name' => 'notifications',
+        'display_name' => 'Notificações',
+    ],
+    [
         'name' => 'stores',
         'display_name' => 'Lojas',
     ],
@@ -28,6 +32,10 @@ return [
     [
         'name' => 'categories',
         'display_name' => 'Categorias',
+    ],
+    [
+        'name' => 'brands',
+        'display_name' => 'Marcas',
     ],
     [
         'name' => 'products',
@@ -42,16 +50,12 @@ return [
         'display_name' => 'Variantes de Produtos da Loja',
     ],
     [
-        'name' => 'notifications',
-        'display_name' => 'Notificações',
+        'name' => 'ingredients',
+        'display_name' => 'Ingredientes',
     ],
     [
         'name' => 'addons',
         'display_name' => 'Complementos',
-    ],
-    [
-        'name' => 'brands',
-        'display_name' => 'Marcas',
     ],
     [
         'name' => 'tables',

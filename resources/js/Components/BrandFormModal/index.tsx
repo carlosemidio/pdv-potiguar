@@ -1,0 +1,102 @@
+import { Button } from "@headlessui/react";
+import { X } from "lucide-react";
+import Modal from "../Modal";
+import SecondaryButton from "../SecondaryButton";
+import PrimaryButton from "../PrimaryButton";
+import { useForm } from "@inertiajs/react";
+import { FormEventHandler } from "react";
+import { useEffect } from "react";
+import { Brand } from "@/types/Brand";
+
+interface BrandFormModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    brand?: Brand | null;
+}
+
+export default function BrandFormModal({ isOpen, onClose, brand }: BrandFormModalProps) {
+    const { data, setData, patch, post, processing } = useForm({
+        name: brand?.name ?? '',
+        status: brand?.status ?? 1,
+    });
+
+    useEffect(() => {
+        setData({
+            name: brand?.name ?? '',
+            status: brand?.status ?? 1,
+        });
+    }, [brand]);
+
+    const isEdit = !!brand;
+
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+
+        if (isEdit) {
+            patch(route('brands.update', brand!.id), {
+                preserveScroll: true,
+                preserveState: false,
+                onSuccess: () => onClose()
+            });
+        } else {
+            post(route('brands.store'), {
+                preserveScroll: true,
+                preserveState: false,
+                onSuccess: () => onClose()
+            });
+        }
+    };
+
+    return (
+        <Modal show={isOpen} onClose={onClose}>
+            <div className="p-3">
+                <div className="flex justify-between">
+                    <p className="text-lg">{isEdit ? `Editar` : 'Adicionar'} marca</p>
+                    <Button onClick={onClose}>
+                        <X size={20} />
+                    </Button>
+                </div>
+                <div className="mt-3">
+                    <div className="space-y-3">
+                        <form onSubmit={submit} className="space-y-4">
+                            <div>
+                                <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Nome da Marca
+                                </label>
+                                <input
+                                    type="text"
+                                    id="name"
+                                    className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
+                                    required
+                                    disabled={processing}
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Status
+                                </label>
+                                <select
+                                    id="status"
+                                    className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    value={data.status}
+                                    onChange={(e) => setData('status', Number(e.target.value))}
+                                    required
+                                    disabled={processing}
+                                >
+                                    <option value={1}>Ativo</option>
+                                    <option value={0}>Inativo</option>
+                                </select>
+                            </div>
+                            <div className="mt-3 flex justify-end items-center gap-2">
+                                <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>
+                                <PrimaryButton onClick={submit}>{isEdit ? 'Salvar' : 'Iniciar'}</PrimaryButton>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </Modal>
+    );
+}

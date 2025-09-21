@@ -13,8 +13,7 @@ class StockMovement extends Model
     protected $fillable = [
         'user_id',
         'tenant_id',
-        'store_id',
-        'store_product_variant_id',
+        'store_id',        
         'type',
         'subtype',
         'quantity',
@@ -38,8 +37,8 @@ class StockMovement extends Model
         return $this->belongsTo(Store::class);
     }
 
-    public function storeProductVariant()
+    public function stockable()
     {
-        return $this->belongsTo(StoreProductVariant::class, 'store_product_variant_id');
+        return $this->morphTo();
     }
 }

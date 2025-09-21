@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Brand } from '@/types/Brand';
 import Pagination from '@/Components/Pagination/Pagination';
+import BrandFormModal from '@/Components/BrandFormModal';
 
 export default function Index({
     auth,
@@ -18,6 +19,8 @@ export default function Index({
 
     const [confirmingBrandDeletion, setConfirmingBrandDeletion] = useState(false);
     const [brandIdToDelete, setBrandIdToDelete] = useState<number | null>(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const [brandToEdit, setBrandToEdit] = useState<Brand | null>(null);
 
     const {
         delete: destroy,
@@ -44,6 +47,11 @@ export default function Index({
         setBrandIdToDelete(null);
         clearErrors();
         reset();
+    };
+
+    const openModal = (brand: Brand | null) => {
+        setBrandToEdit(brand);
+        setIsOpen(true);
     };
 
     const brandToDelete = brands?.data?.find
@@ -84,11 +92,9 @@ export default function Index({
                                             </DangerButton>
                                         )}
                                         {(can('brands_edit') && (brand.user_id != null)) && (
-                                            <Link href={route('brands.edit', { id: brand.id })}>
-                                                <SecondaryButton size='sm' title="Editar marca">
-                                                    <Edit className='w-4 h-4' />
-                                                </SecondaryButton>
-                                            </Link>
+                                            <SecondaryButton size='sm' title="Editar marca" onClick={() => openModal(brand)}>
+                                                <Edit className='w-4 h-4' />
+                                            </SecondaryButton>
                                         )}
                                     </div>
                                 </Card>
@@ -106,15 +112,16 @@ export default function Index({
                 </div>
             </section>
 
+            <BrandFormModal isOpen={isOpen} onClose={() => setIsOpen(false)} brand={brandToEdit} />
+
             {can('brands_create') && (
-                <Link href={route('brands.create')}>
-                    <button
-                        aria-label="Nova marca"
-                        className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
-                    >
-                        <Plus className='w-6 h-6' />
-                    </button>
-                </Link>
+                <button
+                    aria-label="Nova marca"
+                    className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                    onClick={() => openModal(null)}
+                >
+                    <Plus className='w-6 h-6' />
+                </button>
             )}
 
             {brandToDelete && (

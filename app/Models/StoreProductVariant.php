@@ -36,4 +36,9 @@ class StoreProductVariant extends Model
     {
         return $this->hasMany(StoreProductVariantAddon::class, 'sp_variant_id');
     }
+
+    public function stockMovements()
+    {
+        return $this->morphMany(StockMovement::class, 'stockable');
+    }
 }

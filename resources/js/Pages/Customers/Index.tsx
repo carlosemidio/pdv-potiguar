@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Customer } from '@/types/Customer';
 import Pagination from '@/Components/Pagination/Pagination';
+import CustomerFormModal from '@/Components/CustomerFormModal';
 
 export default function Index({
     auth,
@@ -18,6 +19,8 @@ export default function Index({
 
     const [confirmingCustomerDeletion, setConfirmingCustomerDeletion] = useState(false);
     const [costumerIdToDelete, setCustomerIdToDelete] = useState<number | null>(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const [customerToEdit, setCustomerToEdit] = useState<Customer | null>(null);
 
     const {
         delete: destroy,
@@ -44,6 +47,16 @@ export default function Index({
         setCustomerIdToDelete(null);
         clearErrors();
         reset();
+    };
+
+    const openCustomerFormModal = (customer: Customer | null) => {
+        setCustomerToEdit(customer);
+        setIsOpen(true);
+    };
+
+    const closeCustomerFormModal = () => {
+        setCustomerToEdit(null);
+        setIsOpen(false);
     };
 
     const costumerToDelete = customers?.data?.find
@@ -90,14 +103,13 @@ export default function Index({
                                             </DangerButton>
                                         )}
                                         {can('customers_edit') && (
-                                            <Link href={route('customers.edit', { id: costumer.id })}>
-                                                <SecondaryButton size="sm"
-                                                    className="flex items-center gap-1"
-                                                    title="Editar cliente"
-                                                >
-                                                    <Edit className='w-4 h-4' />
-                                                </SecondaryButton>
-                                            </Link>
+                                            <SecondaryButton size="sm"
+                                                className="flex items-center gap-1"
+                                                title="Editar cliente"
+                                                onClick={() => openCustomerFormModal(costumer)}
+                                            >
+                                                <Edit className='w-4 h-4' />
+                                            </SecondaryButton>
                                         )}
                                     </div>
                                 </Card>
@@ -113,15 +125,20 @@ export default function Index({
                         </div>
                     )}
 
+                    <CustomerFormModal
+                        isOpen={isOpen}
+                        onClose={closeCustomerFormModal}
+                        customer={customerToEdit}
+                    />
+
                     {can('customers_create') && (
-                        <Link href={route('customers.create')}>
-                            <button
-                                aria-label="Novo cliente"
-                                className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
-                            >
-                                <Plus className="h-6 w-6" />
-                            </button>
-                        </Link>
+                        <button
+                            aria-label="Novo cliente"
+                            className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                            onClick={() => openCustomerFormModal(null)}
+                        >
+                            <Plus className="h-6 w-6" />
+                        </button>
                     )}
                 </div>
             </section>

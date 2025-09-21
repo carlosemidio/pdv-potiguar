@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\StockMovement;
-use App\Models\StoreProductVariant;
 use App\Enums\StockMovementSubtype;
 use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +14,8 @@ class StockMovementService
         ?int $userId = null,
         int $tenantId,
         int $storeId,
-        int $productVariantId,
+        string $stockableType,
+        int $stockableId,
         float $quantity,
         StockMovementSubtype $subtype,
         ?float $costPrice = null,
@@ -26,7 +26,8 @@ class StockMovementService
             $userId,
             $tenantId,
             $storeId,
-            $productVariantId,
+            $stockableType,
+            $stockableId,
             $quantity,
             $subtype,
             $costPrice,
@@ -36,11 +37,10 @@ class StockMovementService
             $type = $this->resolveType($subtype);
 
             // atualiza estoque da loja
-            $storeVariant = $this->updateStoreStock(
-                $userId ?? Auth::id(),
-                $tenantId,
+            $stockable = $this->updateStoreStock(
                 $storeId,
-                $productVariantId,
+                $stockableType,
+                $stockableId,
                 $quantity,
                 $type,
                 $costPrice
@@ -51,7 +51,8 @@ class StockMovementService
                 'user_id' => $userId ?? Auth::id(),
                 'tenant_id' => $tenantId,
                 'store_id' => $storeId,
-                'store_product_variant_id' => $storeVariant ? $storeVariant->id : null,
+                'stockable_type' => $stockableType,
+                'stockable_id' => $stockableId,
                 'type' => $type,
                 'subtype' => $subtype->value,
                 'quantity' => $quantity,
@@ -67,17 +68,36 @@ class StockMovementService
     public function registerSaleFromOrder(Order $order)
     {
         foreach ($order->items as $item) {
-            $this->register(
-                $order->user_id,
-                $order->tenant_id,
-                $order->store_id,
-                $item->storeProductVariant->product_variant_id,
-                $item->quantity,
-                StockMovementSubtype::SALE,
-                $item->cost_price,
-                "Pedido #{$order->id}",
-                null
-            );
+            if (count($item->storeProductVariant->ingredients) < 1) {
+                $this->register(
+                    $order->user_id,
+                    $order->tenant_id,
+                    $order->store_id,
+                    get_class($item->storeProductVariant),
+                    $item->storeProductVariant->product_variant_id,
+                    $item->quantity,
+                    StockMovementSubtype::SALE,
+                    $item->cost_price,
+                    "Pedido #{$order->id}",
+                    null
+                );
+            } else {
+                // se o produto for composto, registra a saída dos ingredientes
+                foreach ($item->storeProductVariant->ingredients as $ingredient) {
+                    $this->register(
+                        $order->user_id,
+                        $order->tenant_id,
+                        $order->store_id,
+                        get_class($ingredient),
+                        $ingredient->id,
+                        ($ingredient->pivot->quantity * $item->quantity),
+                        StockMovementSubtype::SALE,
+                        $ingredient->cost_price,
+                        "Ingrediente no produto: {$item->storeProductVariant->productVariant->name} (Pedido #{$order->number})",
+                        null
+                    );
+                }
+            }
         }
     }
 
@@ -88,40 +108,39 @@ class StockMovementService
             StockMovementSubtype::PURCHASE,
             StockMovementSubtype::RETURN_CUSTOMER,
             StockMovementSubtype::ADJUSTMENT_IN,
-            StockMovementSubtype::TRANSFER_IN => 'in',
+            StockMovementSubtype::TRANSFER_IN => 1,
 
             StockMovementSubtype::SALE,
             StockMovementSubtype::WASTE,
             StockMovementSubtype::RETURN_SUPPLIER,
             StockMovementSubtype::ADJUSTMENT_OUT,
-            StockMovementSubtype::TRANSFER_OUT => 'out',
+            StockMovementSubtype::TRANSFER_OUT => 0,
         };
     }
 
-    private function updateStoreStock(int $userId, int $tenantId, int $storeId, int $productVariantId, float $quantity, string $type, ?float $costPrice)
+    private function updateStoreStock(int $storeId, string $stockableType, int $stockableId, float $quantity, string $type, ?float $costPrice)
     {
-        $storeVariant = StoreProductVariant::firstOrCreate(
-            ['store_id' => $storeId, 'product_variant_id' => $productVariantId],
-            ['user_id' => $userId, 'tenant_id' => $tenantId, 'stock_quantity' => 0, 'cost_price' => 0, 'price' => 0]
-        );
+        $stockable = app($stockableType)::where('id', $stockableId)
+            ->where('store_id', $storeId)
+            ->firstOrFail();
 
         if ($type === 'in') {
             // custo médio ponderado
             if ($costPrice !== null) {
-                $totalOld = $storeVariant->stock_quantity * $storeVariant->cost_price;
+                $totalOld = $stockable->stock_quantity * $stockable->cost_price;
                 $totalNew = $quantity * $costPrice;
-                $newQty   = $storeVariant->stock_quantity + $quantity;
+                $newQty   = $stockable->stock_quantity + $quantity;
 
-                $storeVariant->cost_price = $newQty > 0 ? ($totalOld + $totalNew) / $newQty : $costPrice;
+                $stockable->cost_price = $newQty > 0 ? ($totalOld + $totalNew) / $newQty : $costPrice;
             }
 
-            $storeVariant->stock_quantity += $quantity;
+            $stockable->stock_quantity += $quantity;
         } else {
-            $storeVariant->stock_quantity -= $quantity;
+            $stockable->stock_quantity -= $quantity;
         }
 
-        $storeVariant->save();
+        $stockable->save();
 
-        return $storeVariant;
+        return $stockable;
     }
 }

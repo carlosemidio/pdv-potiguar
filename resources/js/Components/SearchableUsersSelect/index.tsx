@@ -1,5 +1,5 @@
 import { User } from '@/types/User';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 
 // Define the shape of the options
@@ -22,6 +22,10 @@ const SearchableUsersSelect: React.FC<SearchableUsersSelectProps> = ({
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(
     selectedUser ? { value: selectedUser.id, label: selectedUser.name } : null
   );
+
+  useEffect(() => {
+    setSelectedOption(selectedUser ? { value: selectedUser.id, label: selectedUser.name } : null);
+  }, [selectedUser]);
   
   const [users, setUsers] = useState<User[]>([]);
 

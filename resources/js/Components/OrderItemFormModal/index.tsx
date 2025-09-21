@@ -88,9 +88,9 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
 
     return <>
         <Modal show={isOpen} onClose={onClose}>
-            <div className="p-3">
+            <div className="p-2 w-full scrollbar max-h-[95vh] overflow-y-auto">
                 <div className="flex justify-between">
-                    <p className="text-lg">Adicionar Item ao Pedido #{order?.id}</p>
+                    <p className="text-xs">Adicionar Item ao Pedido #{order?.id}</p>
                     <Button onClick={onClose}>
                         <X size={20} />
                     </Button>
@@ -106,6 +106,50 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                             {errors.store_product_variant_id && <p className="text-red-600 text-sm mt-1">{errors.store_product_variant_id}</p>}
                         </div>
 
+                        <div className="flex gap-3">
+                            <div className="flex-1">
+                                <InputLabel htmlFor="quantity" value="Quantidade" />
+                                <input
+                                    type="number"
+                                    id="quantity"
+                                    className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    value={data.quantity}
+                                    onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
+                                    min={1}
+                                />
+                                {errors.quantity && <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>}
+                            </div>
+
+                            <div className="flex-1">
+                                <InputLabel htmlFor="unit_price" value="Preço Unitário" />
+                                <input
+                                    type="number"
+                                    id="unit_price"
+                                    className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    value={data.unit_price}
+                                    min={0}
+                                    step="0.01"
+                                    disabled
+                                />
+                                {errors.unit_price && <p className="text-red-600 text-sm mt-1">{errors.unit_price}</p>}
+                            </div>
+
+                            <div className="flex-1">
+                                <InputLabel htmlFor="total_price" value="Preço Total" />
+                                <input
+                                    type="number"
+                                    id="total_price"
+                                    className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    value={data.total_price}
+                                    min={0}
+                                    step="0.01"
+                                    disabled
+                                    readOnly
+                                />
+                                {errors.total_price && <p className="text-red-600 text-sm mt-1">{errors.total_price}</p>}
+                            </div>
+                        </div>
+
                         {addons.length > 0 && (
                             <div>
                                 <OrderItemAddonsForm
@@ -115,48 +159,6 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                                 />
                             </div>
                         )}
-
-                        <div>
-                            <InputLabel htmlFor="quantity" value="Quantidade" />
-                            <input
-                                type="number"
-                                id="quantity"
-                                className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                value={data.quantity}
-                                onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
-                                min={1}
-                            />
-                            {errors.quantity && <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>}
-                        </div>
-
-                        <div>
-                            <InputLabel htmlFor="unit_price" value="Preço Unitário" />
-                            <input
-                                type="number"
-                                id="unit_price"
-                                className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                value={data.unit_price}
-                                min={0}
-                                step="0.01"
-                                disabled
-                            />
-                            {errors.unit_price && <p className="text-red-600 text-sm mt-1">{errors.unit_price}</p>}
-                        </div>
-
-                        <div>
-                            <InputLabel htmlFor="total_price" value="Preço Total" />
-                            <input
-                                type="number"
-                                id="total_price"
-                                className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                value={data.total_price}
-                                min={0}
-                                step="0.01"
-                                disabled
-                                readOnly
-                            />
-                            {errors.total_price && <p className="text-red-600 text-sm mt-1">{errors.total_price}</p>}
-                        </div>
 
                         <div className="mt-3 flex justify-end items-center gap-2">
                             <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>

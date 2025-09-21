@@ -142,14 +142,13 @@ export default function Edit({
                                             className="mt-1 block w-full rounded border-gray-300 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-200"
                                             value={data.short_description}
                                             onChange={(e) => setData('short_description', e.target.value)}
-                                            required
                                             autoComplete="short_description"
                                             rows={4}
                                             maxLength={255}
                                         />
 
                                         <div className="text-xs text-gray-500 dark:text-gray-400 text-left">
-                                            {data.short_description.length}/255
+                                            {data?.short_description?.length ? data.short_description.length : 0}/255
                                         </div>
 
                                         <InputError className="mt-2" message={errors.short_description} />

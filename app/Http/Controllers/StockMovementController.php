@@ -88,7 +88,7 @@ class StockMovementController extends Controller
                 $validated['store_id'],
                 $validated['product_variant_id'],
                 (float) $validated['quantity'],
-                StockMovementSubtype::from($validated['subtype']),
+                $validated['subtype'],
                 $validated['cost_price'] ?? null,
                 $validated['reason'] ?? null,
                 $validated['document_number'] ?? null,

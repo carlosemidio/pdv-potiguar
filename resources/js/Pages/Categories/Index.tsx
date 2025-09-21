@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Category } from '@/types/Category';
 import Pagination from '@/Components/Pagination/Pagination';
+import CategoryFormModal from '@/Components/CategoryFormModal';
 
 export default function Index({
     auth,
@@ -18,6 +19,8 @@ export default function Index({
 
     const [confirmingCategoryDeletion, setConfirmingCategoryDeletion] = useState(false);
     const [categoryIdToDelete, setCategoryIdToDelete] = useState<number | null>(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
 
     const {
         delete: destroy,
@@ -44,6 +47,16 @@ export default function Index({
         setCategoryIdToDelete(null);
         clearErrors();
         reset();
+    };
+
+    const handleOpenModalForCreate = () => {
+        setCategoryToEdit(null);
+        setIsOpen(true);
+    };
+
+    const handleOpenModalForEdit = (category: Category) => {
+        setCategoryToEdit(category);
+        setIsOpen(true);
     };
 
     const categoryToDelete = categories?.data?.find
@@ -108,11 +121,9 @@ export default function Index({
                                             </DangerButton>
                                         )}
                                         {(can('categories_edit') &&  (category.user_id != null)) && (
-                                            <Link href={route('categories.edit', { id: category.id })}>
-                                                <SecondaryButton size='sm' title="Editar categoria">
-                                                    <Edit className='w-4 h-4' />
-                                                </SecondaryButton>
-                                            </Link>
+                                            <SecondaryButton size='sm' title="Editar categoria" onClick={() => handleOpenModalForEdit(category)}>
+                                                <Edit className='w-4 h-4' />
+                                            </SecondaryButton>
                                         )}
                                     </div>
                                 </Card>
@@ -129,14 +140,21 @@ export default function Index({
             </section>
 
             {can('categories_create') && (
-                <Link href={route('categories.create')}>
+                <>
+                    <CategoryFormModal
+                        isOpen={isOpen}
+                        onClose={() => setIsOpen(false)}
+                        category={categoryToEdit}
+                    />
+
                     <button
                         aria-label="Nova categoria"
                         className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                        onClick={handleOpenModalForCreate}
                     >
                         <Plus className='w-6 h-6' />
                     </button>
-                </Link>
+                </>
             )}
 
             {categoryToDelete && (

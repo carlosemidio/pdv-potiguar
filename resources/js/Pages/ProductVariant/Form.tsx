@@ -91,15 +91,7 @@ export default function EditVariant({
         if (isEdit) {
             post(route('product-variant.update', productVariant.data.id), {
                 preserveScroll: true,
-                onSuccess: () => setData({
-                    _method: productVariant ? 'patch' : 'post',
-                    product_id: null,
-                    sku: '',
-                    image: null,
-                    images: [],
-                    attributes: [],
-                    files: [],
-                }),
+                preserveState: true,
             });
         } else {
             post(route('product-variant.store'));

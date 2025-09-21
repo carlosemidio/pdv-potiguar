@@ -16,9 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('store_id')->constrained()->onDelete('cascade');
-            $table->foreignId('store_product_variant_id')->nullable()
-                ->constrained('store_product_variants')->onDelete('set null');
-            $table->enum('type', ['in', 'out']);
+            $table->nullableMorphs('stockable'); // Polymorphic relation
+            $table->boolean('type')->default(true)->comment('true = in, false = out');
             $table->string('subtype');
             $table->decimal('quantity', 10, 2);
             $table->decimal('cost_price', 10, 2)->nullable();

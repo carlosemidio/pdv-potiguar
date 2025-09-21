@@ -1,5 +1,5 @@
 import { Category } from '@/types/Category';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 
 // Define the shape of the options
@@ -9,7 +9,7 @@ interface OptionType {
 }
 
 type SearchableCategoriesSelectProps = {
-  setCategory: (category: Category) => void;
+  setCategory: (category: Category | null) => void;
   selectedCategory: Category | null;
   isDisabled?: boolean;
 };
@@ -22,6 +22,11 @@ const SearchableCategoriesSelect: React.FC<SearchableCategoriesSelectProps> = ({
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(
     selectedCategory ? { value: selectedCategory.id, label: selectedCategory.name } : null
   );
+
+  // Sincroniza o valor do select com a prop selectedCategory
+  useEffect(() => {
+    setSelectedOption(selectedCategory ? { value: selectedCategory.id, label: selectedCategory.name } : null);
+  }, [selectedCategory]);
   
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -53,9 +58,10 @@ const SearchableCategoriesSelect: React.FC<SearchableCategoriesSelectProps> = ({
   // Handle the selection change
   const handleChange = (selected: OptionType | null): void => {
     setSelectedOption(selected);
+
     let category = categories.find((category: Category) => category.id === selected?.value);
 
-    if (category) setCategory(category);
+    setCategory(category || null);
   };
 
   return (

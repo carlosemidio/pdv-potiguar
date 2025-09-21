@@ -18,6 +18,7 @@ use App\Http\Controllers\CityController;
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\IngredientsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderDiscountController;
 use App\Http\Controllers\OrderPaymentsController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\StoreProductVariantController;
 use App\Http\Controllers\TenantsController;
 use App\Http\Controllers\UserController;
+use App\Models\Ingredient;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -43,7 +45,6 @@ Route::get('/', function () {
     // ]);
     return redirect('/login');
 })->name('home');
-
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -76,6 +77,15 @@ Route::middleware('auth')->group(function () {
     Route::patch('/lojas/{id}/status', [StoreController::class, 'status'])->name('store.status');
     Route::get('/lojas/{id}/select', [StoreController::class, 'setDefault'])
         ->name('store.select');
+
+    Route::resource('/categorias', CategoriesController::class)
+        ->names('categories');
+
+    Route::resource('/marcas', BrandsController::class)
+        ->names('brands');
+
+    Route::resource('/ingredientes', IngredientsController::class)
+        ->names('ingredients');
         
     Route::resource('/produtos', ProductController::class)
         ->names('product');
@@ -88,12 +98,6 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/movimentacoes-estoque', StockMovementController::class)
         ->names('stock-movement');
-
-    Route::resource('/categorias', CategoriesController::class)
-        ->names('categories');
-
-    Route::resource('/marcas', BrandsController::class)
-        ->names('brands');
 
     Route::resource('/mesas', App\Http\Controllers\TablesController::class)
         ->names('tables');

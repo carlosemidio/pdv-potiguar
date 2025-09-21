@@ -1,5 +1,5 @@
 import { StoreProductVariant } from '@/types/StoreProductVariant';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 
 interface OptionType {
@@ -21,6 +21,10 @@ const SearchableStoreProductVariantsSelect: React.FC<SearchableStoreProductVaria
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(
     selectedVariant ? { value: selectedVariant.id, label: selectedVariant.product_variant.name } : null
   );
+
+  useEffect(() => {
+    setSelectedOption(selectedVariant ? { value: selectedVariant.id, label: selectedVariant.product_variant.name } : null);
+  }, [selectedVariant]);
 
   const [variants, setVariants] = useState<StoreProductVariant[]>([]);
 

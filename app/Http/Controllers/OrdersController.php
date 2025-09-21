@@ -74,9 +74,7 @@ class OrdersController extends Controller
             ->withQueryString();
 
         if ($user->hasPermission('tables_view')) {
-            $tables = Table::where('store_id', $user->store_id)
-                ->where('status', 'available')
-                ->get();
+            $tables = Table::where('store_id', $user->store_id)->get();
         }
 
         return Inertia::render('Orders/Index', [

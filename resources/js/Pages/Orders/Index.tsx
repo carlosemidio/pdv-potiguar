@@ -255,7 +255,7 @@ export default function Index({
 
                     {can('orders_create') && (
                         <>
-                            <OrderFormModal isOpen={isOpen} onClose={() => setIsOpen(false)} tables={tables.data} order={order} />
+                            <OrderFormModal isOpen={isOpen} onClose={() => setIsOpen(false)} tables={tables.data} order={order ?? null} />
 
                             <button
                                 aria-label="Novo pedido"

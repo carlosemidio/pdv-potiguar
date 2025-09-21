@@ -4,12 +4,13 @@ import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { Edit, Trash, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import Pagination from '@/Components/Pagination/Pagination';
 import { Table } from '@/types/Table';
+import TableFormModal from '@/Components/TableFormModal';
 
 export default function Index({
     auth,
@@ -17,6 +18,8 @@ export default function Index({
 }: PageProps<{ tables: PaginatedData<Table> }>) {
     const [confirmingTableDeletion, setConfirmingTableDeletion] = useState(false);
     const [tableIdToDelete, setTableIdToDelete] = useState<number | null>(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const [tableToEdit, setTableToEdit] = useState<Table | null>(null);
 
     const {
         delete: destroy,
@@ -43,6 +46,16 @@ export default function Index({
         setTableIdToDelete(null);
         clearErrors();
         reset();
+    };
+
+    const handleOpenModalForCreate = () => {
+        setTableToEdit(null);
+        setIsOpen(true);
+    }
+
+    const handleOpenModalForEdit = (table: Table) => {
+        setTableToEdit(table);
+        setIsOpen(true);
     };
 
     const tableToDelete = tables?.data?.find
@@ -109,11 +122,9 @@ export default function Index({
                                         </DangerButton>
                                     )}
                                     {(can('tables_edit') && (table.user_id != null)) && (
-                                        <Link href={route('tables.edit', { id: table.id })}>
-                                            <SecondaryButton size='sm' title="Editar mesa">
-                                                <Edit className='w-4 h-4' />
-                                            </SecondaryButton>
-                                        </Link>
+                                        <SecondaryButton size='sm' title="Editar mesa" onClick={() => handleOpenModalForEdit(table)}>
+                                            <Edit className='w-4 h-4' />
+                                        </SecondaryButton>
                                     )}
                                 </div>
                             </Card>
@@ -128,15 +139,16 @@ export default function Index({
                         </div>
                     )}
 
+                    <TableFormModal isOpen={isOpen} onClose={() => setIsOpen(false)} table={tableToEdit} />
+
                     {can('tables_create') && (
-                        <Link href={route('tables.create')}>
-                            <button
-                                aria-label="Nova mesa"
-                                className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
-                            >
-                                <Plus className='w-6 h-6' />
-                            </button>
-                        </Link>
+                        <button
+                            aria-label="Nova mesa"
+                            className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                            onClick={handleOpenModalForCreate}
+                        >
+                            <Plus className='w-6 h-6' />
+                        </button>
                     )}
                 </div>
             </section>

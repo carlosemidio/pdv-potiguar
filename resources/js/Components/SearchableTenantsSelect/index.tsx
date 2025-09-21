@@ -1,5 +1,5 @@
 import { Tenant } from '@/types/Tenant';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 
 interface OptionType {
@@ -21,6 +21,10 @@ const SearchableTenantsSelect: React.FC<SearchableTenantsSelectProps> = ({
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(
     selectedTenant ? { value: selectedTenant.id, label: selectedTenant.name } : null
   );
+
+  useEffect(() => {
+    setSelectedOption(selectedTenant ? { value: selectedTenant.id, label: selectedTenant.name } : null);
+  }, [selectedTenant]);
   
   const [tenants, setTenants] = useState<Tenant[]>([]);
 

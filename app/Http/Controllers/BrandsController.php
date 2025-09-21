@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\BrandResource;
 use App\Models\Brand;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -47,13 +46,6 @@ class BrandsController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        $this->authorize('create', Brand::class);
-
-        return Inertia::render('Brands/Form');
-    }
-
     public function store(Request $request)
     {
         $this->authorize('create', Brand::class);
@@ -65,6 +57,7 @@ class BrandsController extends Controller
             ]);
 
             $data['user_id'] = Auth::user()->id;
+            $data['tenant_id'] = Auth::user()->tenant_id;
 
             $brand = $this->brand->create($data);
 
@@ -79,17 +72,6 @@ class BrandsController extends Controller
             return redirect()->back()
             ->with('fail', 'Erro ao criar marca: ' . $e->getMessage());
         }
-    }
-
-    public function edit($id)
-    {
-        $brand = $this->brand->findOrFail($id);
-
-        $this->authorize('update', $brand);
-
-        return Inertia::render('Brands/Form', [
-            'brand' => new BrandResource($brand),
-        ]);
     }
 
     public function update(Request $request, $id)

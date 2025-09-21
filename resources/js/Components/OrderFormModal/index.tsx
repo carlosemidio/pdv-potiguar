@@ -19,7 +19,7 @@ interface OrderFormModalProps {
 
 export default function OrderFormModal({ isOpen, onClose, tables, order }: OrderFormModalProps) {
     const { data, setData, patch, post, processing } = useForm({
-        table_id: order?.table_id ?? '',
+        table_id: order?.table?.id ?? null,
         customer_id: order?.customer_id ?? ''
     });
 
@@ -29,9 +29,13 @@ export default function OrderFormModal({ isOpen, onClose, tables, order }: Order
     // Keep local state and form data in sync when opening for edit or switching orders
     useEffect(() => {
         setSelectedCustomer(order?.customer ?? null);
-        console.log(order);
-        setData((prevData) => ({...prevData, customer_id: order?.customer_id ?? '', table_id: order?.table_id ?? ''})); 
-    }, [order]);
+        setData(prev => ({
+            customer_id: order?.customer_id ?? '',
+            table_id: (order?.table?.id !== undefined && order?.table?.id !== null)
+                ? order.table.id
+                : prev.table_id
+        }));
+    }, [order, isOpen]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -63,14 +67,16 @@ export default function OrderFormModal({ isOpen, onClose, tables, order }: Order
                                     <select
                                         id="table_id"
                                         className="mt-1 block w-full rounded border-gray-300 dark:border-gray-700 dark:bg-gray-900"
-                                        value={data.table_id}
-                                        onChange={(e) => setData('table_id', Number(e.target.value))}
+                                        value={String(data.table_id)}
+                                        onChange={(e) => setData('table_id', e.target.value === "" ? null : Number(e.target.value))}
                                     >
                                         <option value="">Selecione uma mesa</option>
-                                        {tables.map(table => (
-                                            <option key={table.id} value={table.id}>
-                                                {table.name}
-                                            </option>
+                                        {tables.map(table => (                                            
+                                            ((table.status === 'available') || (String(table.id) === String(data.table_id))) && (
+                                                <option key={table.id} value={String(table.id)}>
+                                                    {table.name}
+                                                </option>
+                                            )
                                         ))}
                                     </select>
                                 </div>

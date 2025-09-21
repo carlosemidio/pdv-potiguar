@@ -1,5 +1,5 @@
 import { Brand } from '@/types/Brand';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 
 // Define the shape of the options
@@ -22,6 +22,10 @@ const SearchableBrandsSelect: React.FC<SearchableBrandsSelectProps> = ({
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(
     selectedBrand ? { value: selectedBrand.id, label: selectedBrand.name } : null
   );
+
+  useEffect(() => {
+    setSelectedOption(selectedBrand ? { value: selectedBrand.id, label: selectedBrand.name } : null);
+  }, [selectedBrand]);
   
   const [brands, setBrands] = useState<Brand[]>([]);
 

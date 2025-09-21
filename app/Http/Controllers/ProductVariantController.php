@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 class ProductVariantController extends Controller
 {
@@ -87,6 +88,16 @@ class ProductVariantController extends Controller
         }
 
         $dataForm['name'] = $product->name . ' - ' . implode(', ', $attributeNames);
+
+        // Verifica se a variante já existe
+        $existingVariant = ProductVariant::where('product_id', $dataForm['product_id'])
+            ->where('slug', Str::slug($dataForm['name']))
+            ->first();
+
+        if ($existingVariant) {
+            return redirect()->back()
+                ->with('fail', 'Já existe uma variante de produto com essas características para o produto selecionado.');
+        }
 
         try {
             $productVariant = ProductVariant::create($dataForm);
@@ -178,6 +189,16 @@ class ProductVariantController extends Controller
             }
 
             $dataForm['name'] = $productVariant->product->name . ' - ' . implode(', ', $attributeNames);
+
+            // Verifica se a variante já existe
+            $existingVariant = ProductVariant::where('product_id', $dataForm['product_id'])
+                ->where('slug', Str::slug($dataForm['name']))
+                ->first();
+
+            if (($existingVariant instanceof ProductVariant) && ($existingVariant->id != $productVariant->id)) {
+                return redirect(route('product-variant.edit', $productVariant->id))
+                    ->with('fail', 'Já existe uma variante de produto com essas características para o produto selecionado.');
+            }
 
             if ($productVariant->update($dataForm)) {
                 if (isset($dataForm['attributes']) && is_array($dataForm['attributes']) && count($dataForm['attributes']) > 0) {

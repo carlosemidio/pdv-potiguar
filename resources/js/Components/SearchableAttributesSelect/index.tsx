@@ -1,5 +1,5 @@
 import { Attribute } from '@/types/Attribute';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 
 // Define the shape of the options
@@ -24,6 +24,10 @@ const SearchableAttibutesSelect: React.FC<SearchableAttibutesSelectProps> = ({
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(
     selectedAttribute ? { value: selectedAttribute.id, label: selectedAttribute.name } : null
   );
+
+  useEffect(() => {
+    setSelectedOption(selectedAttribute ? { value: selectedAttribute.id, label: selectedAttribute.name } : null);
+  }, [selectedAttribute]);
   
   const [attributes, setAttributes] = useState<Attribute[]>([]);
 

@@ -5,15 +5,20 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class StoreProductVariantAddonResource extends JsonResource
+class IngredientResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
-            'sp_variant_id' => $this->store_product_variant_id,
+            'user_id' => $this->user_id,
+            'tenant_id' => $this->tenant_id,
+            'store_id' => $this->store_id,
+            'unit_id' => $this->unit_id,
+            'unit' => new UnitResource($this->whenLoaded('unit')),
             'name' => $this->name,
-            'price' => $this->price,
+            'cost_price' => $this->cost_price,
+            'quantity' => $this->quantity,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

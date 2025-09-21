@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\AddonResource;
 use App\Http\Resources\CategoryResource;
-use App\Models\Addon;
 use App\Models\Category;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -50,13 +47,6 @@ class CategoriesController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        $this->authorize('create', Category::class);
-
-        return Inertia::render('Categories/Form');
-    }
-
     public function store(Request $request)
     {
         $this->authorize('create', Category::class);
@@ -84,19 +74,6 @@ class CategoriesController extends Controller
             return redirect()->back()
             ->with('fail', 'Erro ao criar categoria: ' . $e->getMessage());
         }
-    }
-
-    public function edit($id)
-    {
-        $category = $this->category->findOrFail($id);
-
-        $this->authorize('update', $category);
-
-        $category->load('parent');
-
-        return Inertia::render('Categories/Form', [
-            'category' => new CategoryResource($category),
-        ]);
     }
 
     public function update(Request $request, $id)

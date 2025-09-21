@@ -1,7 +1,6 @@
-import PrimaryButton from "../PrimaryButton"
-import { MdDelete } from "react-icons/md"
 import { Addon } from "@/types/Addon"
 import { OrderItemAddon } from "@/types/OrderItemAddon"
+import { PlusCircle, X, XSquare } from "lucide-react"
 
 interface Props {
   productAddons?: Addon[]
@@ -64,17 +63,20 @@ export default function OrderItemAddonsForm({ productAddons, orderItemAddons, on
         <span className="bg-blue-100 text-blue-700 px-2 py-0 rounded text-xs font-semibold">
           {orderItemAddons.length}
         </span>
+        <span className="bg-blue-700 text-white rounded-full flex items-center justify-center text-xs font-semibold cursor-pointer" onClick={addAddon} title="Adicionar complemento">
+          <PlusCircle size={26} />
+        </span>
       </h4>
       <div className="space-y-2">
         {orderItemAddons.map((orderItemAddon, index) => (
           <div
             key={index}
-            className="border border-gray-200 p-2 rounded-lg bg-white flex flex-col gap-2"
+            className="border border-gray-200 p-2 rounded-lg bg-white flex flex-col gap-2 relative"
           >
             <div className="flex flex-wrap gap-2 items-center">
               <select
                 id={`addon-select-${index}`}
-                className="min-w-[120px] border border-gray-300 rounded px-2 py-1 text-xs bg-gray-50"
+                className="w-[92%] border border-gray-300 rounded px-2 py-1 text-xs bg-gray-50"
                 value={orderItemAddon.sp_variant_addon_id || ''}
                 onChange={e => {
                   handleAddonSelect(index, e.target.value ? parseInt(e.target.value) : null)
@@ -114,27 +116,17 @@ export default function OrderItemAddonsForm({ productAddons, orderItemAddons, on
               <span className="text-xs text-gray-900 font-bold bg-gray-100 px-2 py-1 rounded">
                 R$ {orderItemAddon.total_price}
               </span>
-              <PrimaryButton
-                type="button"
-                className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded flex items-center gap-1 text-xs"
+              <span
+                className="bg-red-500 hover:bg-red-600 text-white rounded flex items-center gap-1 text-xs absolute top-2 right-2"
                 onClick={() => removeAddon(index)}
-                title="Remover complemento"
               >
-                <MdDelete size={16} />
-              </PrimaryButton>
+                <XSquare size={20} />
+              </span>
             </div>
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-2 mt-4">
-        <PrimaryButton
-          type="button"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded flex items-center gap-1 text-xs"
-          onClick={addAddon}
-        >
-          <span className="text-base font-bold">+</span>
-          <span>Complemento</span>
-        </PrimaryButton>
+      <div className="flex items-center gap-2 mt-2">
         {orderItemAddons.length === 0 && (
           <p className="text-gray-400 text-xs">Nenhum complemento adicionado.</p>
         )}

@@ -17,9 +17,9 @@ return new class extends Migration
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('store_id')->constrained('stores')->onDelete('cascade');
             $table->foreignId('product_variant_id')->constrained('product_variants')->onDelete('cascade');
-
             $table->unique(['store_id', 'product_variant_id']);
 
+            $table->boolean('is_produced')->default(false);
             $table->decimal('cost_price', 10, 2)->default(0.00);
             $table->decimal('price', 10, 2)->default(0.00);
             $table->integer('stock_quantity')->default(0);

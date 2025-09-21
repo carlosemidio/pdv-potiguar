@@ -5,45 +5,49 @@ import SecondaryButton from "../SecondaryButton";
 import PrimaryButton from "../PrimaryButton";
 import { useForm } from "@inertiajs/react";
 import { FormEventHandler, useState } from "react";
-import { Unit } from "@/types/Unit";
 import { Addon } from "@/types/Addon";
-import { VariantAddon } from "@/types/VariantAddon";
 import SearchableAddonsSelect from "../SearchableAddonsSelect";
 
-interface VariantAddonFormModalProps {
+interface AddonGroupOptionFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    sp_variant_id: number;
-    units: Unit[];
-    variantAddon?: VariantAddon | null;
+    addon_group_id: number;
 }
 
-export default function VariantAddonFormModal({
+export default function AddonGroupOptionFormModal({
     isOpen,
     onClose,
-    sp_variant_id
-}: VariantAddonFormModalProps) {
+    addon_group_id
+}: AddonGroupOptionFormModalProps) {
     const { data, setData, post, processing } = useForm({
-        sp_variant_id: sp_variant_id,
-        addon_id: '' as string | number,
+        addon_group_id: addon_group_id,
+        addon_id: 0,
         quantity: '',
-        price: '',
+        additional_price: '',
     });
 
     const [addon, setAddon] = useState<Addon | null>(null);
 
-    const handleAddonChange = (ad: Addon | null) => {
-        setAddon(ad);
-        setData('addon_id', ad ? ad.id : '');
-    }
+    const handleAddonChange = (selectedAddon: Addon | null) => {
+        setAddon(selectedAddon);
+        setData('addon_id', selectedAddon ? selectedAddon.id : 0);
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        post(route('variant-addons.store'), {
+        post(route('addon-group-options.store'), {
             preserveScroll: true,
             preserveState: true,
-            onSuccess: () => onClose()
+            onSuccess: () => {
+                setData({
+                    addon_group_id: 0,
+                    addon_id: 0,
+                    quantity: '',
+                    additional_price: '',
+                });
+                onClose();
+            }
         });
     };
 
@@ -51,7 +55,7 @@ export default function VariantAddonFormModal({
         <Modal show={isOpen} onClose={onClose}>
             <div className="p-3">
                 <div className="flex justify-between">
-                    <p className="text-lg">Adicionar complemento</p>
+                    <p className="text-lg">Adicionar Opção</p>
                     <Button onClick={onClose}>
                         <X size={20} />
                     </Button>
@@ -59,19 +63,15 @@ export default function VariantAddonFormModal({
                 <div className="mt-3">
                     <div className="space-y-3">
                         <form onSubmit={submit} className="space-y-4">
-                            <div>
-                                <label htmlFor="addon_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Addon
-                                </label>
-                                <SearchableAddonsSelect
-                                    selectedAddon={addon}
-                                    setAddon={handleAddonChange}
-                                    isDisabled={processing}
-                                />
-                            </div>
+                            <SearchableAddonsSelect
+                                selectedAddon={addon}
+                                setAddon={handleAddonChange}
+                                isDisabled={processing}
+                            />
+
                             <div>
                                 <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Quantidade (Máxima)
+                                    Quantidade
                                 </label>
                                 <input
                                     type="number"
@@ -85,25 +85,25 @@ export default function VariantAddonFormModal({
                                     disabled={processing}
                                 />
                             </div>
-
                             <div>
-                                <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Preço (opcional)
+                                <label htmlFor="additional_price" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Preço adicional
                                 </label>
                                 <input
                                     type="number"
-                                    id="price"
+                                    id="additional_price"
                                     min={0}
                                     step={0.01}
                                     className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    value={data.price}
-                                    onChange={(e) => setData('price', e.target.value)}
+                                    value={data.additional_price}
+                                    onChange={(e) => setData('additional_price', e.target.value)}
+                                    required
                                     disabled={processing}
                                 />
                             </div>
                             <div className="mt-3 flex justify-end items-center gap-2">
                                 <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>
-                                <PrimaryButton onClick={submit}>Adicionar</PrimaryButton>
+                                <PrimaryButton onClick={submit}>Salvar</PrimaryButton>
                             </div>
                         </form>
                     </div>

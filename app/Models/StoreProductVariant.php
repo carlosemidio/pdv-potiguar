@@ -42,4 +42,9 @@ class StoreProductVariant extends Model
     {
         return $this->hasMany(VariantAddon::class, 'sp_variant_id');
     }
+
+    public function variantAddonGroups()
+    {
+        return $this->hasMany(VariantAddonGroup::class, 'sp_variant_id');
+    }
 }

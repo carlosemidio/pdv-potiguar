@@ -91,7 +91,7 @@ export default function Index({
                                         {addon.addon_ingredients && addon.addon_ingredients.length > 0 ? (
                                             addon.addon_ingredients.map((addonIngredient) => (
                                                 <li key={addonIngredient.id} className='truncate'>
-                                                    {addonIngredient.ingredient ? addonIngredient.ingredient.name : '—'}
+                                                    {addonIngredient.ingredient ? addonIngredient.ingredient.name : '—'} {addonIngredient.quantity}({addonIngredient.unit ? addonIngredient.unit.symbol : '—'})
                                                 </li>
                                             ))
                                         ) : (

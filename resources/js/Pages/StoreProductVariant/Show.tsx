@@ -1,7 +1,10 @@
+import AddonGroupOptionFormModal from '@/Components/AddonGroupOptionFormModal';
 import Card from '@/Components/Card';
 import SecondaryButton from '@/Components/SecondaryButton';
 import VariantAddonDeleteFormModal from '@/Components/VariantAddonDeleteFormModal';
 import VariantAddonFormModal from '@/Components/VariantAddonFormModal';
+import VariantAddonGroupDeleteFormModal from '@/Components/VariantAddonGroupDeleteFormModal';
+import VariantAddonGroupFormModal from '@/Components/VariantAddonGroupFormModal';
 import VariantIngredientDeleteFormModal from '@/Components/VariantIngredientDeleteFormModal';
 import VariantIngredientFormModal from '@/Components/VariantIngredientFormModal';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -17,13 +20,24 @@ export default function Index({
     storeProductVariant,
     units
 }: PageProps<{ storeProductVariant: { data: StoreProductVariant }, units: { data: Unit[] } }>) {
-    const [tab, setTab] = useState<'detalhes' | 'ingredientes' | 'complementos'>('detalhes');
+    const [tab, setTab] = useState<'detalhes' | 'ingredientes' | 'grupos-de-opcoes' | 'complementos'>('detalhes');
     const variant = storeProductVariant?.data;
     const [isIngredientModalOpen, setIsIngredientModalOpen] = useState(false);
     const [isIngredientDeleteModalOpen, setIsIngredientDeleteModalOpen] = useState(false);
     const [isAddonModalOpen, setIsAddonModalOpen] = useState(false);
     const [isAddonDeleteModalOpen, setIsAddonDeleteModalOpen] = useState(false);
+    const [isOptionGroupModalOpen, setIsOptionGroupModalOpen] = useState(false);
+    const [isOptionGroupDeleteModalOpen, setIsOptionGroupDeleteModalOpen] = useState(false);
+    // Corrige erro de hooks: controla grupo expandido fora do map
+    // Deixa o primeiro grupo aberto por padrão
+    const [openOptionGroupIdx, setOpenOptionGroupIdx] = useState<number | null>(
+        variant?.variant_addon_groups && variant.variant_addon_groups.length > 0 ? 0 : null
+    );
+    const [isAddonGroupOptionsModalOpen, setIsAddonGroupOptionsModalOpen] = useState(false);
+    const [isAddonGroupOptionsDeleteModalOpen, setIsAddonGroupOptionsDeleteModalOpen] = useState(false);
     
+    const [addonGroupId, setAddonGroupId] = useState<number | null>(null);
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -44,6 +58,7 @@ export default function Index({
                     <div className="mb-2 flex gap-2 border-b border-gray-200 dark:border-gray-700 text-xs">
                         <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'detalhes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('detalhes')}>Detalhes</button>
                         <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'ingredientes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('ingredientes')}>Ingredientes</button>
+                        <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'grupos-de-opcoes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('grupos-de-opcoes')}>Grupos de Opções</button>
                         <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'complementos' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('complementos')}>Complementos</button>
                     </div>
                     <div className='grid grid-cols-1 gap-2 mt-2'>
@@ -122,13 +137,92 @@ export default function Index({
                                     <div className='text-gray-500 dark:text-gray-400'>Nenhum ingrediente cadastrado.</div>
                                 )}
                                 <div className="mt-3 flex justify-start items-center gap-2">
-                                    <SecondaryButton onClick={() => setIsIngredientDeleteModalOpen(true)}>
-                                        <Trash2 className="w-4 h-4 mr-1 inline text-red-700 dark:text-red-300" />
-                                        Remover
-                                    </SecondaryButton>
+                                    {variant?.ingredients && variant.ingredients.length > 0 && (
+                                        <SecondaryButton onClick={() => setIsIngredientDeleteModalOpen(true)}>
+                                            <Trash2 className="w-4 h-4 mr-1 inline text-red-700 dark:text-red-300" />
+                                            Remover
+                                        </SecondaryButton>
+                                    )}
 
                                     <SecondaryButton onClick={() => setIsIngredientModalOpen(true)}>
                                         <PlusCircle className="w-4 h-4 mr-1 inline text-blue-700 dark:text-blue-300" />
+                                    </SecondaryButton>
+                                </div>
+                            </Card>
+                        )}
+
+                        {tab === 'grupos-de-opcoes' && (
+                            <Card className="p-3 relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
+                                <h3 className='text-lg font-bold mb-2 text-blue-700 dark:text-blue-300'>Grupos de Opções</h3>
+                                {variant?.variant_addon_groups && variant.variant_addon_groups.length > 0 ? (
+                                    <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-base">
+                                        {variant.variant_addon_groups.map((variantAddonGroup, idx) => {
+                                            const isOpen = openOptionGroupIdx === idx;
+                                            return (
+                                                <li key={idx} className="flex flex-col gap-1">
+                                                    <button
+                                                        className="flex justify-between items-center w-full py-2 px-2 rounded bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                                        onClick={() => setOpenOptionGroupIdx(isOpen ? null : idx)}
+                                                        type="button"
+                                                    >
+                                                        <span className="font-semibold text-base">
+                                                            {variantAddonGroup.name || '-'} ({variantAddonGroup.is_required ? 'Obrigatório' : 'Opcional'})
+                                                        </span>
+                                                        <span className="ml-2 text-xs">{isOpen ? '▲' : '▼'}</span>
+                                                    </button>
+                                                    {isOpen && (
+                                                        <div className="mt-2">
+                                                            <span className="text-gray-500 dark:text-gray-400 text-sm">
+                                                                Mínimo: {variantAddonGroup.min_options} | Máximo: {variantAddonGroup.max_options}
+                                                            </span>
+                                                            <div className="flex flex-col gap-1 mt-1">
+                                                                {variantAddonGroup.addon_group_options && variantAddonGroup.addon_group_options.length > 0 ? (
+                                                                    <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
+                                                                        {variantAddonGroup.addon_group_options.map((option, optionIdx) => (
+                                                                            <li key={optionIdx} className="flex flex-row gap-4 justify-start">
+                                                                                <span className="font-semibold">{option.addon?.name || '-'}</span>
+                                                                                <span className="text-gray-500 dark:text-gray-400">Qtd: {option.quantity}</span>
+                                                                                <span className="text-gray-500 dark:text-gray-400">Preço: R$ {option.additional_price || '0.00'}</span>
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                ) : (
+                                                                    <div className='text-gray-500 dark:text-gray-400 text-sm'>Nenhuma opção cadastrada.</div>
+                                                                )}
+                                                            </div>
+                                                            <button
+                                                                className="mt-2 px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm w-max"
+                                                                onClick={() => {
+                                                                    setAddonGroupId(0);
+                                                                    setTimeout(() => {
+                                                                        setAddonGroupId(variantAddonGroup.id ?? null);
+                                                                        setIsAddonGroupOptionsModalOpen(true);
+                                                                    }, 100);
+                                                                }}
+                                                            >
+                                                                Add opção
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                ) : (
+                                    <div className='text-gray-500 dark:text-gray-400 text-base'>Nenhum grupo de opções cadastrado.</div>
+                                )}
+
+                                <div className="mt-3 flex justify-start items-center gap-2">
+                                    {variant?.variant_addon_groups && variant.variant_addon_groups.length > 0 && (
+                                        <SecondaryButton onClick={() => setIsOptionGroupDeleteModalOpen(true)}>
+                                            <Trash2 className="w-5 h-5 mr-1 inline text-red-700 dark:text-red-300" />
+                                            <span className="text-base">Grupo</span>
+                                        </SecondaryButton>
+                                    )}
+
+                                    <SecondaryButton onClick={() => setIsOptionGroupModalOpen(true)}>
+                                        <PlusCircle className="w-5 h-5 mr-1 inline text-blue-700 dark:text-blue-300" />
+                                        <span className="text-base">Grupo</span>
                                     </SecondaryButton>
                                 </div>
                             </Card>
@@ -152,10 +246,12 @@ export default function Index({
                                 )}
 
                                 <div className="mt-3 flex justify-start items-center gap-2">
-                                    <SecondaryButton onClick={() => setIsAddonDeleteModalOpen(true)}>
-                                        <Trash2 className="w-4 h-4 mr-1 inline text-red-700 dark:text-red-300" />
-                                        Remover
-                                    </SecondaryButton>
+                                    {variant?.variant_addons && variant.variant_addons.length > 0 && (
+                                        <SecondaryButton onClick={() => setIsAddonDeleteModalOpen(true)}>
+                                            <Trash2 className="w-4 h-4 mr-1 inline text-red-700 dark:text-red-300" />
+                                            Remover
+                                        </SecondaryButton>
+                                    )}
 
                                     <SecondaryButton onClick={() => setIsAddonModalOpen(true)}>
                                         <PlusCircle className="w-4 h-4 mr-1 inline text-blue-700 dark:text-blue-300" />
@@ -171,11 +267,33 @@ export default function Index({
                             units={units.data}
                         />
 
-                        {variant?.ingredients?.length && (
+                        {variant?.ingredients && variant.ingredients.length > 0 && (
                             <VariantIngredientDeleteFormModal
                                 isOpen={isIngredientDeleteModalOpen}
                                 onClose={() => setIsIngredientDeleteModalOpen(false)}
                                 variantIngredients={variant.ingredients}
+                            />
+                        )}
+
+                        <VariantAddonGroupFormModal
+                            sp_variant_id={variant?.id}
+                            isOpen={isOptionGroupModalOpen}
+                            onClose={() => setIsOptionGroupModalOpen(false)}
+                        />
+
+                        {variant?.variant_addon_groups && variant.variant_addon_groups.length > 0 && (
+                            <VariantAddonGroupDeleteFormModal
+                                isOpen={isOptionGroupDeleteModalOpen}
+                                onClose={() => setIsOptionGroupDeleteModalOpen(false)}
+                                variantAddonGroups={variant.variant_addon_groups}
+                            />
+                        )}
+
+                        {addonGroupId && (
+                            <AddonGroupOptionFormModal
+                                isOpen={isAddonGroupOptionsModalOpen}
+                                onClose={() => setIsAddonGroupOptionsModalOpen(false)}
+                                addon_group_id={addonGroupId ?? 0}
                             />
                         )}
 

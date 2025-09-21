@@ -60,6 +60,13 @@ class UserSeeder extends Seeder
             'email' => 'ricardo@email.com',
         ], [ 'password' => bcrypt('123') ]);
 
+        $byRenataPlusUser->status = 1;
+        $byRenataPlusUser->save();
+        $kalineModasUser->status = 1;
+        $kalineModasUser->save();
+        $pizariaImperialUser->status = 1;
+        $pizariaImperialUser->save();
+
         // Dev role
         $role_dev = Role::create([
             'user_id' => $user_dev->id,

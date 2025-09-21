@@ -30,6 +30,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Drop the variant_ingredients table first to avoid foreign key constraint errors
+        Schema::dropIfExists('variant_ingredients');
         Schema::dropIfExists('ingredients');
     }
 };

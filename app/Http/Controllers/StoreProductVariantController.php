@@ -153,7 +153,9 @@ class StoreProductVariantController extends Controller
             'productVariant.image',
             'ingredients.ingredient',
             'ingredients.unit',
-            'variantAddons.addon'
+            'variantAddons.addon',
+            'variantAddonGroups',
+            'variantAddonGroups.addonGroupOptions.addon',
         ]);
 
         $unitList = Unit::all();

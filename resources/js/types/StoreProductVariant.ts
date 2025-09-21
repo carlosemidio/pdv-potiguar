@@ -2,6 +2,7 @@ import { Product } from "./Product";
 import { ProductVariant } from "./ProductVariant";
 import { Store } from "./Store";
 import { VariantAddon } from "./VariantAddon";
+import { VariantAddonGroup } from "./VariantAddonGroup";
 import { VariantIngredient } from "./VariantIngredient";
 
 export type StoreProductVariant = {
@@ -14,6 +15,7 @@ export type StoreProductVariant = {
     product_variant: ProductVariant | null;
     ingredients?: VariantIngredient[] | null;
     variant_addons?: VariantAddon[] | null;
+    variant_addon_groups?: VariantAddonGroup[] | null;
     cost_price: number | null;
     price: number | null;
     stock_quantity: number | null;

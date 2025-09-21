@@ -62,5 +62,9 @@ class StoresSeeder extends Seeder
             'longitude' => -46.633308,
             'status' => 1,
         ]);
+
+        $byRenataPlusUser->update(['store_id' => 1]);
+        $kalineModasUser->update(['store_id' => 2]);
+        $pizariaImperialUser->update(['store_id' => 3]);
     }
 }

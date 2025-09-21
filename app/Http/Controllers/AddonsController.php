@@ -50,7 +50,7 @@ class AddonsController extends Controller
         }
 
         $addons = $addonsQuery->orderBy('name')
-            ->with(['addonIngredients.ingredient'])
+            ->with(['addonIngredients.ingredient', 'addonIngredients.unit'])
             ->paginate(12)
             ->withQueryString();
 

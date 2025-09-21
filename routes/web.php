@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AddonGroupOptionsController;
 use App\Http\Controllers\AddonIngredientsController;
 use App\Http\Controllers\AddonsController;
 use App\Http\Controllers\Ajax\AddonsListController;
@@ -35,6 +36,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\StoreProductVariantController;
 use App\Http\Controllers\TenantsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VariantAddonGroupsController;
 use App\Http\Controllers\VariantAddonsController;
 use App\Http\Controllers\VariantIngredientsController;
 use App\Models\Ingredient;
@@ -109,6 +111,14 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/variante-ingredientes', VariantIngredientsController::class)
         ->names('variant-ingredients');
+
+    Route::resource('/variante-grupos', VariantAddonGroupsController::class)
+        ->only(['store', 'destroy'])
+        ->names('variant-addon-groups');
+
+    Route::resource('/grupo-complementos', AddonGroupOptionsController::class)
+        ->only(['store', 'destroy'])
+        ->names('addon-group-options');
 
     Route::resource('/variante-complementos', VariantAddonsController::class)
         ->only(['store', 'destroy'])

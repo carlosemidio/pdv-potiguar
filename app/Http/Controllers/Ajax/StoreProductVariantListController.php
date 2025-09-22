@@ -23,7 +23,7 @@ class StoreProductVariantListController extends Controller
     {
         $search = $request->search ?? '';
         $storeProductVariantsQuery = $this->storeProductVariant->query()
-            ->with(['productVariant', 'addons']);
+            ->with(['productVariant', 'variantAddonGroups.addonGroupOptions.addon', 'variantAddons.addon']);
 
         $user = User::find(Auth::id());
         

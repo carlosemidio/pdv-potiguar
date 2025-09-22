@@ -158,8 +158,17 @@ class OrdersController extends Controller
         $order = $this->order->findOrFail($id);
         $this->authorize('view', $order);
 
-        $order->load(['store', 'table', 'items.storeProductVariant.productVariant', 'items.itemAddons.addon', 'customer', 'payments']);
+        $order->load(['store',
+            'table',
+            'customer',
+            'payments',
+            'items.storeProductVariant.productVariant',
+            'items.orderItemOptions.addonGroupOption.addonGroup',
+            'items.orderItemOptions.addonGroupOption.addon',
+            'items.orderItemAddons.variantAddon.addon'
+        ]);
 
+        // Gerar link do WhatsApp
         if ($order->customer && $order->customer->phone) {
             $message = "Olá {$order->customer->name}! Aqui estão os detalhes do seu pedido:\n";
             $message .= "Nº: {$order->number}\n";

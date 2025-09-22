@@ -5,18 +5,16 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class OrderItemAddonResource extends JsonResource
+class OrderItemOptionResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
-            'variant_addon_id' => $this->variant_addon_id,
             'order_item_id' => $this->order_item_id,
-            'variant_addon' => new VariantAddonResource($this->whenLoaded('variantAddon')),
+            'addon_group_option' => new AddonGroupOptionResource($this->whenLoaded('addonGroupOption')),
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
-            'total_price' => $this->total_price,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

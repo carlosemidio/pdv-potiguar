@@ -118,7 +118,7 @@ export default function Index({
                     </div>
 
                     {can('stock-movements_create') && (
-                        <Link href={route('stock-movement.create')} className="fixed bottom-14 right-6 z-10">
+                        <Link href={route('stock-movement.create')} className="fixed bottom-16 right-6 z-10">
                             <PrimaryButton className="rounded-full w-12 h-12 p-0 flex items-center justify-center shadow-lg">
                                 <Plus className="w-6 h-6" />
                             </PrimaryButton>

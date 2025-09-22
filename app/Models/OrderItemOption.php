@@ -6,16 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class OrderItemAddon extends Model
+class OrderItemOption extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'order_item_id',
-        'variant_addon_id',
+        'addon_group_option_id',
         'quantity',
         'unit_price',
-        'total_price',
     ];
 
     public function orderItem()
@@ -23,8 +22,8 @@ class OrderItemAddon extends Model
         return $this->belongsTo(OrderItem::class);
     }
 
-    public function variantAddon()
+    public function addonGroupOption()
     {
-        return $this->belongsTo(VariantAddon::class, 'variant_addon_id');
+        return $this->belongsTo(AddonGroupOption::class);
     }
 }

@@ -1,10 +1,11 @@
 import { Addon } from "./Addon";
+import { VariantAddon } from "./VariantAddon";
 
 export type OrderItemAddon = {
     id?: number;
     order_item_id?: number;
-    sp_variant_addon_id?: number;
-    addon?: Addon | null;
+    variant_addon_id?: number;
+    variant_addon?: VariantAddon;
     quantity: number;
     unit_price: string;
     total_price: string;

@@ -22,7 +22,6 @@ export default function AddonGroupOptionFormModal({
     const { data, setData, post, processing } = useForm({
         addon_group_id: addon_group_id,
         addon_id: 0,
-        quantity: '',
         additional_price: '',
     });
 
@@ -43,7 +42,6 @@ export default function AddonGroupOptionFormModal({
                 setData({
                     addon_group_id: 0,
                     addon_id: 0,
-                    quantity: '',
                     additional_price: '',
                 });
                 onClose();
@@ -68,23 +66,6 @@ export default function AddonGroupOptionFormModal({
                                 setAddon={handleAddonChange}
                                 isDisabled={processing}
                             />
-
-                            <div>
-                                <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Quantidade
-                                </label>
-                                <input
-                                    type="number"
-                                    id="quantity"
-                                    min={0.01}
-                                    step={0.01}
-                                    className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    value={data.quantity}
-                                    onChange={(e) => setData('quantity', e.target.value)}
-                                    required
-                                    disabled={processing}
-                                />
-                            </div>
                             <div>
                                 <label htmlFor="additional_price" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Preço adicional

@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class StoreProductVariantController extends Controller
@@ -78,11 +79,16 @@ class StoreProductVariantController extends Controller
     {
         $this->authorize('create', StoreProductVariant::class);
 
+        $user = User::find(Auth::id());
         $request->validate([
             'product_variant_id' => [
                 'required',
                 'exists:product_variants,id',
-                'unique:store_product_variants,product_variant_id,NULL,id,store_id,' . (User::with('store')->find(Auth::id())->store->id ?? 'NULL'),
+                Rule::unique('store_product_variants')
+                    ->where(function ($query) use ($user) {
+                        $query->where('store_id', $user->store_id)
+                              ->whereNull('deleted_at');
+                    }),
             ],
             'price' => 'required|numeric|min:0',
             'featured' => 'boolean',
@@ -110,7 +116,18 @@ class StoreProductVariantController extends Controller
 
         try {
             $storeProductVariant = DB::transaction(function () use ($dataForm) {
-                $storeProductVariant = StoreProductVariant::create($dataForm);
+                $storeProductVariant = StoreProductVariant::where('product_variant_id', $dataForm['product_variant_id'])
+                    ->where('store_id', $dataForm['store_id'])
+                    ->withTrashed()
+                    ->first();
+
+                if ($storeProductVariant) {
+                    // Se a variante já existe (mesmo que deletada), restaure-a e atualize os dados
+                    $storeProductVariant->restore();
+                    $storeProductVariant->update($dataForm);
+                } else {
+                    $storeProductVariant = StoreProductVariant::create($dataForm);
+                }
 
                 if ($dataForm['ingredients'] ?? false) {
                     // Adiciona os ingredientes

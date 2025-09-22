@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
+use App\Models\AddonGroupOption;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\StoreProductVariant;
-use App\Models\StoreProductVariantAddon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -33,7 +33,40 @@ class OrderItemsController extends Controller
                 'unit_price' => 'required|numeric|min:0',
             ]);
 
-            $data = $request->only(['order_id', 'store_product_variant_id', 'quantity', 'addons']);
+            $data = $request->all();
+
+            // Validação customizada dos limites dos grupos de opções
+            if (isset($data['addonGroupOptionQuantities']) && is_array($data['addonGroupOptionQuantities'])) {
+                $groupTotals = [];
+                foreach ($data['addonGroupOptionQuantities'] as $key => $qty) {
+                    if ($qty > 0) {
+                        // chave: groupId_optionId
+                        [$groupId, $optionId] = explode('_', $key);
+                        $groupTotals[$groupId] = ($groupTotals[$groupId] ?? 0) + $qty;
+
+                        $data['addonGroupOptions'][] = [
+                            'group_id' => $groupId,
+                            'option_id' => $optionId,
+                            'quantity' => $qty,
+                        ];
+                    }
+                }
+                // Buscar limites dos grupos
+                foreach ($groupTotals as $groupId => $total) {
+                    $group = \App\Models\VariantAddonGroup::find($groupId);
+                    if ($group) {
+                        $min = (int) $group->min_options;
+                        $max = (int) $group->max_options;
+                        if ($min > 0 && $total < $min) {
+                            return redirect()->back()->with('fail', "Selecione ao menos $min opção(ões) para o grupo '{$group->name}'.");
+                        }
+                        if ($max > 0 && $total > $max) {
+                            return redirect()->back()->with('fail', "Selecione no máximo $max opção(ões) para o grupo '{$group->name}'.");
+                        }
+                    }
+                }
+            }
+
             $order = $this->order->findOrFail($data['order_id']);
             $this->authorize('update', $order);
 
@@ -60,37 +93,43 @@ class OrderItemsController extends Controller
                     'total_price' => ($storeProductVariant->price * $data['quantity']),
                 ]);
 
-                if (!empty($data['addons'])) {
-                    $addonsTotal = 0;
+                if (isset($data['addonGroupOptions']) && is_array($data['addonGroupOptions'])) {
+                    foreach ($data['addonGroupOptions'] as $optionData) {
+                        $addonOption = AddonGroupOption::where('addon_group_id', $optionData['group_id'])
+                            ->where('id', $optionData['option_id'])
+                            ->first();
 
-                    foreach ($data['addons'] as $addonData) {
-                        if (!isset($addonData['sp_variant_addon_id'])) {
-                            continue;
+                        if ($addonOption) {
+                            $orderItem->orderItemOptions()->create([
+                                'addon_group_option_id' => $addonOption->id,
+                                'quantity' => $optionData['quantity'],
+                                'unit_price' => $addonOption->additional_price,
+                            ]);
+
+                            // Se additional_price > 0, incrementar no preço do item
+                            if ($addonOption->additional_price > 0) {
+                                $orderItem->total_price += ($addonOption->additional_price * $optionData['quantity']);
+                                $orderItem->save();
+                            }
                         }
-
-                        $addon = StoreProductVariantAddon::find($addonData['sp_variant_addon_id'] ?? 0);
-
-                        if (!$addon) {
-                            continue;
-                        }
-
-                        $orderItem->itemAddons()->create([
-                            'sp_variant_addon_id' => $addon->id,
-                            'quantity' => $addonData['quantity'] ?? 1, // Default to 1 if not specified
-                            'unit_price' => $addon->price,
-                            'total_price' => ($addon->price * ($addonData['quantity'] ?? 1)),
-                        ]);
-
-                        $addonsTotal += ($addon->price * ($addonData['quantity'] ?? 1));
                     }
+                }
 
-                    // Update order item total price to include addons
-                    $orderItem->total_price += $addonsTotal;
-                    $orderItem->save();
+                if ($data['addons'] ?? false) {
+                    foreach ($data['addons'] as $addon) {
+                        if (isset($addon['variant_addon_id']) && $addon['variant_addon_id'] > 0) {
+                            $orderItem->orderItemAddons()->create([
+                                'variant_addon_id' => $addon['variant_addon_id'],
+                                'quantity' => $addon['quantity'],
+                                'unit_price' => $addon['unit_price'],
+                                'total_price' => (floatval($addon['unit_price']) * intval($addon['quantity'])),
+                            ]);
+                        }
+                    }
                 }
 
                 // Recalculate order totals
-                $order->load('items.itemAddons');
+                $order->load('items');
                 $order->amount = $order->items->sum('total_price');
                 $order->total_amount = (($order->amount + $order->service_fee) - $order->discount);
                 $order->save();
@@ -135,14 +174,8 @@ class OrderItemsController extends Controller
             DB::transaction(function () use ($orderItem, $order) {
                 // Recalculate order totals
                 $orderItem->delete();
-
-                $order->load('items.itemAddons');
-
-                $order->amount = $order->items->sum(function ($item) {
-                    $itemTotal = $item->total_price;
-                    $addonsTotal = $item->itemAddons->sum('total_price');
-                    return $itemTotal + $addonsTotal;
-                });
+                $order->load('items');
+                $order->amount = $order->items->sum('total_price');
 
                 $order->total_amount = (($order->amount + $order->service_fee) - $order->discount);
                 $order->save();

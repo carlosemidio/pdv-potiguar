@@ -144,7 +144,7 @@ export default function Index({
                     {can('tables_create') && (
                         <button
                             aria-label="Nova mesa"
-                            className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                            className="fixed bottom-16 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
                             onClick={handleOpenModalForCreate}
                         >
                             <Plus className='w-6 h-6' />

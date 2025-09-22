@@ -1,9 +1,9 @@
-import { Addon } from "@/types/Addon"
 import { OrderItemAddon } from "@/types/OrderItemAddon"
-import { PlusCircle, X, XSquare } from "lucide-react"
+import { VariantAddon } from "@/types/VariantAddon"
+import { PlusCircle, XSquare } from "lucide-react"
 
 interface Props {
-  productAddons?: Addon[]
+  productAddons?: VariantAddon[]
   orderItemAddons: OrderItemAddon[]
   onChange: (newAddons: OrderItemAddon[]) => void
 }
@@ -11,7 +11,7 @@ interface Props {
 export default function OrderItemAddonsForm({ productAddons, orderItemAddons, onChange }: Props) {
   const addAddon = () => {
     const newAddon: OrderItemAddon = {
-      sp_variant_addon_id: undefined,
+      variant_addon_id: undefined,
       quantity: 1,
       unit_price: "0",
       total_price: "0",
@@ -32,8 +32,8 @@ export default function OrderItemAddonsForm({ productAddons, orderItemAddons, on
     const updated = [...orderItemAddons]
     updated[index] = {
       ...updated[index],
-      sp_variant_addon_id: selectedAddon.id !== undefined ? selectedAddon.id : undefined,
-      unit_price: selectedAddon.price || "0",
+      variant_addon_id: selectedAddon.id !== undefined ? selectedAddon.id : undefined,
+      unit_price: String(selectedAddon.price ?? "0"),
       total_price: (Number(selectedAddon.price || 0) * updated[index].quantity).toFixed(2),
     }
     onChange(updated)
@@ -77,7 +77,7 @@ export default function OrderItemAddonsForm({ productAddons, orderItemAddons, on
               <select
                 id={`addon-select-${index}`}
                 className="w-[92%] border border-gray-300 rounded px-2 py-1 text-xs bg-gray-50"
-                value={orderItemAddon.sp_variant_addon_id || ''}
+                value={orderItemAddon.variant_addon_id || ''}
                 onChange={e => {
                   handleAddonSelect(index, e.target.value ? parseInt(e.target.value) : null)
                 }}
@@ -86,7 +86,7 @@ export default function OrderItemAddonsForm({ productAddons, orderItemAddons, on
                 {productAddons?.map(productAddon => (
                   productAddon ? (
                     <option key={productAddon.id} value={productAddon.id}>
-                      {productAddon.name}
+                      {productAddon.addon ? productAddon.addon.name : ''}
                     </option>
                   ) : null
                 ))}
@@ -95,6 +95,10 @@ export default function OrderItemAddonsForm({ productAddons, orderItemAddons, on
                 id={`quantity-input-${index}`}
                 type="number"
                 min={1}
+                max={(() => {
+                  const selectedAddon = productAddons?.find(pa => pa.id === orderItemAddon.variant_addon_id);
+                  return selectedAddon?.quantity ?? 99;
+                })()}
                 className="w-16 border border-gray-300 rounded px-2 py-1 text-xs bg-gray-50"
                 value={orderItemAddon.quantity}
                 onChange={e => {

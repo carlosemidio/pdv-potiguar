@@ -32,7 +32,7 @@ export default function Index({
     const handleDeleteItem = (item: OrderItem) => {
         Swal.fire({
             title: 'Remover item',
-            text: `Remover ${item.quantity}x ${item.store_product_variant?.product_variant.name} do pedido?`,
+            text: `Remover ${item.quantity}x ${item.store_product_variant?.product_variant?.name} do pedido?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Sim, remover',
@@ -158,26 +158,65 @@ export default function Index({
                                             <div className="flex items-start justify-between gap-1.5 p-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 relative">
                                                 <div className="flex-1">
                                                     <div className="font-medium text-gray-800 dark:text-gray-200 text-sm">
-                                                        {item.quantity}x {item.store_product_variant?.product_variant.name || 'N/A'}
+                                                        {item.quantity}x {item.store_product_variant?.product_variant?.name || 'N/A'}
                                                     </div>
                                                     <div className="text-xs text-gray-600 dark:text-gray-400">
-                                                        {item.unit_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} cada = {(item.unit_price * item.quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                        {item.unit_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} cada, Total = {(item.total_price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                        {item.order_item_options?.some(opt => opt.addon_group_option?.additional_price > 0) && (
+                                                            <span className="ml-2 text-green-700 dark:text-green-300 font-semibold">(acréscimo por opções)</span>
+                                                        )}
                                                     </div>
-                                                    {item.item_addons?.length > 0 && (
+                                                    {item.order_item_options && item.order_item_options.length > 0 && (
                                                         <div className="mt-1">
-                                                            <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Complementos:</span>
+                                                            <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Opções:</span>
+                                                            {/* Agrupa por grupo */}
                                                             <ul className="ml-3 mt-1 space-y-0.5">
-                                                                {item.item_addons.map((addon, idx) => (
-                                                                    <li key={idx} className="text-[11px] text-gray-600 dark:text-gray-400">
-                                                                        {addon.quantity}x {addon.addon?.name || 'N/A'} - {parseFloat(addon.unit_price as any).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} = {parseFloat(addon.total_price as any).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                                {Object.entries(
+                                                                    item.order_item_options.reduce((acc: Record<string, typeof item.order_item_options>, option) => {
+                                                                        const groupName = option.addon_group_option.addon_group?.name || 'Outros';
+                                                                        if (!acc[groupName]) acc[groupName] = [];
+                                                                        acc[groupName].push(option);
+                                                                        return acc;
+                                                                    }, {} as Record<string, typeof item.order_item_options>)
+                                                                ).map(([groupName, options]) => (
+                                                                    <li key={groupName} className="text-[11px] text-gray-700 dark:text-gray-300">
+                                                                        <span className="font-semibold text-blue-700 dark:text-blue-300 mr-1">{groupName}:</span>
+                                                                        <span>
+                                                                            {(options as any[]).map((option, idx) => {
+                                                                                const name = option.addon_group_option?.addon?.name || 'N/A';
+                                                                                const additionalPrice = option.addon_group_option?.additional_price;
+                                                                                return (
+                                                                                    <span key={idx} className="mr-2">
+                                                                                        {option.quantity}x {name}
+                                                                                        {additionalPrice > 0 && (
+                                                                                            <span className="text-green-700 dark:text-green-300 font-semibold ml-1">+ R$ {Number(additionalPrice).toFixed(2)}</span>
+                                                                                        )}
+                                                                                    </span>
+                                                                                );
+                                                                            })}
+                                                                        </span>
                                                                     </li>
                                                                 ))}
                                                             </ul>
                                                         </div>
                                                     )}
-                                                </div>
-                                                <div className="text-gray-800 dark:text-gray-200 font-semibold text-sm whitespace-nowrap">
-                                                    {parseFloat(item.total_price as any).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+
+                                                    {item.order_item_addons && item.order_item_addons.length > 0 && (
+                                                        <div className="mt-2">
+                                                            <span className="font-semibold text-gray-700 dark:text-gray-300">Adicionais:</span>
+                                                            <ul className="list-disc list-inside">
+                                                                {item.order_item_addons.map((itemAddon) => (
+                                                                    <li key={itemAddon.id} className="text-[11px] text-gray-700 dark:text-gray-300">
+                                                                        <span className="font-semibold text-blue-700 dark:text-blue-300 mr-1">{itemAddon.quantity}x</span>
+                                                                        <span>{itemAddon.variant_addon?.addon?.name || 'N/A'}</span>
+                                                                        <span className="text-xs text-gray-600 dark:text-gray-400 ml-1">
+                                                                            ({itemAddon.unit_price} cada, Total = {itemAddon.total_price})
+                                                                        </span>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {orderCanBeModified && (

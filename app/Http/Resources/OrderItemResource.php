@@ -15,6 +15,8 @@ class OrderItemResource extends JsonResource
             'user_id' => $this->user_id,
             'order_id' => $this->order_id,
             'store_product_variant' => $this->whenLoaded('storeProductVariant') ? new StoreProductVariantResource($this->storeProductVariant) : null,
+            'order_item_options' => OrderItemOptionResource::collection($this->whenLoaded('orderItemOptions')),
+            'order_item_addons' => OrderItemAddonResource::collection($this->whenLoaded('orderItemAddons')),
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
             'total_price' => $this->total_price,

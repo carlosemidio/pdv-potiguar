@@ -61,7 +61,7 @@ export default function Authenticated({
                         </div>
 
                         {/* Navigation links */}
-                        <div className="flex-grow flex flex-col gap-2 overflow-y-auto p-4">
+                        <div className="flex-grow flex flex-col gap-2 overflow-y-auto p-4 pb-20">
                             <NavLink href={route('dashboard')} active={route().current('dashboard')}>
                                 <div className='flex gap-2 items-center'>
                                     <Gauge size={24} />

@@ -13,14 +13,12 @@ class AddonGroupOptionsController extends Controller
         $request->validate([
             'addon_group_id'    => 'required|exists:variant_addon_groups,id',
             'addon_id'          => 'required|exists:addons,id',
-            'quantity'          => 'required|numeric|min:1',
-            'additional_price'  => 'required|numeric|min:0',
+            'additional_price'  => 'nullable|numeric|min:0',
         ]);
 
         $data = $request->only([
             'addon_group_id',
             'addon_id',
-            'quantity',
             'additional_price',
         ]);
 
@@ -36,6 +34,10 @@ class AddonGroupOptionsController extends Controller
             if ($existingOption) {
                 return redirect()->back()
                     ->with('fail', 'Este complemento já está associado a este grupo, se deseja alterar a quantidade ou preço, remova e adicione novamente com os valores desejados.');
+            }
+
+            if ($data['additional_price'] == null) {
+                unset($data['additional_price']);
             }
 
             $addonGroupOption = AddonGroupOption::create($data);
@@ -55,8 +57,13 @@ class AddonGroupOptionsController extends Controller
 
     public function destroy($id)
     {
-        $addonOptionGroup = AddonGroupOption::with('addonGroup')->findOrFail($id);
-        $this->authorize('update', $addonOptionGroup->addonGroup);
+        $addonOptionGroup = AddonGroupOption::with('addonGroup.storeProductVariant')->findOrFail($id);
+        if (!$addonOptionGroup) {
+            return redirect()->back()
+                ->with('fail', 'Complemento do grupo não encontrado.');
+        }
+
+        $this->authorize('update', $addonOptionGroup->addonGroup->storeProductVariant);
 
         try {
             if (!$addonOptionGroup->delete()) {

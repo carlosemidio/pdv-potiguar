@@ -13,7 +13,6 @@ class AddonGroupOption extends Model
     protected $fillable = [
         'addon_group_id',
         'addon_id',
-        'quantity',
         'additional_price',
     ];
 

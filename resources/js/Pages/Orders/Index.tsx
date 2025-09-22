@@ -179,7 +179,7 @@ export default function Index({
                                             <ul className='max-h-24 overflow-y-auto pr-1.5 space-y-0.5'>
                                                 {order.items.map((item) => (
                                                     <li key={item.id} className='text-[11px] text-gray-700 dark:text-gray-300'>
-                                                        {item.quantity}x {item.store_product_variant?.product_variant.name} - {parseFloat(item.total_price as any).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                        {item.quantity}x {item.store_product_variant?.product_variant?.name ?? <span className="italic text-gray-400">Sem produto</span>} - {parseFloat(item.total_price as any).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                                     </li>
                                                 ))}
                                             </ul>
@@ -259,7 +259,7 @@ export default function Index({
 
                             <button
                                 aria-label="Novo pedido"
-                                className="fixed bottom-14 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                                className="fixed bottom-16 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
                                 onClick={() => setIsOpen(true)}
                             >
                                 <Plus className="h-6 w-6" />

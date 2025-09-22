@@ -31,6 +31,8 @@ class UserFormRequest extends FormRequest
 
         if ($this->isMethod('post')) {
             $rules['password'] = ['required', 'string', 'min:8', 'confirmed', Password::defaults()];
+        } elseif ($this->isMethod('put') || $this->isMethod('patch')) {
+            $rules['password'] = ['nullable', 'string', 'min:8', 'confirmed', Password::defaults()];
         }
 
         return $rules;

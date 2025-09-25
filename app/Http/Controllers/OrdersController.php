@@ -321,17 +321,21 @@ class OrdersController extends Controller
 
                     // Devolve estoque
                     foreach ($order->items as $item) {
-                        $this->stockMovementService->register(
-                            Auth::user()->id,
-                            $order->tenant_id,
-                            $order->store_id,
-                            $item->storeProductVariant->product_variant_id,
-                            $item->quantity,
-                            StockMovementSubtype::RETURN_CUSTOMER,
-                            null,
-                            "Cancelamento - Pedido #{$order->id}",
-                            null
-                        );
+                        if (!$item->storeProductVariant->is_produced) {
+                            $this->stockMovementService->register(
+                                Auth::user()->id,
+                                $order->tenant_id,
+                                $order->store_id,
+                                get_class($item->storeProductVariant),
+                                $item->storeProductVariant->product_variant_id,
+                                $item->quantity,
+                                StockMovementSubtype::RETURN_CUSTOMER,
+                                null,
+                                "Cancelamento - Pedido #{$order->id}",
+                                null,
+                                null
+                            );
+                        }
                     }
                 } else {
                     $order->update(['status' => OrderStatus::REJECTED->value]);

@@ -1,11 +1,11 @@
-import Card from '@/Components/Card';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
+import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus } from 'lucide-react';
+import { Edit, Trash, Plus, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Customer } from '@/types/Customer';
@@ -78,44 +78,67 @@ export default function Index({
         >
             <Head title="Clientes" />
 
-            <section className='px-2 text-gray-800 dark:text-gray-200 bg-gradient-to-b from-gray-50 dark:from-gray-900 to-white dark:to-gray-800 min-h-screen'>
-                <div className="mx-auto lg:px-2">
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'>
-                        {
-                            customers?.data?.map((costumer) => (
-                                <Card key={costumer.id} className="p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-md transition-shadow">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <p className='font-semibold text-base truncate'>{costumer.name}</p>
-                                        {costumer.type === 'pj' ? (
-                                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full dark:bg-blue-800 dark:text-blue-100">PJ</span>
-                                        ) : (
-                                            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full dark:bg-green-800 dark:text-green-100">PF</span>
+            <section className='px-3 text-gray-800 dark:text-gray-200'>
+                <div className="max-w-5xl">
+                    <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2'>
+                        {customers?.data?.map((costumer) => (
+                            <li key={costumer.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800">
+                                <div className="flex items-center justify-between gap-2 relative p-3">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        <div className='min-w-0 flex-1'>
+                                            <div className="flex items-center gap-2">
+                                                <p className='font-semibold text-sm truncate'>{costumer.name}</p>
+                                                {costumer.type === 'pj' ? (
+                                                    <span className='px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200'>
+                                                        PJ
+                                                    </span>
+                                                ) : (
+                                                    <span className='px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'>
+                                                        PF
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='flex flex-col gap-1 absolute top-1 right-1'>
+                                        {(can('customers_edit') || can('customers_delete')) && (
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <SecondaryButton size='sm' className='!px-2 !py-1' title='Ações'>
+                                                        <MoreVertical className='w-4 h-4' />
+                                                    </SecondaryButton>
+                                                </Dropdown.Trigger>
+                                                <Dropdown.Content align='right' width='48'>
+                                                    {can('customers_edit') && (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => openCustomerFormModal(costumer)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Edit className='w-4 h-4' /> Editar
+                                                            </span>
+                                                        </button>
+                                                    )}
+                                                    {can('customers_delete') && (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => confirmCustomerDeletion(costumer.id)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Trash className='w-4 h-4' /> Excluir
+                                                            </span>
+                                                        </button>
+                                                    )}
+                                                </Dropdown.Content>
+                                            </Dropdown>
                                         )}
                                     </div>
-                                    <div className='flex gap-1.5 mt-2 justify-end'>
-                                        {can('customers_delete') && (
-                                            <DangerButton size="sm"
-                                                onClick={() => confirmCustomerDeletion(costumer.id)}
-                                                className="flex items-center gap-1"
-                                                title="Deletar cliente"
-                                            >
-                                                <Trash className='w-4 h-4' />
-                                            </DangerButton>
-                                        )}
-                                        {can('customers_edit') && (
-                                            <SecondaryButton size="sm"
-                                                className="flex items-center gap-1"
-                                                title="Editar cliente"
-                                                onClick={() => openCustomerFormModal(costumer)}
-                                            >
-                                                <Edit className='w-4 h-4' />
-                                            </SecondaryButton>
-                                        )}
-                                    </div>
-                                </Card>
-                            ))
-                        }                    
-                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
                     
                     <Pagination links={links} />
                     

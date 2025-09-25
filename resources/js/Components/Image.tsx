@@ -19,9 +19,7 @@ const Image: React.FC<ImageProps> = ({ src, alt = '', width, height, className }
         className={className}
       />
     ) : (
-      <div className={`flex items-center justify-center bg-gray-400 dark:bg-gray-800 rounded-md ${className}`}>
-        <p className='text-center text-white-800 dark:text-gray-400'>Sem imagem</p>
-      </div>
+      <div className={`flex items-center justify-center bg-gray-400 dark:bg-gray-800 rounded-md ${className}`} />
     )}
   </>
 );

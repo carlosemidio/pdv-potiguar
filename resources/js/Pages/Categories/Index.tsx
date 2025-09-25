@@ -2,10 +2,11 @@ import Card from '@/Components/Card';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
+import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus } from 'lucide-react';
+import { Edit, Trash, Plus, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Category } from '@/types/Category';
@@ -78,58 +79,75 @@ export default function Index({
         >
             <Head title="Categorias" />
 
-            <section className='text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto lg:px-2">
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3'>
-                        {
-                            categories?.data?.map((category) => (
-                                <Card key={category.id} className="relative p-3 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <p className='font-semibold text-base truncate'>{category.name}</p>
-                                        <div className='flex justify-end'>
-                                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${category.status === 1 ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                                                {category.status === 1 ? 'Ativo' : 'Inativo'}
-                                            </span>
+            <section className='px-3 text-gray-800 dark:text-gray-200'>
+                <div className="max-w-5xl">
+                    <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1'>
+                        {categories?.data?.map((category) => (
+                            <li key={category.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800">
+                                <div className="flex items-center justify-between gap-2 relative p-2">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        <div className='min-w-0 flex-1'>
+                                            <div className="flex items-center gap-2">
+                                                <p className='font-semibold text-sm truncate'>{category.name}</p>
+                                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${category.status === 1 ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'}`}>
+                                                    {category.status === 1 ? 'Ativo' : 'Inativo'}
+                                                </span>
+                                            </div>
+                                            <div className='mt-1 flex flex-wrap items-end gap-1.5 text-[11px] text-gray-700 dark:text-gray-300'>
+                                                {category.parent && typeof category.parent === 'object' && 'name' in category.parent ? (
+                                                    <span className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px]'>
+                                                        Pai: {(category.parent as any).name}
+                                                    </span>
+                                                ) : (
+                                                    <span className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px]'>
+                                                        Categoria raiz
+                                                    </span>
+                                                )}
+                                                <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-auto">
+                                                    {category.created_at ? new Date(category.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—'}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <div className='mt-1 text-sm text-gray-700 dark:text-gray-300'>
-                                        <span className='text-gray-600 dark:text-gray-400'>Pai: </span>
-                                        {category.parent && typeof category.parent === 'object' && 'name' in category.parent ? (
-                                            <Link
-                                                href={route('categories.edit', { id: (category.parent as any).id })}
-                                                className="text-blue-600 dark:text-blue-400 hover:underline"
-                                            >
-                                                {(category.parent as any).name || `ID: ${category.parent_id}`}
-                                            </Link>
-                                        ) : (
-                                            <span className="italic text-gray-400">Nenhuma</span>
+                                    <div className='flex flex-col gap-1 absolute top-1 right-1'>
+                                        {((can('categories_edit') && category.user_id != null) || (can('categories_delete') && category.user_id != null)) && (
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <SecondaryButton size='sm' className='!px-2 !py-1' title='Ações'>
+                                                        <MoreVertical className='w-4 h-4' />
+                                                    </SecondaryButton>
+                                                </Dropdown.Trigger>
+                                                <Dropdown.Content align='right' width='48'>
+                                                    {(can('categories_edit') && category.user_id != null) && (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => handleOpenModalForEdit(category)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Edit className='w-4 h-4' /> Editar
+                                                            </span>
+                                                        </button>
+                                                    )}
+                                                    {(can('categories_delete') && category.user_id != null) && (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => confirmCategoryDeletion(category.id)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Trash className='w-4 h-4' /> Excluir
+                                                            </span>
+                                                        </button>
+                                                    )}
+                                                </Dropdown.Content>
+                                            </Dropdown>
                                         )}
                                     </div>
-
-                                    <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                                        Criado em: {category.created_at ? new Date(category.created_at).toLocaleDateString('pt-BR') : '-'}
-                                    </div>
-
-                                    <div className='flex gap-1.5 mt-2 justify-end'>
-                                        {(can('categories_delete') && (category.user_id != null)) && (
-                                            <DangerButton size='sm'
-                                                onClick={() => confirmCategoryDeletion(category.id)}
-                                                title="Deletar categoria"
-                                            >
-                                                <Trash className='w-4 h-4' />
-                                            </DangerButton>
-                                        )}
-                                        {(can('categories_edit') &&  (category.user_id != null)) && (
-                                            <SecondaryButton size='sm' title="Editar categoria" onClick={() => handleOpenModalForEdit(category)}>
-                                                <Edit className='w-4 h-4' />
-                                            </SecondaryButton>
-                                        )}
-                                    </div>
-                                </Card>
-                            ))
-                        }
-                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
                     <Pagination links={links} />
                     {categories?.data?.length === 0 && (
                         <div className="text-center py-12 text-gray-500 dark:text-gray-400">

@@ -1,11 +1,11 @@
-import Card from '@/Components/Card';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
+import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus } from 'lucide-react';
+import { Edit, Trash, Plus, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import Pagination from '@/Components/Pagination/Pagination';
@@ -84,52 +84,70 @@ export default function Index({
             <Head title="Mesas" />
 
             <section className='px-3 text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto lg:px-2">
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3'>
+                <div className="max-w-5xl">
+                    <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2'>
                         {tables?.data?.map((table) => (
-                            <Card key={table.id} className="relative p-3 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-                                <p className='font-semibold text-base truncate'>{table.name}</p>
-                                <div className='flex justify-end absolute top-2 right-2'>
-                                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${disponibilityColors[table.status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'}`}>
-                                        {table.status_name}
-                                    </span>
-                                </div>
-
-                                <div className='mt-1 text-sm text-gray-700 dark:text-gray-300'>
-                                    <span className='text-gray-600 dark:text-gray-400'>Loja: </span>
-                                    {table?.store?.name || <span className="italic text-gray-400">Sem loja</span>}
-                                </div>
-
-                                <div className='mt-1 grid grid-cols-2 gap-2'>
-                                    <div>
-                                        <p className='text-xs text-gray-500 dark:text-gray-400'>Criado em</p>
-                                        <span className='text-xs'>
-                                            {new Date(table.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                        </span>
+                            <li key={table.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800">
+                                <div className="flex items-center justify-between gap-2 relative p-2">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        <div className='min-w-0 flex-1'>
+                                            <div className="flex items-center gap-2">
+                                                <p className='font-semibold text-sm truncate'>{table.name}</p>
+                                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${disponibilityColors[table.status] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'}`}>
+                                                    {table.status_name}
+                                                </span>
+                                            </div>
+                                            <div className='mt-1 flex flex-wrap items-end gap-1.5 text-[11px] text-gray-700 dark:text-gray-300'>
+                                                {table?.store?.name && (
+                                                    <span className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px]'>
+                                                        {table.store.name}
+                                                    </span>
+                                                )}
+                                                <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-auto">
+                                                    {new Date(table.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className='text-xs text-gray-500 dark:text-gray-400'>Atualizado em</p>
-                                        <span className='text-xs'>
-                                            {new Date(table.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                        </span>
+                                    <div className='flex flex-col gap-1 absolute top-1 right-1'>
+                                        {(can('tables_edit') || can('tables_delete')) && table.user_id != null && (
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <SecondaryButton size='sm' className='!px-2 !py-1' title='Ações'>
+                                                        <MoreVertical className='w-4 h-4' />
+                                                    </SecondaryButton>
+                                                </Dropdown.Trigger>
+                                                <Dropdown.Content align='right' width='48'>
+                                                    {can('tables_edit') && table.user_id != null && (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => handleOpenModalForEdit(table)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Edit className='w-4 h-4' /> Editar
+                                                            </span>
+                                                        </button>
+                                                    )}
+                                                    {can('tables_delete') && table.user_id != null && (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => confirmTableDeletion(table.id)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Trash className='w-4 h-4' /> Excluir
+                                                            </span>
+                                                        </button>
+                                                    )}
+                                                </Dropdown.Content>
+                                            </Dropdown>
+                                        )}
                                     </div>
                                 </div>
-
-                                <div className='flex gap-1.5 mt-2 justify-end'>
-                                    {(can('tables_delete') && (table.user_id != null)) && (
-                                        <DangerButton size='sm' onClick={() => confirmTableDeletion(table.id)} title="Deletar mesa">
-                                            <Trash className='w-4 h-4' />
-                                        </DangerButton>
-                                    )}
-                                    {(can('tables_edit') && (table.user_id != null)) && (
-                                        <SecondaryButton size='sm' title="Editar mesa" onClick={() => handleOpenModalForEdit(table)}>
-                                            <Edit className='w-4 h-4' />
-                                        </SecondaryButton>
-                                    )}
-                                </div>
-                            </Card>
+                            </li>
                         ))}
-                    </div>
+                    </ul>
 
                     <Pagination links={links} />
 

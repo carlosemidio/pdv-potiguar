@@ -23,6 +23,21 @@ class Ingredient extends Model
         return $this->belongsTo(Unit::class);
     }
 
+    public function addonIngredients()
+    {
+        return $this->hasMany(AddonIngredient::class);
+    }
+
+    public function variantIngredients()
+    {
+        return $this->hasMany(VariantIngredient::class);
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
+
     public function stockMovements()
     {
         return $this->morphMany(StockMovement::class, 'stockable');

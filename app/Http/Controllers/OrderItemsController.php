@@ -7,6 +7,7 @@ use App\Models\AddonGroupOption;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\StoreProductVariant;
+use App\Models\VariantAddonGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -35,35 +36,51 @@ class OrderItemsController extends Controller
 
             $data = $request->all();
 
-            // Validação customizada dos limites dos grupos de opções
-            if (isset($data['addonGroupOptionQuantities']) && is_array($data['addonGroupOptionQuantities'])) {
-                $groupTotals = [];
-                foreach ($data['addonGroupOptionQuantities'] as $key => $qty) {
-                    if ($qty > 0) {
-                        // chave: groupId_optionId
-                        [$groupId, $optionId] = explode('_', $key);
-                        $groupTotals[$groupId] = ($groupTotals[$groupId] ?? 0) + $qty;
+            $variantRequiredGroups = VariantAddonGroup::where('sp_variant_id', $data['store_product_variant_id'] ?? 0)
+                ->where('is_required', 1)->get()->keyBy('id');
 
-                        $data['addonGroupOptions'][] = [
-                            'group_id' => $groupId,
-                            'option_id' => $optionId,
-                            'quantity' => $qty,
-                        ];
+            // Validação customizada dos limites dos grupos de opções
+            if (count($variantRequiredGroups) > 0) {
+                $validationErrors = [];
+                if (isset($data['addonGroupOptionQuantities']) && is_array($data['addonGroupOptionQuantities'])) {
+                    $groupTotals = [];
+                    foreach ($data['addonGroupOptionQuantities'] as $key => $qty) {
+                        if ($qty > 0) {
+                            // chave: groupId_optionId
+                            [$groupId, $optionId] = explode('_', $key);
+                            $groupTotals[$groupId] = ($groupTotals[$groupId] ?? 0) + $qty;
+
+                            $data['addonGroupOptions'][] = [
+                                'group_id' => $groupId,
+                                'option_id' => $optionId,
+                                'quantity' => $qty,
+                            ];
+                        }
                     }
                 }
+
                 // Buscar limites dos grupos
-                foreach ($groupTotals as $groupId => $total) {
-                    $group = \App\Models\VariantAddonGroup::find($groupId);
+                foreach ($variantRequiredGroups as $groupId => $group) {
                     if ($group) {
                         $min = (int) $group->min_options;
                         $max = (int) $group->max_options;
-                        if ($min > 0 && $total < $min) {
-                            return redirect()->back()->with('fail', "Selecione ao menos $min opção(ões) para o grupo '{$group->name}'.");
-                        }
-                        if ($max > 0 && $total > $max) {
-                            return redirect()->back()->with('fail', "Selecione no máximo $max opção(ões) para o grupo '{$group->name}'.");
+
+                        if (!isset($groupTotals[$groupId])) {
+                            $validationErrors["addonGroupOptionQuantities.$groupId"] = "Selecione ao menos $min" . ($min > 1 ? ' opções' : ' opção');
+                        } else {
+                            if ($min > 0 && $groupTotals[$groupId] < $min) {
+                                $validationErrors["addonGroupOptionQuantities.$groupId"] = "Selecione ao menos $min" . ($min > 1 ? ' opções' : ' opção');
+                            }
+
+                            if ($max > 0 && $groupTotals[$groupId] > $max) {
+                                $validationErrors["addonGroupOptionQuantities.$groupId"] = "Selecione no máximo $max" . ($max > 1 ? ' opções' : ' opção');
+                            }
                         }
                     }
+                }
+
+                if (!empty($validationErrors)) {
+                    throw \Illuminate\Validation\ValidationException::withMessages($validationErrors);
                 }
             }
 
@@ -124,6 +141,12 @@ class OrderItemsController extends Controller
                                 'unit_price' => $addon['unit_price'],
                                 'total_price' => (floatval($addon['unit_price']) * intval($addon['quantity'])),
                             ]);
+
+                            // Incrementar no preço do item
+                            if (floatval($addon['unit_price']) > 0) {
+                                $orderItem->total_price += (floatval($addon['unit_price']) * intval($addon['quantity']));
+                                $orderItem->save();
+                            }
                         }
                     }
                 }
@@ -144,9 +167,12 @@ class OrderItemsController extends Controller
 
             return redirect()->route('orders.show', $data['order_id'])
                 ->with('success', 'Pedido criado com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Laravel/Inertia já retorna status 422 para ValidationException
+            throw $e;
         } catch (\Exception $e) {
             return redirect()->back()
-            ->with('fail', 'Erro ao adicionar item ao pedido: ' . $e->getMessage());
+                ->with('fail', 'Erro ao adicionar item ao pedido: ' . $e->getMessage());
         }
     }
 

@@ -56,8 +56,8 @@ export default function UsersFilterBar({ filters } : {
   }
 
   return (
-    <div className="flex  max-w-md shadow">
-      <div className="relative flex bg-white rounded">
+    <div className="flex  w-full">
+      <div className="relative flex bg-white rounded w-full border border-gray-300 dark:border-gray-700 focus-within:ring-2 focus-within:ring-indigo-400 focus-within:border-indigo-400">
         <div
           style={{ top: '100%' }}
           className={`absolute ${opened ? '' : 'hidden'}`}
@@ -66,7 +66,7 @@ export default function UsersFilterBar({ filters } : {
             onClick={() => setOpened(false)}
             className="fixed inset-0 z-20 bg-black opacity-25"
           />
-          <div className="relative z-30 w-64 px-4 py-6 mt-2 bg-white rounded shadow-lg space-y-4">
+          <div className="relative z-30 w-[320px] px-4 py-6 mt-2 bg-white rounded shadow-lg space-y-4">
             <FieldGroup label="Campo da busca" name="field">
               <SelectInput
                 name="field"
@@ -103,7 +103,7 @@ export default function UsersFilterBar({ filters } : {
         </button>
         <TextInput
           name="search"
-          placeholder="Busca…"
+          placeholder="Buscar…"
           autoComplete="on"
           value={values.search}
           onChange={handleChange}

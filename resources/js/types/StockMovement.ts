@@ -1,4 +1,4 @@
-import { ProductVariant } from "./ProductVariant";
+import { Ingredient } from "./Ingredient";
 import { Store } from "./Store";
 import { StoreProductVariant } from "./StoreProductVariant";
 import { Tenant } from "./Tenant";
@@ -9,12 +9,12 @@ export type StockMovement = {
     user_id: number;
     tenant_id: number;
     store_id: number;
-    store_product_variant_id: number | null;
     user: User;
     tenant?: Tenant;
     store?: Store;
     store_product_variant?: StoreProductVariant | null;
-    type: string; // e.g., 'addition', 'removal'
+    ingredient?: Ingredient | null;
+    type: number; // e.g., 1 for 'addition', 2 for 'removal'
     subtype: string | null; // e.g., 'purchase', 'sale', 'adjustment'
     quantity: number;
     cost_price: number | null;

@@ -161,7 +161,7 @@ export default function Index({
                                                         {item.quantity}x {item.store_product_variant?.product_variant?.name || 'N/A'}
                                                     </div>
                                                     <div className="text-xs text-gray-600 dark:text-gray-400">
-                                                        {item.unit_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} cada, Total = {(item.total_price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                        {item.unit_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} cada, Total = {(item.unit_price * item.quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                                         {item.order_item_options?.some(opt => opt.addon_group_option?.additional_price > 0) && (
                                                             <span className="ml-2 text-green-700 dark:text-green-300 font-semibold">(acréscimo por opções)</span>
                                                         )}
@@ -173,7 +173,7 @@ export default function Index({
                                                             <ul className="ml-3 mt-1 space-y-0.5">
                                                                 {Object.entries(
                                                                     item.order_item_options.reduce((acc: Record<string, typeof item.order_item_options>, option) => {
-                                                                        const groupName = option.addon_group_option.addon_group?.name || 'Outros';
+                                                                        const groupName = option.addon_group_option?.addon_group?.name ?? 'Outros';
                                                                         if (!acc[groupName]) acc[groupName] = [];
                                                                         acc[groupName].push(option);
                                                                         return acc;
@@ -217,6 +217,11 @@ export default function Index({
                                                             </ul>
                                                         </div>
                                                     )}
+
+                                                    <div className="mt-2">
+                                                        <span className="font-semibold text-gray-700 dark:text-gray-300">Subtotal:</span>
+                                                        <span className="ml-1">{item.total_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                                    </div>
                                                 </div>
 
                                                 {orderCanBeModified && (
@@ -299,8 +304,8 @@ export default function Index({
                             </div>
 
                             <div className="flex flex-col bg-gray-50 dark:bg-gray-800 rounded-lg p-1.5 shadow-sm">
-                                <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Valor Restante</span>
-                                <span className="text-sm md:text-base text-gray-800 dark:text-gray-200 font-medium truncate">{((order?.data.total_amount ?? 0) - (order?.data.paid_amount ?? 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">{((parseFloat(String(order?.data.total_amount ?? 0)) < parseFloat(String(order?.data.paid_amount ?? 0))) ? 'Troco' : 'Valor Restante')}</span>
+                                <span className="text-sm md:text-base text-gray-800 dark:text-gray-200 font-medium truncate">{Math.abs(((order?.data.total_amount ?? 0) - (order?.data.paid_amount ?? 0))).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                             </div>
                         </div>
 

@@ -15,7 +15,7 @@ class StoreProductVariantResource extends JsonResource
             'product_variant_id' => $this->product_variant_id,
             'store' => new StoreResource($this->whenLoaded('store')),
             'product_variant' => new ProductVariantResource($this->whenLoaded('productVariant')),
-            'ingredients' => VariantIngredientResource::collection($this->whenLoaded('ingredients')),
+            'variant_ingredients' => VariantIngredientResource::collection($this->whenLoaded('variantIngredients')),
             'variant_addons' => VariantAddonResource::collection($this->whenLoaded('variantAddons')),
             'variant_addon_groups' => VariantAddonGroupResource::collection($this->whenLoaded('variantAddonGroups')),
             'sku' => $this->sku,

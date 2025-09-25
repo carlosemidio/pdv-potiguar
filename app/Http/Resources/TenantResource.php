@@ -15,6 +15,7 @@ class TenantResource extends JsonResource
             'domain' => $this->domain,
             'status' => $this->status,
             'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

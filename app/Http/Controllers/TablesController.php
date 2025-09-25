@@ -66,7 +66,12 @@ class TablesController extends Controller
 
         try {
             $data = $request->validate([
-                'name' => 'required|string|max:255'
+                'name' => 'required|string|max:255|unique:tables,name,NULL,id,store_id,' . Auth::user()->store_id,
+            ], [
+                'name.required' => 'O nome da mesa é obrigatório.',
+                'name.string' => 'O nome da mesa deve ser uma string.',
+                'name.max' => 'O nome da mesa não pode exceder 255 caracteres.',
+                'name.unique' => 'Já existe uma mesa com este nome na loja.',
             ]);
 
             $user = User::find(Auth::user()->id);

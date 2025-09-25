@@ -1,18 +1,16 @@
-import Card from '@/Components/Card';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
+import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus } from 'lucide-react';
+import { Edit, Eye, Trash, Plus, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
-import { Addon } from '@/types/Addon'; // Troque para o tipo correto
+import { Addon } from '@/types/Addon';
 import Pagination from '@/Components/Pagination/Pagination';
-import AddonFormModal from '@/Components/AddonFormModal'; // Troque para o componente correto
-import { CgProductHunt } from 'react-icons/cg';
-import { add } from 'lodash';
+import AddonFormModal from '@/Components/AddonFormModal';
 
 export default function Index({
     auth,
@@ -76,53 +74,102 @@ export default function Index({
             <Head title="Complementos" />
 
             <section className='px-3 text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto lg:px-2">
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3'>
-                        {
-                            addons?.data?.map((addon) => (
-                                <Card key={addon.id} className="relative p-3 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-                                    <p className='font-semibold text-base truncate'>{addon.name}</p>
-
-                                    <p className='mt-1 text-sm text-gray-700 dark:text-gray-300'>
-                                        Ingredientes:
-                                    </p>
-
-                                    <ul className='list-disc list-inside text-sm text-gray-700 dark:text-gray-300'>
-                                        {addon.addon_ingredients && addon.addon_ingredients.length > 0 ? (
-                                            addon.addon_ingredients.map((addonIngredient) => (
-                                                <li key={addonIngredient.id} className='truncate'>
-                                                    {addonIngredient.ingredient ? addonIngredient.ingredient.name : '—'} {addonIngredient.quantity}({addonIngredient.unit ? addonIngredient.unit.symbol : '—'})
-                                                </li>
-                                            ))
-                                        ) : (
-                                            <li className='text-gray-500 dark:text-gray-400'>Nenhum ingrediente associado.</li>
-                                        )}
-                                    </ul>
-
-                                    <div className='flex gap-1.5 mt-2 justify-end'>
-                                        {(can('addons_delete') && (addon.user_id != null) && typeof addon.id === 'number') && (
-                                            <DangerButton size='sm' onClick={() => confirmAddonDeletion(addon.id!)} title="Deletar complemento">
-                                                <Trash className='w-4 h-4' />
-                                            </DangerButton>
-                                        )}
-                                        {(can('addons_edit') && (addon.user_id != null)) && (
-                                            <SecondaryButton size='sm' title="Editar complemento" onClick={() => openModal(addon)}>
-                                                <Edit className='w-4 h-4' />
-                                            </SecondaryButton>
-                                        )}
-
-                                        {!can('addons_show') && (
-                                            <Link href={route('addons.show', { id: addon.id })}>
-                                                <SecondaryButton size='sm' title="Ver detalhes do complemento">
-                                                    <CgProductHunt className='w-4 h-4' />
-                                                </SecondaryButton>
-                                            </Link>
+                <div className="max-w-5xl">
+                    <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1'>
+                        {addons?.data?.map((addon) => (
+                            <li key={addon.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800">
+                                <div className="flex items-center justify-between gap-2 relative p-2">
+                                    {can('addons_view') ? (
+                                        <Link href={route('addons.show', { id: addon.id })} className="flex items-center gap-3 flex-1 min-w-0 rounded-md -m-1 p-1 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                            <div className='min-w-0 flex-1'>
+                                                <p className='font-semibold text-sm truncate'>{addon.name}</p>
+                                                <div className='mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-gray-700 dark:text-gray-300'>
+                                                    {addon.addon_ingredients && addon.addon_ingredients.length > 0 ? (
+                                                        <>
+                                                            {addon.addon_ingredients.slice(0, 2).map((addonIngredient) => (
+                                                                <span key={addonIngredient.id} className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px]'>
+                                                                    {addonIngredient.ingredient?.name || '—'}
+                                                                </span>
+                                                            ))}
+                                                            {addon.addon_ingredients.length > 2 && (
+                                                                <span className='text-[10px] text-gray-500'>+{addon.addon_ingredients.length - 2} mais</span>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <span className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'>Sem ingredientes</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ) : (
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <div className='min-w-0 flex-1'>
+                                                <p className='font-semibold text-sm truncate'>{addon.name}</p>
+                                                <div className='mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-gray-700 dark:text-gray-300'>
+                                                    {addon.addon_ingredients && addon.addon_ingredients.length > 0 ? (
+                                                        <>
+                                                            {addon.addon_ingredients.slice(0, 2).map((addonIngredient) => (
+                                                                <span key={addonIngredient.id} className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px]'>
+                                                                    {addonIngredient.ingredient?.name || '—'}
+                                                                </span>
+                                                            ))}
+                                                            {addon.addon_ingredients.length > 2 && (
+                                                                <span className='text-[10px] text-gray-500'>+{addon.addon_ingredients.length - 2} mais</span>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <span className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'>Sem ingredientes</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className='flex flex-col gap-1 absolute top-1 right-1'>
+                                        {(can('addons_view') || (can('addons_edit') && addon.user_id != null) || (can('addons_delete') && addon.user_id != null && typeof addon.id === 'number')) && (
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <SecondaryButton size='sm' className='!px-2 !py-1' title='Ações'>
+                                                        <MoreVertical className='w-4 h-4' />
+                                                    </SecondaryButton>
+                                                </Dropdown.Trigger>
+                                                <Dropdown.Content align='right' width='48'>
+                                                    {can('addons_view') && (
+                                                        <Dropdown.Link href={route('addons.show', { id: addon.id })}>
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Eye className='w-4 h-4' /> Ver detalhes
+                                                            </span>
+                                                        </Dropdown.Link>
+                                                    )}
+                                                    {(can('addons_edit') && addon.user_id != null) && (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => openModal(addon)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Edit className='w-4 h-4' /> Editar
+                                                            </span>
+                                                        </button>
+                                                    )}
+                                                    {(can('addons_delete') && addon.user_id != null && typeof addon.id === 'number') && (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => confirmAddonDeletion(addon.id!)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Trash className='w-4 h-4' /> Excluir
+                                                            </span>
+                                                        </button>
+                                                    )}
+                                                </Dropdown.Content>
+                                            </Dropdown>
                                         )}
                                     </div>
-                                </Card>
-                            ))
-                        }                    
-                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
                     
                     <Pagination links={links} />
                     

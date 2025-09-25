@@ -30,7 +30,7 @@ class TenantsController extends Controller
         }
 
         $tenants = $tenantsQuery->orderBy('name')
-            ->paginate(12, ['id', 'name', 'domain', 'status'])
+            ->paginate(12, ['id', 'name', 'domain', 'status', 'created_at', 'updated_at'])
             ->withQueryString();
 
         return Inertia::render('Tenants/Index', [

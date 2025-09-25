@@ -19,11 +19,11 @@ class OrderItemOption extends Model
 
     public function orderItem()
     {
-        return $this->belongsTo(OrderItem::class);
+        return $this->belongsTo(OrderItem::class)->withTrashed();
     }
 
     public function addonGroupOption()
     {
-        return $this->belongsTo(AddonGroupOption::class);
+        return $this->belongsTo(AddonGroupOption::class)->withTrashed();
     }
 }

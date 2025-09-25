@@ -192,7 +192,7 @@ export default function Authenticated({
                                         <NavLink href={route('product.index')} active={route().current('product.index')}>
                                             <div className='flex gap-2 items-center'>
                                                 <CgProductHunt className="w-5 h-5" />
-                                                <p>Produtos base</p>
+                                                <p>Modelos</p>
                                             </div>
                                         </NavLink>
                                     )}
@@ -209,7 +209,7 @@ export default function Authenticated({
                                         <NavLink href={route('store-product-variant.index')} active={route().current('store-product-variant.index')}>
                                             <div className='flex gap-2 items-center'>
                                                 <CgProductHunt className="w-5 h-5" />
-                                                <p>Produtos da loja</p>
+                                                <p>Produtos</p>
                                             </div>
                                         </NavLink>
                                     )}                                    

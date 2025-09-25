@@ -125,9 +125,9 @@ export default function Index({
                         {tab === 'ingredientes' && (
                             <Card className="p-3 relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
                                 <h3 className='text-base font-bold mb-2 text-blue-700 dark:text-blue-300'>Ingredientes</h3>
-                                {variant?.ingredients && variant.ingredients.length > 0 ? (
+                                {variant?.variant_ingredients && variant.variant_ingredients.length > 0 ? (
                                     <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
-                                        {variant.ingredients.map((ingredient, idx) => (
+                                        {variant.variant_ingredients.map((ingredient, idx) => (
                                             <li key={idx} className="flex flex-row gap-4 justify-start">
                                                 <span className="font-semibold">{ingredient.ingredient?.name || '-'}</span>
                                                 <span className="text-gray-500 dark:text-gray-400">{ingredient.quantity}({ingredient.unit?.symbol || ''})</span>
@@ -138,7 +138,7 @@ export default function Index({
                                     <div className='text-gray-500 dark:text-gray-400'>Nenhum ingrediente cadastrado.</div>
                                 )}
                                 <div className="mt-3 flex justify-start items-center gap-2">
-                                    {variant?.ingredients && variant.ingredients.length > 0 && (
+                                    {variant?.variant_ingredients && variant.variant_ingredients.length > 0 && (
                                         <SecondaryButton onClick={() => setIsIngredientDeleteModalOpen(true)}>
                                             <Trash2 className="w-4 h-4 mr-1 inline text-red-700 dark:text-red-300" />
                                             Remover
@@ -296,11 +296,11 @@ export default function Index({
                             units={units.data}
                         />
 
-                        {variant?.ingredients && variant.ingredients.length > 0 && (
+                        {variant?.variant_ingredients && variant.variant_ingredients.length > 0 && (
                             <VariantIngredientDeleteFormModal
                                 isOpen={isIngredientDeleteModalOpen}
                                 onClose={() => setIsIngredientDeleteModalOpen(false)}
-                                variantIngredients={variant.ingredients}
+                                variantIngredients={variant.variant_ingredients}
                             />
                         )}
 

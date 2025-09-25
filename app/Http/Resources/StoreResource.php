@@ -28,8 +28,12 @@ class StoreResource extends JsonResource
                     'email' => $this->user->email,
                 ];
             }),
-            'image' => new FileResource($this->image),
-            'images' => FileResource::collection($this->images),
+            'image' => $this->whenLoaded('image', function () {
+                return new FileResource($this->image);
+            }),
+            'images' => $this->whenLoaded('images', function () {
+                return FileResource::collection($this->images);
+            }),
             'name' => $this->name,
             'slug' => $this->slug,
             'email' => $this->email,

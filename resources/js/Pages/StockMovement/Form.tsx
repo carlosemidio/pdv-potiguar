@@ -9,23 +9,28 @@ import { Transition } from '@headlessui/react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 import { ProductVariant } from '@/types/ProductVariant';
-import { StockMovement } from '@/types/StockMovement';
 import SearchableProductVariantsSelect from '@/Components/SearchableProductVariantsSelect';
+import SearchableIngredientsSelect from '@/Components/SearchableIngredientsSelect';
+import { Ingredient } from '@/types/Ingredient';
+import { Unit } from '@/types/Unit';
 
 type SubtypeOption = { value: string; label: string };
 
-export default function Create({ auth, subtypes }: PageProps<{ subtypes: SubtypeOption[] }>) {
+export default function Create({ auth, subtypes, units }: PageProps<{ subtypes: SubtypeOption[], units: { data: Unit[] } }>) {
     const { data, setData, post, errors, processing, recentlySuccessful } = useForm({
         store_id: auth.user.store?.id ?? null,
-        product_variant_id: null as number | null,
+        stockable_type: 'variant',
+        stockable_id: null as number | null,
         quantity: 0,
         subtype: '',
         cost_price: '' as number | string,
         reason: '' as string,
         document_number: '' as string,
+        unit_id: null as number | null,
     });
 
     const [variant, setVariant] = useState<ProductVariant | null>(null);
+    const [ingredient, setIngredient] = useState<Ingredient | null>(null);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -53,17 +58,67 @@ export default function Create({ auth, subtypes }: PageProps<{ subtypes: Subtype
                             <div className="w-full col-span-1 md:col-span-2 lg:col-span-3">
                                 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <div className='w-full'>
-                                        <InputLabel htmlFor="product_variant_id" value="Variante" />
-                                        <SearchableProductVariantsSelect
-                                            selectedVariant={variant}
-                                            setVariant={(v) => {
-                                                setVariant(v);
-                                                setData('product_variant_id', v ? v.id : null);
-                                            }}
-                                            isDisabled={processing}
-                                        />
-                                        <InputError className="mt-2" message={errors.product_variant_id} />
+                                        <InputLabel htmlFor="stockable_type" value="Tipo" />
+                                        <select
+                                            id="stockable_type"
+                                            className="mt-1 block w-full rounded border-gray-300 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-200"
+                                            value={data.stockable_type}
+                                            onChange={(e) => setData('stockable_type', e.target.value)}
+                                            required
+                                        >
+                                            <option value="variant">Produto pronto</option>
+                                            <option value="ingredient">Ingrediente</option>
+                                        </select>
+                                        <InputError className="mt-2" message={errors.stockable_type} />
                                     </div>
+
+                                    {data.stockable_type === 'variant' && (
+                                        <div className='w-full'>
+                                            <InputLabel htmlFor="stockable_id" value="Variante" />
+                                            <SearchableProductVariantsSelect
+                                                selectedVariant={variant}
+                                                setVariant={(v) => {
+                                                    setVariant(v);
+                                                    setData('stockable_id', v ? v.id : null);
+                                                }}
+                                                isDisabled={processing}
+                                            />
+                                            <InputError className="mt-2" message={errors.stockable_id} />
+                                        </div>
+                                    )}
+
+                                    {data.stockable_type === 'ingredient' && (
+                                        <>
+                                            <div className='w-full'>
+                                                <InputLabel htmlFor="ingredient_id" value="Ingrediente" />
+                                                <SearchableIngredientsSelect
+                                                    selectedIngredient={ingredient}
+                                                    setIngredient={(i) => {
+                                                        setIngredient(i);
+                                                        setData('stockable_id', i ? i.id : null);
+                                                    }}
+                                                    isDisabled={processing}
+                                                />
+                                                <InputError className="mt-2" message={errors.stockable_id} />
+                                            </div>
+
+                                            <div className='w-full'>
+                                                <InputLabel htmlFor="unit_id" value="Unidade de medida" />
+                                                <select
+                                                    id="unit_id"
+                                                    className="mt-1 block w-full rounded border-gray-300 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-200"
+                                                    value={data.unit_id ?? ''}
+                                                    onChange={(e) => setData('unit_id', e.target.value ? Number(e.target.value) : null)}
+                                                >
+                                                    <option value="">Selecione...</option>
+                                                    {units?.data?.map(u => (
+                                                        <option key={u.id} value={u.id}>{u.name} ({u.symbol})</option>
+                                                    ))}
+                                                </select>
+                                                <InputError className="mt-2" message={errors.unit_id} />
+                                            </div>
+                                       </>
+                                    )}
 
                                     <div className='w-full'>
                                         <InputLabel htmlFor="subtype" value="Subtipo" />

@@ -1,10 +1,10 @@
-import Card from '@/Components/Card';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
+import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Eye, Plus } from 'lucide-react';
+import { Edit, Eye, Plus, MoreVertical } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 import { can } from '@/utils/authorization';
 import Pagination from '@/Components/Pagination/Pagination';
@@ -72,7 +72,7 @@ export default function Index({
                                     <select
                                         id="status"
                                         className="border rounded px-2 py-1 w-full focus:ring focus:ring-blue-400 dark:bg-gray-800 dark:text-gray-100"
-                                        defaultValue={data.status}
+                                        value={data.status}
                                         onChange={e => setData('status', e.target.value)}
                                     >
                                         <option value="">Todos</option>
@@ -141,112 +141,140 @@ export default function Index({
                         </div>
                     </div>
 
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'>
-                        {
-                            orders?.data?.map((order) => (
-                                <Card key={order.id} className="p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-md transition-shadow">
-                                    <div className="flex items-center justify-between mb-0.5">
-                                        <p className='font-semibold text-sm'>{order.number ? `Pedido #${order.number}` : 'Pedido sem número'}</p>
-                                        <span
-                                            className={`px-2 py-0.5 rounded-full text-xs font-medium
-                                                ${
-                                                    OrderStatusColors[order.status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                                                }
-                                            `}
-                                        >
-                                            {order.status_name}
-                                        </span>
-                                    </div>
-                                    <div className='mt-1 flex flex-col gap-1'>
-                                        <div className='flex items-center gap-2'>
-                                            <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Cliente:</p>
-                                            <span className="bg-gray-100 rounded px-1.5 py-0.5 text-[11px] dark:bg-gray-800 dark:text-gray-200 min-h-[20px]">
-                                                {order?.customer?.name || <span className="italic text-gray-400">Sem cliente</span>}
-                                            </span>
-                                        </div>
-                                        {order.table && (
-                                            <div className='flex items-center gap-2'>
-                                                <p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Mesa:</p>
-                                                <span className="bg-gray-100 rounded px-1.5 py-0.5 text-[11px] dark:bg-gray-800 dark:text-gray-200 min-h-[20px]">
-                                                    {order.table.name}
-                                                </span>
+                    <ul className='bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800'>
+                        {orders?.data?.map((order) => {
+                            const total = Number(order.total_amount);
+                            const paid = Number(order.paid_amount);
+                            const pending = Math.max(total - paid, 0);
+                            const createdAt = new Date(order.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                            const itemsCount = order.items.length;
+                            const itemsPreview = order.items.slice(0, 2).map(i => `${i.quantity}x ${i.store_product_variant?.product_variant?.name ?? '—'}`).join(', ');
+                            const hasMoreItems = itemsCount > 2;
+                            return (
+                                <li key={order.id} className="p-3">
+                                    <div className="flex items-start justify-between gap-2">
+                                        {can('orders_view') ? (
+                                            <Link href={route('orders.show', { id: order.id })} className="flex-1 min-w-0 rounded-md -m-1 p-1 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <p className="font-semibold text-sm truncate">{order.number ? `#${order.number}` : 'Pedido sem número'}</p>
+                                                    <span
+                                                        className={`px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap ${OrderStatusColors[order.status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'}`}
+                                                    >
+                                                        {order.status_name}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-gray-700 dark:text-gray-300">
+                                                    <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800">{order?.customer?.name || 'Sem cliente'}</span>
+                                                    {order.table && (
+                                                        <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800">Mesa {order.table.name}</span>
+                                                    )}
+                                                    <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800">{itemsCount} {itemsCount === 1 ? 'item' : 'itens'}</span>
+                                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-auto">{createdAt}</span>
+                                                </div>
+                                                <div className="mt-1 text-xs text-gray-600 dark:text-gray-400 truncate">
+                                                    {itemsCount > 0 ? (
+                                                        <span className="truncate inline-block max-w-full">
+                                                            {itemsPreview}{hasMoreItems ? '…' : ''}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="italic text-gray-400">Sem itens</span>
+                                                    )}
+                                                </div>
+                                                <div className="mt-1 flex items-center justify-between">
+                                                    <div className="text-xs">
+                                                        <span className="text-gray-600 dark:text-gray-400 mr-1">Total:</span>
+                                                        <span className="font-semibold">{total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                                    </div>
+                                                    <div className="text-xs">
+                                                        {pending > 0 ? (
+                                                            <span className="font-semibold text-red-600 dark:text-red-400">Falta {pending.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                                        ) : (
+                                                            <span className="font-semibold text-green-600 dark:text-green-400">Pago</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        ) : (
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <p className="font-semibold text-sm truncate">{order.number ? `#${order.number}` : 'Pedido sem número'}</p>
+                                                    <span
+                                                        className={`px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap ${OrderStatusColors[order.status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'}`}
+                                                    >
+                                                        {order.status_name}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-gray-700 dark:text-gray-300">
+                                                    <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800">{order?.customer?.name || 'Sem cliente'}</span>
+                                                    {order.table && (
+                                                        <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800">Mesa {order.table.name}</span>
+                                                    )}
+                                                    <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800">{itemsCount} {itemsCount === 1 ? 'item' : 'itens'}</span>
+                                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-auto">{createdAt}</span>
+                                                </div>
+                                                <div className="mt-1 text-xs text-gray-600 dark:text-gray-400 truncate">
+                                                    {itemsCount > 0 ? (
+                                                        <span className="truncate inline-block max-w-full">
+                                                            {itemsPreview}{hasMoreItems ? '…' : ''}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="italic text-gray-400">Sem itens</span>
+                                                    )}
+                                                </div>
+                                                <div className="mt-1 flex items-center justify-between">
+                                                    <div className="text-xs">
+                                                        <span className="text-gray-600 dark:text-gray-400 mr-1">Total:</span>
+                                                        <span className="font-semibold">{total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                                    </div>
+                                                    <div className="text-xs">
+                                                        {pending > 0 ? (
+                                                            <span className="font-semibold text-red-600 dark:text-red-400">Falta {pending.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                                        ) : (
+                                                            <span className="font-semibold text-green-600 dark:text-green-400">Pago</span>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
-                                    </div>
-                                    <div className='mt-1.5'>
-                                        <p className='text-xs font-medium text-gray-600 dark:text-gray-400 mb-1'>Resumo:</p>
-                                        {order.items.length > 0 ? (
-                                            <ul className='max-h-24 overflow-y-auto pr-1.5 space-y-0.5'>
-                                                {order.items.map((item) => (
-                                                    <li key={item.id} className='text-[11px] text-gray-700 dark:text-gray-300'>
-                                                        {item.quantity}x {item.store_product_variant?.product_variant?.name ?? <span className="italic text-gray-400">Sem produto</span>} - {parseFloat(item.total_price as any).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className='text-xs italic text-gray-400'>Nenhum item no pedido.</p>
-                                        )}
-                                    </div>
-                                    <div className='grid grid-cols-2 gap-2.5 mt-2.5'>
-                                        <div>
-                                            <p className='text-xs text-gray-600 dark:text-gray-400'>Total:</p>
-                                            <span className='font-semibold'>
-                                                {parseFloat(order.total_amount as any).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <p className='text-xs text-gray-600 dark:text-gray-400'>Pago:</p>
-                                            <span className={`font-semibold ${(Number(order.paid_amount) < Number(order.total_amount)) ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                                                {parseFloat(order.paid_amount as any).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className='mt-2 grid grid-cols-2 gap-1.5'>
-                                        <div>
-                                            <p className='text-[11px] text-gray-500 dark:text-gray-400'>Criado em</p>
-                                            <span className='text-[11px]'>
-                                                {new Date(order.created_at).toLocaleDateString('pt-BR', {
-                                                    day: '2-digit',
-                                                    month: '2-digit',
-                                                    year: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <p className='text-[11px] text-gray-500 dark:text-gray-400'>Atualizado em</p>
-                                            <span className='text-[11px]'>
-                                                {new Date(order.updated_at).toLocaleDateString('pt-BR', {
-                                                    day: '2-digit',
-                                                    month: '2-digit',
-                                                    year: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
-                                            </span>
+                                        <div className="flex flex-col gap-1 shrink-0">
+                                            {(can('orders_view') || (can('orders_edit') && order.user_id != null)) && (
+                                                <Dropdown>
+                                                    <Dropdown.Trigger>
+                                                        <SecondaryButton size="sm" className="!px-2 !py-1" title="Ações">
+                                                            <MoreVertical className='w-4 h-4' />
+                                                        </SecondaryButton>
+                                                    </Dropdown.Trigger>
+                                                    <Dropdown.Content align='right' width='48'>
+                                                        {can('orders_view') && (
+                                                            <Dropdown.Link href={route('orders.show', { id: order.id })}>
+                                                                <span className='inline-flex items-center gap-2'>
+                                                                    <Eye className='w-4 h-4' /> Ver detalhes
+                                                                </span>
+                                                            </Dropdown.Link>
+                                                        )}
+                                                        {(can('orders_edit') && order.user_id != null) && (
+                                                            <button
+                                                                type='button'
+                                                                onClick={() => handleOpenOrderModal(order)}
+                                                                className='block w-full px-4 py-2 text-start text-sm leading-5 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none'
+                                                            >
+                                                                <span className='inline-flex items-center gap-2'>
+                                                                    <Edit className='w-4 h-4' /> Editar pedido
+                                                                </span>
+                                                            </button>
+                                                        )}
+                                                    </Dropdown.Content>
+                                                </Dropdown>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className='flex gap-1.5 mt-2.5 justify-end'>
-                                        {(can('orders_edit') && (order.user_id != null)) && (
-                                            <SecondaryButton size="sm" title="Editar pedido" className="flex items-center gap-1" onClick={() => handleOpenOrderModal(order)}>
-                                                <Edit className='w-4 h-4' />
-                                            </SecondaryButton>
-                                        )}
-
-                                        {can('orders_view') && (
-                                            <Link href={route('orders.show', { id: order.id })}>
-                                                <SecondaryButton size="sm" className="flex items-center gap-1" title="Ver detalhes do pedido">
-                                                    <Eye className='w-4 h-4' />
-                                                </SecondaryButton>
-                                            </Link>
-                                        )}
-                                    </div>
-                                </Card>
-                            ))
-                        }
-                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    
                     <Pagination links={links} />
+
                     {orders?.data?.length === 0 && (
                         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                             Nenhum pedido cadastrado.

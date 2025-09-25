@@ -1,13 +1,13 @@
-import Card from '@/Components/Card';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
+import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Product } from '@/types/Product';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Eye, Trash, Plus } from 'lucide-react';
+import { Edit, Trash, Plus, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { formatCustomDateTime } from '@/utils/date-format';
@@ -63,54 +63,61 @@ export default function Index({
         >
             <Head title="Produtos" />
 
-            <section className=' px-3 text-gray-800 dark:text-gray-200'>
+            <section className=' px-3 text-gray-800 dark:text-gray-200 max-w-5xl'>
                 <div className="mx-auto lg:px-2">
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3'>
-                        {
-                            products.data.map((item) => (
-                                <Card key={item.id} className='relative flex flex-col justify-between p-3 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'>
-                                    <p className='font-semibold text-base truncate'>{item.name}</p>
-
-                                    <div className='mt-1 text-sm text-gray-700 dark:text-gray-300'>
-                                        <span className='text-gray-600 dark:text-gray-400'>Marca: </span>
-                                        {item.brand?.name || '—'}
+                    <ul className='grid grid-cols-1 lg:grid-cols-2 gap-1 mt-2'>
+                        {products.data.map((item) => (
+                            <li key={item.id} className='bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800'>
+                                <div className="flex items-start justify-between gap-2 relative p-2">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <p className='font-semibold text-sm truncate'>{item.name}</p>
+                                            </div>
+                                            <div className='mt-1 flex flex-wrap items-end gap-1.5 text-[11px] text-gray-700 dark:text-gray-300'>
+                                                <span className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800'>{item.brand?.name || 'Sem marca'}</span>
+                                                {item.category?.name && (
+                                                    <span className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800'>{item.category?.name}</span>
+                                                )}
+                                                <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-auto">{formatCustomDateTime(item.updated_at)}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className='text-sm text-gray-700 dark:text-gray-300'>
-                                        <span className='text-gray-600 dark:text-gray-400'>Categoria: </span>
-                                        {item.category?.name}
-                                    </div>
-                                    <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                                        Criado em: { formatCustomDateTime(item.created_at) }
-                                    </div>
-                                    <div className='text-xs text-gray-500 dark:text-gray-400'>
-                                        Atualizado em: { formatCustomDateTime(item.updated_at)}
-                                    </div>
-
-                                    <div className='flex gap-1.5 mt-2 justify-end'>
-                                        {can('products_delete') && (
-                                            <DangerButton size='sm' onClick={() => handleDeleteClick(item)} disabled={processing} title='Excluir produto'>
-                                                <Trash className='w-4 h-4' />
-                                            </DangerButton>
+                                    <div className='flex flex-col gap-1 absolute top-1 right-1'>
+                                        {(can('products_view') || can('products_edit') || can('products_delete')) && (
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <SecondaryButton size='sm' className='!px-2 !py-1' title='Ações'>
+                                                        <MoreVertical className='w-4 h-4' />
+                                                    </SecondaryButton>
+                                                </Dropdown.Trigger>
+                                                <Dropdown.Content align='right' width='48'>
+                                                    {can('products_edit') && (
+                                                        <Dropdown.Link href={route('product.edit', { id: item.id })}>
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Edit className='w-4 h-4' /> Editar
+                                                            </span>
+                                                        </Dropdown.Link>
+                                                    )}
+                                                    {can('products_delete') && (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => handleDeleteClick(item)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Trash className='w-4 h-4' /> Excluir
+                                                            </span>
+                                                        </button>
+                                                    )}
+                                                </Dropdown.Content>
+                                            </Dropdown>
                                         )}
-                                        {can('products_edit') && (
-                                            <Link href={route('product.edit', { id: item.id })}>
-                                                <SecondaryButton size='sm' title='Editar produto'>
-                                                    <Edit className='w-4 h-4' />
-                                                </SecondaryButton>
-                                            </Link>
-                                        )}
-                                        {can('products_view') && (
-                                            <Link href={route('product.show', { id: item.id })}>
-                                                <PrimaryButton size='sm' title='Ver produto'>
-                                                    <Eye className='w-4 h-4' />
-                                                </PrimaryButton>
-                                            </Link>
-                                        )}
                                     </div>
-                                </Card>
-                            ))
-                        }
-                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
 
                     <Pagination links={meta.links} />
 

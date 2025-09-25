@@ -18,11 +18,11 @@ class AddonGroupOption extends Model
 
     public function addonGroup()
     {
-        return $this->belongsTo(VariantAddonGroup::class, 'addon_group_id');
+        return $this->belongsTo(VariantAddonGroup::class, 'addon_group_id')->withTrashed();
     }
 
     public function addon()
     {
-        return $this->belongsTo(Addon::class, 'addon_id');
+        return $this->belongsTo(Addon::class, 'addon_id')->withTrashed();
     }
 }

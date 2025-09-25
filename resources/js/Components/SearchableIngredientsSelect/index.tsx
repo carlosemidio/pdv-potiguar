@@ -1,6 +1,33 @@
 import { Ingredient } from '@/types/Ingredient';
 import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
+import { StylesConfig, GroupBase } from 'react-select';
+
+const customStyles: StylesConfig<OptionType, false, GroupBase<OptionType>> = {
+  control: (provided) => ({
+    ...provided,
+    minHeight: '30px', // Set a minimum height for the control
+    height: '42px',    // Set a fixed height for the control
+  }),
+  valueContainer: (provided) => ({
+    ...provided,
+    minHeight: '28px', // Adjust min-height for the value container
+    height: '38px',    // Adjust fixed height for the value container
+    paddingTop: '0',   // Remove or adjust padding
+    paddingBottom: '0',
+  }),
+  indicatorsContainer: (provided) => ({
+    ...provided,
+    minHeight: '28px', // Adjust min-height for the indicators container
+    height: '38px',    // Adjust fixed height for the indicators container
+  }),
+  // You might also need to adjust styles for other parts like singleValue or multiValue
+  singleValue: (provided) => ({
+    ...provided,
+    lineHeight: '38px', // Ensure single value aligns vertically
+  }),
+};
+
 
 // Define the shape of the options
 interface OptionType {
@@ -76,6 +103,7 @@ const SearchableIngredientsSelect: React.FC<SearchableIngredientsSelectProps> = 
         value={selectedOption}
         isClearable
         isDisabled={isDisabled}
+        styles={customStyles}
       />
     </div>
   );

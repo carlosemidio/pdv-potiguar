@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\StockMovement;
 use App\Enums\StockMovementSubtype;
 use App\Models\Order;
+use App\Models\Unit;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -21,6 +22,7 @@ class StockMovementService
         ?float $costPrice = null,
         ?string $reason = null,
         ?string $documentNumber = null,
+        ?Unit $unit
     ): StockMovement {
         return DB::transaction(function () use (
             $userId,
@@ -33,17 +35,19 @@ class StockMovementService
             $costPrice,
             $reason,
             $documentNumber,
+            $unit
         ) {
             $type = $this->resolveType($subtype);
 
             // atualiza estoque da loja
-            $stockable = $this->updateStoreStock(
+            $result = $this->updateStoreStock(
                 $storeId,
                 $stockableType,
                 $stockableId,
                 $quantity,
                 $type,
-                $costPrice
+                $costPrice,
+                $unit
             );
 
             // cria o registro
@@ -55,8 +59,8 @@ class StockMovementService
                 'stockable_id' => $stockableId,
                 'type' => $type,
                 'subtype' => $subtype->value,
-                'quantity' => $quantity,
-                'cost_price' => $costPrice,
+                'quantity' => $result['quantity'],
+                'cost_price' => $result['cost_price'] ?? $costPrice,
                 'reason' => $reason,
                 'document_number' => $documentNumber,
             ]);
@@ -68,7 +72,16 @@ class StockMovementService
     public function registerSaleFromOrder(Order $order)
     {
         foreach ($order->items as $item) {
-            if (count($item->storeProductVariant->ingredients) < 1) {
+            $item->load(
+                'orderItemOptions.addonGroupOption.addon.addonIngredients.ingredient',
+                'orderItemOptions.addonGroupOption.addon.addonIngredients.unit',
+                'storeProductVariant.variantIngredients.ingredient',
+                'storeProductVariant.variantIngredients.unit',
+                'orderItemAddons.variantAddon.addon.addonIngredients.ingredient',
+                'orderItemAddons.variantAddon.addon.addonIngredients.unit'
+            );
+            
+            if ($item->storeProductVariant->is_produced) {
                 $this->register(
                     $order->user_id,
                     $order->tenant_id,
@@ -79,23 +92,70 @@ class StockMovementService
                     StockMovementSubtype::SALE,
                     $item->cost_price,
                     "Pedido #{$order->id}",
+                    null,
                     null
                 );
             } else {
-                // se o produto for composto, registra a saída dos ingredientes
-                foreach ($item->storeProductVariant->ingredients as $ingredient) {
-                    $this->register(
-                        $order->user_id,
-                        $order->tenant_id,
-                        $order->store_id,
-                        get_class($ingredient),
-                        $ingredient->id,
-                        ($ingredient->pivot->quantity * $item->quantity),
-                        StockMovementSubtype::SALE,
-                        $ingredient->cost_price,
-                        "Ingrediente no produto: {$item->storeProductVariant->productVariant->name} (Pedido #{$order->number})",
-                        null
-                    );
+                if (count($item->orderItemOptions) > 0) {
+                    foreach ($item->orderItemOptions as $option) {
+                        if ($option->addonGroupOption && $option->addonGroupOption->addon && ($option->addonGroupOption->addon->addonIngredients->count() > 0)) {
+                            foreach ($option->addonGroupOption->addon->addonIngredients as $addonIngredient) {
+                                $this->register(
+                                    $order->user_id,
+                                    $order->tenant_id,
+                                    $order->store_id,
+                                    get_class($addonIngredient->ingredient),
+                                    $addonIngredient->ingredient->id,
+                                    ($addonIngredient->quantity * $option->quantity),
+                                    StockMovementSubtype::SALE,
+                                    $addonIngredient->ingredient->cost_price,
+                                    "Ingrediente na opção: {$option->addonGroupOption->addon->name} do produto: {$item->storeProductVariant->productVariant->name} (Pedido #{$order->number})",
+                                    null,
+                                    $addonIngredient->unit
+                                );
+                            }
+                        }
+                    }
+                }
+
+                if (count($item->orderItemAddons) > 0) {
+                    foreach ($item->orderItemAddons as $variantAddon) {
+                        if ($variantAddon->variantAddon && $variantAddon->variantAddon->addon && ($variantAddon->variantAddon->addon->addonIngredients->count() > 0)) {
+                            foreach ($variantAddon->variantAddon->addon->addonIngredients as $addonIngredient) {
+                                $this->register(
+                                    $order->user_id,
+                                    $order->tenant_id,
+                                    $order->store_id,
+                                    get_class($addonIngredient->ingredient),
+                                    $addonIngredient->ingredient->id,
+                                    ($addonIngredient->quantity * $variantAddon->quantity),
+                                    StockMovementSubtype::SALE,
+                                    $addonIngredient->ingredient->cost_price,
+                                    "Ingrediente no adicional: {$variantAddon->variantAddon->addon->name} do produto: {$item->storeProductVariant->productVariant->name} (Pedido #{$order->number})",
+                                    null,
+                                    $addonIngredient->unit
+                                );
+                            }
+                        }
+                    }
+                }
+
+                if (count($item->storeProductVariant->variantIngredients) > 0) {
+                    foreach ($item->storeProductVariant->variantIngredients as $variantIngredient) {
+                        $this->register(
+                            $order->user_id,
+                            $order->tenant_id,
+                            $order->store_id,
+                            get_class($variantIngredient->ingredient),
+                            $variantIngredient->ingredient->id,
+                            ($variantIngredient->quantity * $item->quantity),
+                            StockMovementSubtype::SALE,
+                            $variantIngredient->ingredient->cost_price,
+                            "Ingrediente no produto: {$item->storeProductVariant->productVariant->name} (Pedido #{$order->number})",
+                            null,
+                            $variantIngredient->unit
+                        );
+                    }
                 }
             }
         }
@@ -118,19 +178,22 @@ class StockMovementService
         };
     }
 
-    private function updateStoreStock(int $storeId, string $stockableType, int $stockableId, float $quantity, string $type, ?float $costPrice)
+    private function updateStoreStock(int $storeId, string $stockableType, int $stockableId, float $quantity, string $type, ?float $costPrice, ?Unit $unit)
     {
         $stockable = app($stockableType)::where('id', $stockableId)
-            ->where('store_id', $storeId)
-            ->firstOrFail();
+            ->where('store_id', $storeId)->firstOrFail();
 
-        if ($type === 'in') {
+        if (($unit instanceof Unit) && ($unit->id != $stockable->unit_id)) {
+            $stockable->load('unit');
+            $quantity = unit_convert($quantity, $unit->symbol, $stockable->unit->symbol);
+        }
+
+        if ($type == 1) {
             // custo médio ponderado
             if ($costPrice !== null) {
                 $totalOld = $stockable->stock_quantity * $stockable->cost_price;
-                $totalNew = $quantity * $costPrice;
-                $newQty   = $stockable->stock_quantity + $quantity;
-
+                $totalNew = $costPrice;
+                $newQty = $stockable->stock_quantity + $quantity;
                 $stockable->cost_price = $newQty > 0 ? ($totalOld + $totalNew) / $newQty : $costPrice;
             }
 
@@ -141,6 +204,9 @@ class StockMovementService
 
         $stockable->save();
 
-        return $stockable;
+        return [
+            'stockable' => $stockable,
+            'quantity' => $quantity
+        ];
     }
 }

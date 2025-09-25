@@ -33,7 +33,7 @@ class StoreProductVariant extends Model
         return $this->belongsTo(ProductVariant::class);
     }
 
-    public function ingredients()
+    public function variantIngredients()
     {
         return $this->hasMany(VariantIngredient::class, 'sp_variant_id');
     }

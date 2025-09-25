@@ -2,10 +2,11 @@ import Card from '@/Components/Card';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
+import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus } from 'lucide-react';
+import { Edit, Trash, Plus, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Ingredient } from '@/types/Ingredient';
@@ -80,43 +81,69 @@ export default function Index({
         >
             <Head title="Ingredientes" />
 
-            <section className='text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto lg:px-2">
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3'>
-                        {
-                            ingredients?.data?.map((ingredient) => (
-                                <Card key={ingredient.id} className="relative p-3 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <p className='font-semibold text-base truncate'>{ingredient.name}</p>
+            <section className='px-3 text-gray-800 dark:text-gray-200'>
+                <div className="max-w-5xl">
+                    <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1'>
+                        {ingredients?.data?.map((ingredient) => (
+                            <li key={ingredient.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800">
+                                <div className="flex items-center justify-between gap-2 relative p-2">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        <div className='min-w-0 flex-1'>
+                                            <p className='font-semibold text-sm truncate'>{ingredient.name}</p>
+                                            <div className='mt-1 flex flex-wrap items-end gap-1.5 text-[11px] text-gray-700 dark:text-gray-300'>
+                                                <span className={`px-1.5 py-0.5 rounded text-[10px] ${(ingredient.stock_quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'}`}>
+                                                    Estoque: {ingredient.stock_quantity ?? '0'}{ingredient.unit?.symbol || ''}
+                                                </span>
+                                                {ingredient.cost_price && (
+                                                    <span className='px-1.5 py-0.5 rounded bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 text-[10px]'>
+                                                        {ingredient.cost_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                    </span>
+                                                )}
+                                                <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-auto">
+                                                    {ingredient.created_at ? new Date(ingredient.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—'}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-
-                                    <div className='mt-1 text-sm text-gray-700 dark:text-gray-300'>
-                                        Estoque: {ingredient.stock_quantity ?? '0'}{ingredient.unit ? ingredient.unit.symbol : ''}
-                                    </div>
-
-                                    <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                                        Criado em: {ingredient.created_at ? new Date(ingredient.created_at).toLocaleDateString('pt-BR') : '-'}
-                                    </div>
-
-                                    <div className='flex gap-1.5 mt-2 justify-end'>
-                                        {(can('ingredients_delete') && (ingredient.user_id != null)) && (
-                                            <DangerButton size='sm'
-                                                onClick={() => confirmIngredientDeletion(ingredient.id)}
-                                                title="Deletar ingrediente"
-                                            >
-                                                <Trash className='w-4 h-4' />
-                                            </DangerButton>
+                                    <div className='flex flex-col gap-1 absolute top-1 right-1'>
+                                        {((can('ingredients_edit') && ingredient.user_id != null) || (can('ingredients_delete') && ingredient.user_id != null)) && (
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <SecondaryButton size='sm' className='!px-2 !py-1' title='Ações'>
+                                                        <MoreVertical className='w-4 h-4' />
+                                                    </SecondaryButton>
+                                                </Dropdown.Trigger>
+                                                <Dropdown.Content align='right' width='48'>
+                                                    {(can('ingredients_edit') && ingredient.user_id != null) && (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => handleOpenModalForEdit(ingredient)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Edit className='w-4 h-4' /> Editar
+                                                            </span>
+                                                        </button>
+                                                    )}
+                                                    {(can('ingredients_delete') && ingredient.user_id != null) && (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => confirmIngredientDeletion(ingredient.id)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <Trash className='w-4 h-4' /> Excluir
+                                                            </span>
+                                                        </button>
+                                                    )}
+                                                </Dropdown.Content>
+                                            </Dropdown>
                                         )}
-                                        {(can('ingredients_edit') &&  (ingredient.user_id != null)) && (
-                                            <SecondaryButton size='sm' title="Editar ingrediente" onClick={() => handleOpenModalForEdit(ingredient)}>
-                                                <Edit className='w-4 h-4' />
-                                            </SecondaryButton>
-                                        )}
                                     </div>
-                                </Card>
-                            ))
-                        }
-                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
                     <Pagination links={links} />
                     {ingredients?.data?.length === 0 && (
                         <div className="text-center py-12 text-gray-500 dark:text-gray-400">

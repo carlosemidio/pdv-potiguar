@@ -8,6 +8,7 @@ use App\Models\Ingredient;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class IngredientsController extends Controller
@@ -112,14 +113,22 @@ class IngredientsController extends Controller
         $this->authorize('delete', $ingredient);
 
         try {
+            DB::beginTransaction();
+
+            $ingredient->addonIngredients()->delete();
+            $ingredient->variantIngredients()->delete();
+
             if (!$ingredient->delete()) {
                 return redirect()->back()
                     ->with('fail', 'Erro ao remover ingrediente.');
             }
 
+            DB::commit();
+
             return redirect()->route('ingredients.index')
                 ->with('success', 'Ingrediente removido com sucesso!');
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()->back()
                 ->with('fail', 'Erro ao remover ingrediente: ' . $e->getMessage());
         }

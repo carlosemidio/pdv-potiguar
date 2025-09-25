@@ -19,7 +19,6 @@ return new class extends Migration
                 ->on('variant_addon_groups')
                 ->onDelete('cascade');
             $table->foreignId('addon_id')->constrained()->onDelete('cascade');
-            $table->decimal('quantity', 10, 2);
             $table->decimal('additional_price', 10, 2)->default(0);
             $table->softDeletes();
             $table->timestamps();

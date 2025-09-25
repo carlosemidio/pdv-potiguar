@@ -1,13 +1,13 @@
-import Card from '@/Components/Card';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
+import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { User } from '@/types/User';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Edit, LogIn, ShieldCheck, ShieldX, Plus } from 'lucide-react';
+import { Edit, LogIn, ShieldCheck, ShieldX, Plus, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import Pagination from '@/Components/Pagination/Pagination';
@@ -72,62 +72,88 @@ export default function Page({ auth }: PageProps) {
         >
             <Head title="Usuários" />
 
-            <section className='text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto lg:px-2">
-                    <div className="mb-3 mt-3">
+            <section className='px-3 text-gray-800 dark:text-gray-200'>
+                <div className="max-w-5xl">
+                    <div className="mb-3 w-full max-w-2xl">
                         <UsersFilterBar filters={{ ...filters }} />
                     </div>
 
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3'>
-                        {
-                            users?.data?.map((user) => (
-                                <Card key={user.uuid} className='relative flex flex-col justify-between p-3 shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'>
-                                    <p className='font-semibold text-base truncate'>{user.name}</p>
-                                    <p className='text-sm text-gray-700 dark:text-gray-300 truncate'>{user.email}</p>
-                                    <div className='flex justify-end absolute top-2 right-2'>
-                                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${user.status ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                                            {user.status ? 'Ativo' : 'Inativo'}
-                                        </span>
-                                    </div>
-                                    <div className='mt-1'>
-                                        <p className='text-sm mb-1 text-gray-600 dark:text-gray-400'>Funções</p>
-                                        <div className='flex gap-1.5 flex-wrap'>
-                                            {user.roles?.map((role) => (
-                                                <span key={role.id} className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs">
-                                                    {role.name}
+                    <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 mb-6'>
+                        {users?.data?.map((user) => (
+                            <li key={user.uuid} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800">
+                                <div className="flex items-center justify-between gap-2 relative p-2">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        <div className='min-w-0 flex-1'>
+                                            <div className="flex items-center gap-2">
+                                                <p className='font-semibold text-sm truncate'>{user.name}</p>
+                                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${user.status ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'}`}>
+                                                    {user.status ? 'Ativo' : 'Inativo'}
                                                 </span>
-                                            ))}
+                                            </div>
+                                            <div className='mt-1 text-[11px] text-gray-600 dark:text-gray-400 truncate'>
+                                                {user.email}
+                                            </div>
+                                            <div className='mt-1 flex flex-wrap gap-1.5'>
+                                                {user.roles?.map((role) => (
+                                                    <span key={role.id} className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px]'>
+                                                        {role.name}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className='flex gap-1.5 mt-2 justify-end'>
+                                    <div className='flex flex-col gap-1 absolute top-1 right-1'>
                                         {can('users_edit') && (
-                                            <>
-                                                <SecondaryButton size='sm' title='Entrar como usuário' onClick={() => loginAsUser(user.uuid)}>
-                                                    <LogIn className='w-4 h-4' />
-                                                </SecondaryButton>
-
-                                                {user.status ? (
-                                                    <DangerButton size='sm' title='Desabilitar usuário' onClick={() => changeUserStatus(user.uuid)}>
-                                                        { <ShieldX className='w-4 h-4' /> }
-                                                    </DangerButton>
-                                                ): (
-                                                    <PrimaryButton size='sm' title='Habilitar usuário' onClick={() => changeUserStatus(user.uuid)} >
-                                                        <ShieldCheck className='w-4 h-4' />
-                                                    </PrimaryButton> 
-                                                )}
-
-                                                <Link href={route('user.edit',  { uuid: user?.uuid })}>
-                                                    <SecondaryButton size='sm' title='Editar usuário'>
-                                                        <Edit className='w-4 h-4' />
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <SecondaryButton size='sm' className='!px-2 !py-1' title='Ações'>
+                                                        <MoreVertical className='w-4 h-4' />
                                                     </SecondaryButton>
-                                                </Link>
-                                            </>
+                                                </Dropdown.Trigger>
+                                                <Dropdown.Content align='right' width='48'>
+                                                    <button
+                                                        type='button'
+                                                        onClick={() => loginAsUser(user.uuid)}
+                                                        className='block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 focus:outline-none'
+                                                    >
+                                                        <span className='inline-flex items-center gap-2'>
+                                                            <LogIn className='w-4 h-4' /> Entrar como usuário
+                                                        </span>
+                                                    </button>
+                                                    <Dropdown.Link href={route('user.edit', { uuid: user.uuid })}>
+                                                        <span className='inline-flex items-center gap-2'>
+                                                            <Edit className='w-4 h-4' /> Editar
+                                                        </span>
+                                                    </Dropdown.Link>
+                                                    {user.status ? (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => changeUserStatus(user.uuid)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <ShieldX className='w-4 h-4' /> Desabilitar
+                                                            </span>
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            type='button'
+                                                            onClick={() => changeUserStatus(user.uuid)}
+                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-800 focus:outline-none'
+                                                        >
+                                                            <span className='inline-flex items-center gap-2'>
+                                                                <ShieldCheck className='w-4 h-4' /> Habilitar
+                                                            </span>
+                                                        </button>
+                                                    )}
+                                                </Dropdown.Content>
+                                            </Dropdown>
                                         )}
                                     </div>
-                                </Card>
-                            ))
-                        }
-                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
 
                     <Pagination links={links} />
                 </div>

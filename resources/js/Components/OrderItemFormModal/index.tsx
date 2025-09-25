@@ -12,6 +12,7 @@ import OrderItemAddonsForm from "../OrderItemAddonsForm";
 import SearchableStoreProductVariantsSelect from "../SearchableStoreProductVariantsSelect";
 import { StoreProductVariant } from "@/types/StoreProductVariant";
 import { VariantAddon } from "@/types/VariantAddon";
+import Swal from "sweetalert2";
 
 interface OrderItemFormModalProps {
     isOpen: boolean;
@@ -65,19 +66,15 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
     }
 
     const submit = () => {
-        // Torna obrigatório selecionar uma variação
         const dataToSubmit = {
             ...data,
         };
-
         post(route('orders.items.store', order.id), {
             data: dataToSubmit,
             preserveScroll: true,
-            preserveState: false,
+            preserveState: true,
             onSuccess: () => closeModal(),
-        });
-
-        onClose();
+        })
     };
 
     return <>
@@ -146,82 +143,99 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
 
                         {/* Estilo iFood para grupos de opções */}
                         {storeProductVariant?.variant_addon_groups && storeProductVariant.variant_addon_groups.length > 0 && (
-                                <div className="space-y-4">
-                                    {storeProductVariant.variant_addon_groups.map((group, groupIdx) => {
-                                        const quantities = data.addonGroupOptionQuantities as Record<string, number>;
-                                        const groupKeys = Object.keys(quantities).filter(k => k.startsWith(`${group.id}_`));
-                                        const totalSelected = groupKeys.reduce((sum, k) => sum + (quantities[k] || 0), 0);
-                                        const max = Number(group.max_options) || 0;
-                                        const min = Number(group.min_options) || 0;
-                                        const limiteAtingido = max > 0 && totalSelected >= max;
-                                        return (
-                                            <div key={groupIdx} className={`border-2 rounded-xl p-3 bg-white dark:bg-gray-900 shadow-sm ${limiteAtingido ? 'border-blue-600' : 'border-gray-200 dark:border-gray-700'}`}>
-                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
-                                                    <span className="font-semibold text-base text-blue-700 dark:text-blue-300">{group.name} {group.is_required ? <span className="text-red-500">*</span> : null}</span>
-                                                    <span className="text-xs text-gray-500 mt-1 sm:mt-0">(Escolha {min}{max > min ? ` até ${max}` : ''})</span>
-                                                </div>
-                                                <div className="flex flex-col gap-2">
-                                                    {group.addon_group_options && group.addon_group_options.length > 0 ? (
-                                                        group.addon_group_options.map((option, optionIdx) => {
-                                                            const currentGroupKey = `${group.id}_${option.id}`;
-                                                            const value = quantities[currentGroupKey] ?? 0;
-                                                            return (
-                                                                <div key={optionIdx} className={`flex items-center gap-2 p-2 rounded transition-all ${value > 0 ? 'bg-blue-50 dark:bg-blue-800' : 'bg-gray-50 dark:bg-gray-900'}`}>
-                                                                    <span className="flex-1 font-medium text-sm">{option.addon?.name}</span>
-                                                                    {option.additional_price > 0 && (
-                                                                        <span className="text-xs text-green-700 dark:text-green-300 font-semibold">+ R$ {option.additional_price}</span>
-                                                                    )}
-                                                                    <input
-                                                                        type="number"
-                                                                        min={0}
-                                                                        max={(() => {
-                                                                            // Limite máximo por grupo e por opção
-                                                                            const optionMax = option.quantity ?? undefined;
-                                                                            if (max > 0 && optionMax !== undefined) {
-                                                                                return Math.min(max, optionMax);
-                                                                            }
-                                                                            if (optionMax !== undefined) {
-                                                                                return optionMax;
-                                                                            }
-                                                                            return max > 0 ? max : undefined;
-                                                                        })()}
-                                                                        className="w-14 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-xs text-center focus:ring-blue-500 focus:border-blue-500"
-                                                                        value={value}
-                                                                        onChange={e => {
-                                                                            let qty = Math.max(0, parseInt(e.target.value) || 0);
-                                                                            // Soma total de opções já selecionadas neste grupo (excluindo a atual)
-                                                                            const totalOther = groupKeys.reduce((sum, k) => k === currentGroupKey ? sum : sum + (quantities[k] || 0), 0);
-                                                                            // Limite do grupo
-                                                                            if (max > 0 && (totalOther + qty) > max) {
-                                                                                qty = Math.max(0, max - totalOther);
-                                                                            }
-                                                                            // Limite da opção
-                                                                            if (option.quantity !== undefined && qty > option.quantity) {
-                                                                                qty = option.quantity;
-                                                                            }
-                                                                            setData({
-                                                                                ...data,
-                                                                                addonGroupOptionQuantities: {
-                                                                                    ...quantities,
-                                                                                    [currentGroupKey]: qty
-                                                                                }
-                                                                            });
-                                                                        }}
-                                                                    />
-                                                                </div>
-                                                            );
-                                                        })
-                                                    ) : (
-                                                        <span className="text-xs text-gray-500">Nenhuma opção disponível.</span>
-                                                    )}
-                                                </div>
-                                                {limiteAtingido && (
-                                                    <div className="mt-2 text-xs text-blue-600 font-semibold">Limite máximo de opções atingido!</div>
+                            <div className="space-y-4">
+                                {storeProductVariant.variant_addon_groups.map((group, groupIdx) => {
+                                    const quantities = data.addonGroupOptionQuantities as Record<string, number>;
+                                    const groupKeys = Object.keys(quantities).filter(k => k.startsWith(`${group.id}_`));
+                                    const totalSelected = groupKeys.reduce((sum, k) => sum + (quantities[k] || 0), 0);
+                                    const max = Number(group.max_options) || 0;
+                                    const min = Number(group.min_options) || 0;
+                                    const limiteAtingido = max > 0 && totalSelected >= max;
+                                    let groupError: string | undefined = undefined;
+                                    const addonGroupErrors = errors?.addonGroupOptionQuantities;
+                                    if (addonGroupErrors) {
+                                        if (typeof addonGroupErrors === 'string') {
+                                            groupError = addonGroupErrors;
+                                        } else if (typeof addonGroupErrors === 'object') {
+                                            groupError = (addonGroupErrors as Record<string, string | undefined>)[String(group.id)];
+                                        }
+                                    }
+                                    return (
+                                        <div key={groupIdx} className={`border-2 rounded-xl p-3 bg-white dark:bg-gray-900 shadow-sm ${limiteAtingido ? 'border-blue-600' : 'border-gray-200 dark:border-gray-700'}`}>
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
+                                                <span className="font-semibold text-base text-blue-700 dark:text-blue-300">{group.name} {group.is_required ? <span className="text-red-500">*</span> : null}</span>
+                                                <span className="text-xs text-gray-500 mt-1 sm:mt-0">(Escolha {min}{max > min ? ` até ${max}` : ''})</span>
+                                                {errors && (group.id && (errors as any)['addonGroupOptionQuantities.'+group.id]) && (
+                                                    <div className="text-red-500 text-xs mt-1">
+                                                        {(errors as any)['addonGroupOptionQuantities.'+group.id]}
+                                                    </div>
                                                 )}
                                             </div>
-                                        );
-                                    })}
-                                </div>
+                                            <div className="flex flex-col gap-2">
+                                                {group.addon_group_options && group.addon_group_options.length > 0 ? (
+                                                    group.addon_group_options.map((option, optionIdx) => {
+                                                        const currentGroupKey = `${group.id}_${option.id}`;
+                                                        const value = quantities[currentGroupKey] ?? 0;
+                                                        return (
+                                                            <div key={optionIdx} className={`flex items-center gap-2 p-2 rounded transition-all ${value > 0 ? 'bg-blue-50 dark:bg-blue-800' : 'bg-gray-50 dark:bg-gray-900'}`}>
+                                                                <span className="flex-1 font-medium text-sm">{option.addon?.name}</span>
+                                                                {option.additional_price > 0 && (
+                                                                    <span className="text-xs text-green-700 dark:text-green-300 font-semibold">+ R$ {option.additional_price}</span>
+                                                                )}
+                                                                <input
+                                                                    type="number"
+                                                                    min={0}
+                                                                    max={(() => {
+                                                                        // Limite máximo por grupo e por opção
+                                                                        const optionMax = option.quantity ?? undefined;
+                                                                        if (max > 0 && optionMax !== undefined) {
+                                                                            return Math.min(max, optionMax);
+                                                                        }
+                                                                        if (optionMax !== undefined) {
+                                                                            return optionMax;
+                                                                        }
+                                                                        return max > 0 ? max : undefined;
+                                                                    })()}
+                                                                    className="w-14 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-xs text-center focus:ring-blue-500 focus:border-blue-500"
+                                                                    value={value}
+                                                                    onChange={e => {
+                                                                        let qty = Math.max(0, parseInt(e.target.value) || 0);
+                                                                        // Soma total de opções já selecionadas neste grupo (excluindo a atual)
+                                                                        const totalOther = groupKeys.reduce((sum, k) => k === currentGroupKey ? sum : sum + (quantities[k] || 0), 0);
+                                                                        // Limite do grupo
+                                                                        if (max > 0 && (totalOther + qty) > max) {
+                                                                            qty = Math.max(0, max - totalOther);
+                                                                        }
+                                                                        // Limite da opção
+                                                                        if (option.quantity !== undefined && qty > option.quantity) {
+                                                                            qty = option.quantity;
+                                                                        }
+                                                                        setData({
+                                                                            ...data,
+                                                                            addonGroupOptionQuantities: {
+                                                                                ...quantities,
+                                                                                [currentGroupKey]: qty
+                                                                            }
+                                                                        });
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <span className="text-xs text-gray-500">Nenhuma opção disponível.</span>
+                                                )}
+                                            </div>
+                                            {groupError && (
+                                                <div className="mt-2 text-xs text-red-600 font-semibold">{groupError}</div>
+                                            )}
+                                            {limiteAtingido && (
+                                                <div className="mt-2 text-xs text-blue-600 font-semibold">Limite máximo de opções atingido!</div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         )}
                         {/* Addons avulsos */}
                         {addons.length > 0 && (

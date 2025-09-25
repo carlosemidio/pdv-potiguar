@@ -14,7 +14,6 @@ interface Props {
 }
 
 export default function OrderPaymentsForm({ order, isOpen, onClose }: Props) {
-  const [orderFilter, setOrderFilter] = useState<string>('');
   const { data, setData, post, errors, processing } = useForm({
     order_id: order?.id || null,
     method: '',
@@ -24,11 +23,6 @@ export default function OrderPaymentsForm({ order, isOpen, onClose }: Props) {
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    const maxAmount = order ? (order.total_amount - order.paid_amount) : undefined;
-    if (maxAmount !== undefined && data.amount > maxAmount) {
-      alert('O valor do pagamento não pode exceder o valor restante do pedido.');
-      return;
-    }
     post(route('payments.store'));
     setData({ order_id: order?.id || null, method: '', amount: 0, notes: '' });
     onClose();
@@ -94,12 +88,7 @@ export default function OrderPaymentsForm({ order, isOpen, onClose }: Props) {
             <div className="flex justify-end">
               <PrimaryButton
                 onClick={submit}
-                disabled={
-                  processing ||
-                  data.amount < 0 ||
-                  !data.method ||
-                  (order && data.amount > (order.total_amount - order.paid_amount))
-                }
+                disabled={processing}
               >
                 Adicionar Pagamento
               </PrimaryButton>

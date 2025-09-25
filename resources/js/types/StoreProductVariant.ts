@@ -13,7 +13,7 @@ export type StoreProductVariant = {
     store: Store | null;
     product: Product | null;
     product_variant: ProductVariant | null;
-    ingredients?: VariantIngredient[] | null;
+    variant_ingredients?: VariantIngredient[] | null;
     variant_addons?: VariantAddon[] | null;
     variant_addon_groups?: VariantAddonGroup[] | null;
     cost_price: number | null;

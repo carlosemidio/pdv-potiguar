@@ -24,6 +24,8 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->default(0.00);
             $table->integer('stock_quantity')->default(0);
             $table->boolean('featured')->default(false);
+            $table->boolean('manage_stock')->default(true);
+            $table->boolean('is_published')->default(false);
             $table->bigInteger('view_count')->default(0);
             $table->softDeletes();
             $table->timestamps();

@@ -91,11 +91,11 @@ class StockMovementController extends Controller
                 function ($attribute, $value, $fail) use ($request) {
                     $type = $request->input('stockable_type');
                     if ($type === 'variant') {
-                        if (!\App\Models\StoreProductVariant::where('id', $value)->exists()) {
+                        if (!StoreProductVariant::where('id', $value)->exists()) {
                             $fail('A variante selecionada não existe.');
                         }
                     } elseif ($type === 'ingredient') {
-                        if (!\App\Models\Ingredient::where('id', $value)->exists()) {
+                        if (!Ingredient::where('id', $value)->exists()) {
                             $fail('O ingrediente selecionado não existe.');
                         }
                     } else {

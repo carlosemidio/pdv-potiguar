@@ -20,6 +20,8 @@ class StoreProductVariant extends Model
         'stock_quantity',
         'is_produced',
         'featured',
+        'manage_stock',
+        'is_published',
         'view_count',
     ];
 

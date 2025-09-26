@@ -188,13 +188,10 @@ class StoreProductVariantController extends Controller
      */
     public function edit($id)
     {
-        $storeProductVariant = StoreProductVariant::where('id', $id)
-            ->firstOrFail();
+        $storeProductVariant = StoreProductVariant::where('id', $id)->firstOrFail();
 
         $this->authorize('update', $storeProductVariant);
-
-        $storeProductVariant->load(['productVariant.product', 'store', 'ingredients.ingredient', 'ingredients.unit']);
-
+        $storeProductVariant->load(['productVariant.product', 'store']);
         $unitList = Unit::all();
 
         return Inertia::render('StoreProductVariant/Form', [
@@ -226,11 +223,8 @@ class StoreProductVariantController extends Controller
             'featured.boolean' => 'O campo em destaque deve ser verdadeiro ou falso.',
         ]);
 
-        $storeProductVariant = StoreProductVariant::where('id', $id)
-            ->firstOrFail();
-
+        $storeProductVariant = StoreProductVariant::where('id', $id)->firstOrFail();
         $this->authorize('update', $storeProductVariant);
-
         $dataForm = $request->all();
 
         try {
@@ -283,9 +277,7 @@ class StoreProductVariantController extends Controller
      */
     public function destroy($id)
     {
-        $storeProductVariant = StoreProductVariant::where('id', $id)
-            ->firstOrFail();
-
+        $storeProductVariant = StoreProductVariant::where('id', $id)->firstOrFail();
         $this->authorize('delete', $storeProductVariant);
 
         try {

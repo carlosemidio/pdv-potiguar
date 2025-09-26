@@ -8,11 +8,11 @@ import { PageProps } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
-import { ProductVariant } from '@/types/ProductVariant';
-import SearchableProductVariantsSelect from '@/Components/SearchableProductVariantsSelect';
 import SearchableIngredientsSelect from '@/Components/SearchableIngredientsSelect';
 import { Ingredient } from '@/types/Ingredient';
 import { Unit } from '@/types/Unit';
+import SearchableStoreProductVariantsSelect from '@/Components/SearchableStoreProductVariantsSelect';
+import { StoreProductVariant } from '@/types/StoreProductVariant';
 
 type SubtypeOption = { value: string; label: string };
 
@@ -29,7 +29,7 @@ export default function Create({ auth, subtypes, units }: PageProps<{ subtypes: 
         unit_id: null as number | null,
     });
 
-    const [variant, setVariant] = useState<ProductVariant | null>(null);
+    const [variant, setVariant] = useState<StoreProductVariant | null>(null);
     const [ingredient, setIngredient] = useState<Ingredient | null>(null);
 
     const submit: FormEventHandler = (e) => {
@@ -75,7 +75,7 @@ export default function Create({ auth, subtypes, units }: PageProps<{ subtypes: 
                                     {data.stockable_type === 'variant' && (
                                         <div className='w-full'>
                                             <InputLabel htmlFor="stockable_id" value="Variante" />
-                                            <SearchableProductVariantsSelect
+                                            <SearchableStoreProductVariantsSelect
                                                 selectedVariant={variant}
                                                 setVariant={(v) => {
                                                     setVariant(v);

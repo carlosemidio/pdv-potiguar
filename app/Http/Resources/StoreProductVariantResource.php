@@ -24,6 +24,8 @@ class StoreProductVariantResource extends JsonResource
             'stock_quantity' => $this->stock_quantity,
             'is_produced' => $this->is_produced,
             'featured' => $this->featured,
+            'manage_stock' => $this->manage_stock,
+            'is_published' => $this->is_published,
             'view_count' => $this->view_count,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

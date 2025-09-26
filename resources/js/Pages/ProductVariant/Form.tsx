@@ -74,12 +74,22 @@ export default function EditVariant({
 
     const handleDeleteFile = (fileId: number) => {
         data._method = 'delete';
-        post(route('file.destroy', fileId));
+        post(route('file.destroy', fileId), 
+            {
+                preserveScroll: true,
+                preserveState: false,
+            }
+        );
     }
 
     const handleSetFileAsDefault = (fileId: number) => {
         data._method = 'post';
-        post(route('file.setAsDefault', fileId));
+        post(route('file.setAsDefault', fileId), 
+            {
+                preserveScroll: true,
+                preserveState: false,
+            }
+        );
     }
 
     const submit: FormEventHandler = (e) => {
@@ -91,7 +101,7 @@ export default function EditVariant({
         if (isEdit) {
             post(route('product-variant.update', productVariant.data.id), {
                 preserveScroll: true,
-                preserveState: true,
+                preserveState: false,
             });
         } else {
             post(route('product-variant.store'));

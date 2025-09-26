@@ -21,6 +21,8 @@ export type StoreProductVariant = {
     stock_quantity: number | null;
     featured: boolean | null;
     is_produced: boolean | null;
+    manage_stock: boolean | null;
+    is_published: boolean | null;
     created_at: string | null;
     updated_at: string | null;
 };

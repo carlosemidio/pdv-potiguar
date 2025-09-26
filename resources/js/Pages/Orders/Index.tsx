@@ -63,7 +63,7 @@ export default function Index({
         >
             <Head title="Pedidos" />
             <section className='py-2 px-2 text-gray-800 dark:text-gray-200 bg-gradient-to-b from-gray-50 dark:from-gray-900 to-white dark:to-gray-800 min-h-screen'>
-                <div className="mx-auto w-full lg:px-2">
+                <div className="max-w-5xl">
                     <div className="mb-3">
                         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-2.5 flex flex-col md:flex-row md:items-end gap-2.5 border border-gray-200 dark:border-gray-700">
                             <form className="flex flex-col md:flex-row gap-2.5 w-full" onSubmit={handleFilter}>
@@ -141,7 +141,7 @@ export default function Index({
                         </div>
                     </div>
 
-                    <ul className='bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800'>
+                    <ul className='grid grid-cols-1 md:grid-cols-2 gap-2 mb-6'>
                         {orders?.data?.map((order) => {
                             const total = Number(order.total_amount);
                             const paid = Number(order.paid_amount);
@@ -149,12 +149,13 @@ export default function Index({
                             const createdAt = new Date(order.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                             const itemsCount = order.items.length;
                             const itemsPreview = order.items.slice(0, 2).map(i => `${i.quantity}x ${i.store_product_variant?.product_variant?.name ?? '—'}`).join(', ');
-                            const hasMoreItems = itemsCount > 2;
+                            const hasMoreItems = (itemsCount > 2);
+
                             return (
-                                <li key={order.id} className="p-3">
-                                    <div className="flex items-start justify-between gap-2">
+                                <li key={order.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800">
+                                    <div className="flex items-start justify-between gap-2 relative p-2">
                                         {can('orders_view') ? (
-                                            <Link href={route('orders.show', { id: order.id })} className="flex-1 min-w-0 rounded-md -m-1 p-1 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                            <Link href={route('orders.show', { id: order.id })} className="flex-1 min-w-0 rounded-md -m-1 p-1 pr-9 hover:bg-gray-50 dark:hover:bg-gray-800">
                                                 <div className="flex items-center justify-between gap-2">
                                                     <p className="font-semibold text-sm truncate">{order.number ? `#${order.number}` : 'Pedido sem número'}</p>
                                                     <span
@@ -236,7 +237,8 @@ export default function Index({
                                                 </div>
                                             </div>
                                         )}
-                                        <div className="flex flex-col gap-1 shrink-0">
+
+                                        <div className="flex flex-col gap-1 absolute top-1 right-1">
                                             {(can('orders_view') || (can('orders_edit') && order.user_id != null)) && (
                                                 <Dropdown>
                                                     <Dropdown.Trigger>

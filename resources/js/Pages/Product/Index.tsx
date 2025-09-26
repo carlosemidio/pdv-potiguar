@@ -63,8 +63,8 @@ export default function Index({
         >
             <Head title="Produtos" />
 
-            <section className=' px-3 text-gray-800 dark:text-gray-200 max-w-5xl'>
-                <div className="mx-auto lg:px-2">
+            <section className='px-3 text-gray-800 dark:text-gray-200'>
+                <div className="max-w-5xl">
                     <ul className='grid grid-cols-1 lg:grid-cols-2 gap-1 mt-2'>
                         {products.data.map((item) => (
                             <li key={item.id} className='bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800'>

@@ -12,11 +12,6 @@ import { StoreProductVariant } from '@/types/StoreProductVariant';
 import { ProductVariant } from '@/types/ProductVariant';
 import SearchableProductVariantsSelect from '@/Components/SearchableProductVariantsSelect';
 import Checkbox from '@/Components/Checkbox';
-import { XSquare } from 'lucide-react';
-import { GrAdd } from 'react-icons/gr';
-import Swal from 'sweetalert2';
-import { VariantIngredient } from '@/types/VariantIngredient';
-import SearchableIngredientsSelect from '@/Components/SearchableIngredientsSelect';
 import { Unit } from '@/types/Unit';
 
 export default function Edit({ auth, storeProductVariant, units }: PageProps<{ storeProductVariant?: { data: StoreProductVariant }, units: { data: Unit[] } }>) {
@@ -28,52 +23,13 @@ export default function Edit({ auth, storeProductVariant, units }: PageProps<{ s
         price: storeProductVariant ? storeProductVariant.data.price : null,
         is_produced: storeProductVariant ? storeProductVariant.data.is_produced : false,
         featured: storeProductVariant ? storeProductVariant.data.featured : false,
-        ingredients: storeProductVariant ? storeProductVariant.data.ingredients : [],
+        manage_stock: storeProductVariant ? storeProductVariant.data.manage_stock : true,
+        is_published: storeProductVariant ? storeProductVariant.data.is_published : false,
     });
 
     const [variant, setVariant] = useState<ProductVariant | null>(
         storeProductVariant ? storeProductVariant.data.product_variant : null
     );
-
-    const [ingredients, setIngredients] = useState<VariantIngredient[]>(
-        storeProductVariant && storeProductVariant.data.ingredients ? storeProductVariant.data.ingredients : []
-    );
-
-    const [unitList, setUnitList] = useState<Unit[]>(
-        units && Array.isArray(units.data) ? units.data : []
-    );
-
-    const handleAddIngredient = () => {
-        let newIngredient: VariantIngredient = {
-            id: undefined,
-            sp_variant_id: storeProductVariant ? storeProductVariant.data.id : 0,
-            ingredient_id: null,
-            ingredient: null,
-            unit_id: null,
-            unit: null,
-            quantity: null
-        };
-        const updatedIngredients = ingredients ? [...ingredients, newIngredient] : [newIngredient];
-        setIngredients(updatedIngredients);
-        setData('ingredients', updatedIngredients);
-    }
-
-    const handleRemoveIngredient = (ingredient: VariantIngredient) => {
-        Swal.fire({
-            title: 'Remover complemento?',
-            text: 'Tem certeza que deseja remover este complemento?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sim, remover',
-            cancelButtonText: 'Cancelar',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const updatedIngredients = ingredients ? ingredients.filter(i => i.id !== ingredient.id) : [];
-                setIngredients(updatedIngredients);
-                setData('ingredients', updatedIngredients);
-            }
-        });
-    }
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -89,7 +45,8 @@ export default function Edit({ auth, storeProductVariant, units }: PageProps<{ s
                     price: 0,
                     is_produced: false,
                     featured: false,
-                    ingredients: []
+                    manage_stock: true,
+                    is_published: false,
                 }),
             });
         } else {
@@ -175,6 +132,26 @@ export default function Edit({ auth, storeProductVariant, units }: PageProps<{ s
                                         onChange={(e: any) => setData('featured', e.target.checked)}
                                     />
                                     <span className="ml-2">Destaque</span>
+                                </label>
+                            </div>
+
+                            <div className='flex items-end'>
+                                <label className="inline-flex items-center">
+                                    <Checkbox
+                                        checked={data.manage_stock ?? false}
+                                        onChange={(e: any) => setData('manage_stock', e.target.checked)}
+                                    />
+                                    <span className="ml-2">Gerenciar estoque</span>
+                                </label>
+                            </div>
+
+                            <div className='flex items-end'>
+                                <label className="inline-flex items-center">
+                                    <Checkbox
+                                        checked={data.is_published ?? false}
+                                        onChange={(e: any) => setData('is_published', e.target.checked)}
+                                    />
+                                    <span className="ml-2">Mostrar no site</span>
                                 </label>
                             </div>
                         </div>

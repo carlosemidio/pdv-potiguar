@@ -164,7 +164,7 @@ class ProductVariantController extends Controller
         $productVariant = ProductVariant::where('id', $id)->firstOrFail();
         $this->authorize('update', $productVariant);
 
-        $productVariant->load(['product', 'attributes.attributeValues', 'images']);
+        $productVariant->load(['product', 'attributes.attributeValues', 'images', 'image']);
 
         return Inertia::render('ProductVariant/Form', [
             'productVariant' => new ProductVariantResource($productVariant)
@@ -247,7 +247,7 @@ class ProductVariantController extends Controller
                     }
                 }
 
-                return redirect()->route('product-variant.index')
+                return redirect()->back()
                     ->with('success', 'Variante de produto atualizada com sucesso.');
             } else {
                 return redirect()->back()

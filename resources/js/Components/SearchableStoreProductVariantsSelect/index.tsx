@@ -19,11 +19,17 @@ const SearchableStoreProductVariantsSelect: React.FC<SearchableStoreProductVaria
   isDisabled = false,
 }) => {
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(
-    selectedVariant ? { value: selectedVariant.id, label: selectedVariant.product_variant.name } : null
+    selectedVariant && selectedVariant.product_variant
+      ? { value: selectedVariant.id, label: selectedVariant.product_variant.name }
+      : null
   );
 
   useEffect(() => {
-    setSelectedOption(selectedVariant ? { value: selectedVariant.id, label: selectedVariant.product_variant.name } : null);
+    setSelectedOption(
+      selectedVariant && selectedVariant.product_variant
+        ? { value: selectedVariant.id, label: selectedVariant.product_variant.name }
+        : null
+    );
   }, [selectedVariant]);
 
   const [variants, setVariants] = useState<StoreProductVariant[]>([]);
@@ -42,7 +48,9 @@ const SearchableStoreProductVariantsSelect: React.FC<SearchableStoreProductVaria
 
       return data.map((variant: StoreProductVariant) => ({
         value: variant.id,
-        label: `${variant.product_variant.sku ?? ''} - ${variant.product_variant.name}`.trim(),
+        label: variant.product_variant
+          ? `${variant.product_variant.sku ?? ''} - ${variant.product_variant.name}`.trim()
+          : '',
       }));
     } catch (error) {
       console.error('Error fetching variant options:', error);
@@ -64,7 +72,9 @@ const SearchableStoreProductVariantsSelect: React.FC<SearchableStoreProductVaria
         onChange={handleChange}
         defaultOptions={variants?.map((variant: StoreProductVariant) => ({
           value: variant.id,
-          label: `${variant.product_variant.sku ?? ''} - ${variant.product_variant.name}`.trim(),
+          label: variant.product_variant
+            ? `${variant.product_variant.sku ?? ''} - ${variant.product_variant.name}`.trim()
+            : '',
         }))}
         placeholder="Buscar variante..."
         className="mt-1 block w-full"

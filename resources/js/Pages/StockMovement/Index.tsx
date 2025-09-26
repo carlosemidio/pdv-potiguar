@@ -61,91 +61,97 @@ export default function Index({
         >
             <Head title="Movimentação de Estoque" />
 
-            <section className='py-2 px-4 text-gray-800 dark:text-gray-200'>
+            <section className='py-2 px-3 text-gray-800 dark:text-gray-200'>
                 <div className="max-w-5xl">
                     <div className="mb-2">
-                        <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 border border-gray-200 dark:border-gray-700">
-                            <form className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4" onSubmit={submit}>
-                                <div>
-                                    <InputLabel htmlFor="stockable_type" value="Tipo" />
-                                    <select
-                                        id="stockable_type"
-                                        className="mt-1 block w-full rounded border-gray-300 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-200 focus:ring focus:ring-blue-400"
-                                        value={data.stockable_type}
-                                        onChange={(e) => setData('stockable_type', e.target.value)}
-                                        required
-                                    >
-                                        <option value="variant">Produtos prontos</option>
-                                        <option value="ingredient">Ingredientes</option>
-                                    </select>
-                                    <InputError className="mt-2" message={errors.stockable_type} />
-                                </div>
-
-                                {data.stockable_type === 'variant' && (
+                        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-3 border border-gray-200 dark:border-gray-700">
+                            <form className="space-y-3" onSubmit={submit}>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <InputLabel htmlFor="stockable_id" value="Variante" />
-                                        <SearchableProductVariantsSelect
-                                            selectedVariant={variant}
-                                            setVariant={(v) => {
-                                                setVariant(v);
-                                                setData('stockable_id', v ? v.id : null);
-                                            }}
-                                            isDisabled={processing}
-                                        />
-                                        <InputError className="mt-2" message={errors.stockable_id} />
+                                        <InputLabel htmlFor="stockable_type" value="Tipo" className="text-xs font-medium" />
+                                        <select
+                                            id="stockable_type"
+                                            className="mt-1 block w-full text-sm rounded border-gray-300 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-200 focus:ring focus:ring-blue-400"
+                                            value={data.stockable_type}
+                                            onChange={(e) => setData('stockable_type', e.target.value)}
+                                            required
+                                        >
+                                            <option value="variant">Produtos prontos</option>
+                                            <option value="ingredient">Ingredientes</option>
+                                        </select>
+                                        <InputError className="mt-1" message={errors.stockable_type} />
                                     </div>
-                                )}
 
-                                {data.stockable_type === 'ingredient' && (
-                                    <div>
-                                        <InputLabel htmlFor="ingredient_id" value="Ingrediente" />
-                                        <div id='ingredient_id'>
-                                            <SearchableIngredientsSelect
-                                                selectedIngredient={ingredient}
-                                                setIngredient={(i) => {
-                                                    setIngredient(i);
-                                                    setData('stockable_id', i ? i.id : null);
+                                    {data.stockable_type === 'variant' && (
+                                        <div>
+                                            <InputLabel htmlFor="stockable_id" value="Variante" className="text-xs font-medium" />
+                                            <SearchableProductVariantsSelect
+                                                selectedVariant={variant}
+                                                setVariant={(v) => {
+                                                    setVariant(v);
+                                                    setData('stockable_id', v ? v.id : null);
                                                 }}
                                                 isDisabled={processing}
                                             />
+                                            <InputError className="mt-1" message={errors.stockable_id} />
                                         </div>
-                                        <InputError className="mt-2" message={errors.stockable_id} />
+                                    )}
+
+                                    {data.stockable_type === 'ingredient' && (
+                                        <div>
+                                            <InputLabel htmlFor="ingredient_id" value="Ingrediente" className="text-xs font-medium" />
+                                            <div id='ingredient_id'>
+                                                <SearchableIngredientsSelect
+                                                    selectedIngredient={ingredient}
+                                                    setIngredient={(i) => {
+                                                        setIngredient(i);
+                                                        setData('stockable_id', i ? i.id : null);
+                                                    }}
+                                                    isDisabled={processing}
+                                                />
+                                            </div>
+                                            <InputError className="mt-1" message={errors.stockable_id} />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <InputLabel htmlFor="date_from" value="Data de" className="text-xs font-medium" />
+                                        <TextInput
+                                            id="date_from"
+                                            type="date"
+                                            className="mt-1 w-full text-sm"
+                                            value={data.date_from}
+                                            onChange={e => setData('date_from', e.target.value)}
+                                        />
                                     </div>
-                                )}
 
-                                <div>
-                                    <InputLabel htmlFor="date_from" value="Data de" />
-                                    <TextInput
-                                        id="date_from"
-                                        type="date"
-                                        className="mt-1 w-full"
-                                        value={data.date_from}
-                                        onChange={e => setData('date_from', e.target.value)}
-                                    />
+                                    <div>
+                                        <InputLabel htmlFor="date_to" value="até" className="text-xs font-medium" />
+                                        <TextInput
+                                            id="date_to"
+                                            type="date"
+                                            className="mt-1 w-full text-sm"
+                                            value={data.date_to}
+                                            onChange={e => setData('date_to', e.target.value)}
+                                        />
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <InputLabel htmlFor="date_to" value="até" />
-                                    <TextInput
-                                        id="date_to"
-                                        type="date"
-                                        className="mt-1 w-full"
-                                        value={data.date_to}
-                                        onChange={e => setData('date_to', e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="flex gap-2 items-end">
+                                <div className="flex gap-2">
                                     <PrimaryButton
                                         type="submit"
-                                        className="inline-flex items-center gap-2 w-full md:w-auto">
+                                        size="sm"
+                                        className="inline-flex items-center gap-2 flex-1">
                                         <Search className="w-4 h-4" />
                                         Filtrar
                                     </PrimaryButton>
                                     <SecondaryButton
                                         type="button"
+                                        size="sm"
                                         onClick={() => { window.location.href = route('stock-movement.index'); }}
-                                        className="inline-flex items-center gap-2 w-full md:w-auto"
+                                        className="inline-flex items-center gap-2 flex-1"
                                     >
                                         <Eraser className="w-4 h-4" />
                                         Limpar
@@ -214,7 +220,7 @@ export default function Index({
                                                 </p>
                                             )}
                                             <p>
-                                                <span className="font-medium">Custo:</span> R$ {((item.cost_price ?? 0) * item.quantity).toFixed(2)}
+                                                <span className="font-medium">Custo:</span> R$ { item.cost_price }
                                             </p>
                                             <p>
                                                 {(item.type === 1) ? (

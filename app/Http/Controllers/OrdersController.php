@@ -170,16 +170,40 @@ class OrdersController extends Controller
 
         // Gerar link do WhatsApp
         if ($order->customer && $order->customer->phone) {
-            $message = "Olá {$order->customer->name}! Aqui estão os detalhes do seu pedido:\n";
+            $message = "Olá {$order->customer->name}!\n";
+            $message .= "Aqui estão os detalhes do seu pedido:\n\n";
             $message .= "Nº: {$order->number}\n";
             $message .= "Data: " . $order->created_at->format('d/m/Y à\s H:i') . "\n";
             $message .= "Itens:\n";
 
             foreach ($order->items as $item) {
-                $message .= "- {$item->quantity}x {$item->storeProductVariant->productVariant->name}\n";
+                $message .= "  - *{$item->quantity}x {$item->storeProductVariant->productVariant->name}*\n";
+                $message .= "    Preço: R$ " . number_format($item->unit_price, 2, ',', '.') . "\n";
+
+                if ($item->orderItemOptions->isNotEmpty()) {
+                    $message .= "    Opções:\n";
+
+                    foreach ($item->orderItemOptions as $option) {
+                    $message .= "      • {$option->quantity}x {$option->addonGroupOption->addon->name}";
+                    if ($option->unit_price > 0) {
+                        $message .= " + (R$ " . number_format($option->unit_price, 2, ',', '.') . ")";
+                    }
+                    $message .= "\n";
+                    }
+                }
+
+                if ($item->orderItemAddons->isNotEmpty()) {
+                    $message .= "    Adicionais:\n";
+
+                    foreach ($item->orderItemAddons as $addon) {
+                    $message .= "      • {$addon->quantity}x {$addon->variantAddon->addon->name} + (R$ " . number_format($addon->total_price, 2, ',', '.') . ")\n";
+                    }
+                }
+
+                $message .= "    Total do item: R$ " . number_format($item->total_price, 2, ',', '.') . "\n";
             }
 
-            $message .= "Total: R$ " . number_format($order->total_amount, 2, ',', '.');
+            $message .= "\nTotal: R$ " . number_format($order->total_amount, 2, ',', '.');
             $encodedMessage = urlencode($message);
             $whatsappUrl = "https://wa.me/55{$order->customer->phone}?text={$encodedMessage}";
         } else {

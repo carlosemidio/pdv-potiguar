@@ -8,7 +8,6 @@ use App\Models\AttributeValue;
 use App\Models\File;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\User;
 use App\Models\VariantAttribute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,9 +23,12 @@ class ProductVariantController extends Controller
     public function index(Request $request)
     {
         $this->authorize('product-variants_view');
-        $user = User::find(Auth::id());
 
-        $productVariantsQuery = ProductVariant::with(['product', 'attributes.attributeValues']);
+        $productVariantsQuery = ProductVariant::with([
+            'product',
+            'attributes.attributeValues',
+            'image'
+        ]);
 
         if (!request()->user()->hasPermission('product-variants_view', true)) {
             $productVariantsQuery->where('user_id', Auth::id());

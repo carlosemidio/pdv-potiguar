@@ -25,6 +25,7 @@ return new class extends Migration
             $table->integer('stock_quantity')->default(0);
             $table->boolean('featured')->default(false);
             $table->boolean('manage_stock')->default(true);
+            $table->boolean('is_combo')->default(false);
             $table->boolean('is_published')->default(false);
             $table->bigInteger('view_count')->default(0);
             $table->softDeletes();

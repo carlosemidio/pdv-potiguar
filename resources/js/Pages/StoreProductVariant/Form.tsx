@@ -24,6 +24,7 @@ export default function Edit({ auth, storeProductVariant, units }: PageProps<{ s
         is_produced: storeProductVariant ? storeProductVariant.data.is_produced : false,
         featured: storeProductVariant ? storeProductVariant.data.featured : false,
         manage_stock: storeProductVariant ? storeProductVariant.data.manage_stock : true,
+        is_combo: storeProductVariant ? storeProductVariant.data.is_combo : false,
         is_published: storeProductVariant ? storeProductVariant.data.is_published : false,
     });
 
@@ -42,10 +43,11 @@ export default function Edit({ auth, storeProductVariant, units }: PageProps<{ s
                     _method: 'patch',
                     store_id: null,
                     product_variant_id: null,
-                    price: 0,
+                    price: null,
                     is_produced: false,
                     featured: false,
                     manage_stock: true,
+                    is_combo: false,
                     is_published: false,
                 }),
             });
@@ -121,7 +123,7 @@ export default function Edit({ auth, storeProductVariant, units }: PageProps<{ s
                                         checked={data.is_produced ?? false}
                                         onChange={(e: any) => setData('is_produced', e.target.checked)}
                                     />
-                                    <span className="ml-2">Produto pronto (ex: coca-cola, água mineral)</span>
+                                    <span className="ml-2">A ser produzido?</span>
                                 </label>
                             </div>        
 
@@ -142,6 +144,16 @@ export default function Edit({ auth, storeProductVariant, units }: PageProps<{ s
                                         onChange={(e: any) => setData('manage_stock', e.target.checked)}
                                     />
                                     <span className="ml-2">Gerenciar estoque</span>
+                                </label>
+                            </div>
+
+                            <div className='flex items-end'>
+                                <label className="inline-flex items-center">
+                                    <Checkbox
+                                        checked={data.is_combo ?? false}
+                                        onChange={(e: any) => setData('is_combo', e.target.checked)}
+                                    />
+                                    <span className="ml-2">Combo</span>
                                 </label>
                             </div>
 

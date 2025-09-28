@@ -23,7 +23,15 @@ trait GeneratesSku
             $productPrefix = strtoupper(substr($variant->product->name, 0, 3));
 
             // Prefixo da variante: 3 primeiras letras do nome ou atributo
-            $variantPrefix = strtoupper(substr(explode(' - ', $variant->name)[1], 0, 3));
+            $variantPrefix = 'VAR';
+            if (!empty($variant->name)) {
+                $variantPrefix = strtoupper(substr($variant->name, 0, 3));
+            } elseif ($variant->attributes()->exists()) {
+                $firstAttribute = $variant->attributes()->first();
+                if ($firstAttribute) {
+                    $variantPrefix = strtoupper(substr($firstAttribute->pivot->value, 0, 3));
+                }
+            }
 
             // Busca o último SKU para o mesmo tenant + prefixos
             $lastSku = self::whereHas('product', function ($q) use ($tenantId) {

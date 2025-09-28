@@ -1,3 +1,5 @@
+import { ComboItem } from "./ComboItem";
+import { ComboOptionGroup } from "./ComboOptionGroup";
 import { Product } from "./Product";
 import { ProductVariant } from "./ProductVariant";
 import { Store } from "./Store";
@@ -16,12 +18,15 @@ export type StoreProductVariant = {
     variant_ingredients?: VariantIngredient[] | null;
     variant_addons?: VariantAddon[] | null;
     variant_addon_groups?: VariantAddonGroup[] | null;
+    combo_items?: ComboItem[] | null;
+    combo_option_groups?: ComboOptionGroup[] | null;
     cost_price: number | null;
     price: number | null;
     stock_quantity: number | null;
     featured: boolean | null;
     is_produced: boolean | null;
     manage_stock: boolean | null;
+    is_combo: boolean | null;
     is_published: boolean | null;
     created_at: string | null;
     updated_at: string | null;

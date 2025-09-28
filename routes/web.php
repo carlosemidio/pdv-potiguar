@@ -39,7 +39,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VariantAddonGroupsController;
 use App\Http\Controllers\VariantAddonsController;
 use App\Http\Controllers\VariantIngredientsController;
-use App\Models\Ingredient;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -123,6 +122,16 @@ Route::middleware('auth')->group(function () {
     Route::resource('/variante-complementos', VariantAddonsController::class)
         ->only(['store', 'destroy'])
         ->names('variant-addons');
+
+    Route::resource('/itens-combo', App\Http\Controllers\ComboItemsController::class)
+        ->names('combo-items');
+
+    Route::resource('/grupos-opcoes-combo', App\Http\Controllers\ComboOptionGroupsController::class)
+        ->names('combo-option-groups');
+
+    Route::resource('/itens-grupos-opcoes-combo', App\Http\Controllers\ComboOptionItemsController::class)
+        ->only(['store', 'destroy'])
+        ->names('combo-option-items');
 
     Route::resource('/movimentacoes-estoque', StockMovementController::class)
         ->names('stock-movement');

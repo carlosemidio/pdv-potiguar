@@ -1,6 +1,12 @@
 import AddonGroupOptionDeleteFormModal from '@/Components/AddonGroupOptionDeleteFormModal';
 import AddonGroupOptionFormModal from '@/Components/AddonGroupOptionFormModal';
 import Card from '@/Components/Card';
+import ComboItemDeleteFormModal from '@/Components/ComboItemDeleteFormModal';
+import ComboItemFormModal from '@/Components/ComboItemFormModal';
+import ComboOptionGroupDeleteFormModal from '@/Components/ComboOptionGroupDeleteFormModal ';
+import ComboOptionGroupFormModal from '@/Components/ComboOptionGroupFormModal';
+import ComboOptionItemDeleteFormModal from '@/Components/ComboOptionItemDeleteFormModal';
+import ComboOptionItemFormModal from '@/Components/ComboOptionItemFormModal';
 import SecondaryButton from '@/Components/SecondaryButton';
 import VariantAddonDeleteFormModal from '@/Components/VariantAddonDeleteFormModal';
 import VariantAddonFormModal from '@/Components/VariantAddonFormModal';
@@ -21,7 +27,7 @@ export default function Index({
     storeProductVariant,
     units
 }: PageProps<{ storeProductVariant: { data: StoreProductVariant }, units: { data: Unit[] } }>) {
-    const [tab, setTab] = useState<'detalhes' | 'ingredientes' | 'grupos-de-opcoes' | 'complementos'>('detalhes');
+    const [tab, setTab] = useState<'detalhes' | 'opcoes-fixas' | 'opcoes-variaveis' | 'ingredientes' | 'grupos-de-opcoes' | 'complementos'>('detalhes');
     const variant = storeProductVariant?.data;
     const [isIngredientModalOpen, setIsIngredientModalOpen] = useState(false);
     const [isIngredientDeleteModalOpen, setIsIngredientDeleteModalOpen] = useState(false);
@@ -29,15 +35,26 @@ export default function Index({
     const [isAddonDeleteModalOpen, setIsAddonDeleteModalOpen] = useState(false);
     const [isOptionGroupModalOpen, setIsOptionGroupModalOpen] = useState(false);
     const [isOptionGroupDeleteModalOpen, setIsOptionGroupDeleteModalOpen] = useState(false);
-    // Corrige erro de hooks: controla grupo expandido fora do map
-    // Permite múltiplos grupos abertos
+
     const [openOptionGroupIdxs, setOpenOptionGroupIdxs] = useState<number[]>(
         variant?.variant_addon_groups && variant.variant_addon_groups.length > 0 ? [0] : []
     );
+
     const [isAddonGroupOptionsModalOpen, setIsAddonGroupOptionsModalOpen] = useState(false);
     const [isAddonGroupOptionsDeleteModalOpen, setIsAddonGroupOptionsDeleteModalOpen] = useState(false);
     
     const [addonGroupId, setAddonGroupId] = useState<number | null>(null);
+
+    const [isComboItemModalOpen, setIsComboItemModalOpen] = useState(false);
+    const [isComboItemDeleteModalOpen, setIsComboItemDeleteModalOpen] = useState(false);
+
+    const [isComboOptionGroupModalOpen, setIsComboOptionGroupModalOpen] = useState(false);
+    const [isComboOptionGroupDeleteModalOpen, setIsComboOptionGroupDeleteModalOpen] = useState(false);
+
+    const [isComboOptionItemModalOpen, setIsComboOptionItemModalOpen] = useState(false);
+    const [isComboOptionItemDeleteModalOpen, setIsComboOptionItemDeleteModalOpen] = useState(false);
+
+    const [comboOptionGroupId, setComboOptionGroupId] = useState<number>(0);
 
     return (
         <AuthenticatedLayout
@@ -58,8 +75,18 @@ export default function Index({
                     </div>
                     <div className="mb-2 flex gap-2 border-b border-gray-200 dark:border-gray-700 text-xs">
                         <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'detalhes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('detalhes')}>Detalhes</button>
-                        <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'ingredientes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('ingredientes')}>Ingredientes</button>
-                        <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'grupos-de-opcoes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('grupos-de-opcoes')}>Opções</button>
+                        {variant?.is_combo && (
+                            <>
+                                <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'opcoes-fixas' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('opcoes-fixas')}>Opções Fixas</button>
+                                <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'opcoes-variaveis' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('opcoes-variaveis')}>Opções Variáveis</button>
+                            </>
+                        )}
+                        {!variant?.is_combo && (
+                            <>
+                                <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'ingredientes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('ingredientes')}>Ingredientes</button>
+                                <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'grupos-de-opcoes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('grupos-de-opcoes')}>Opções</button>
+                            </>
+                        )}
                         <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'complementos' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('complementos')}>Complementos</button>
                     </div>
                     <div className='grid grid-cols-1 gap-2 mt-2'>
@@ -122,7 +149,162 @@ export default function Index({
                                 </div>
                             </Card>
                         )}
-                        {tab === 'ingredientes' && (
+
+                        {((tab === 'opcoes-fixas') && (variant?.is_combo)) && (
+                            <Card className="p-3 relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
+                                <h3 className='text-lg font-bold mb-2 text-blue-700 dark:text-blue-300'>Opções Fixas</h3>
+                                {variant?.combo_items && variant.combo_items.length > 0 ? (
+                                    <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-base">
+                                        {variant.combo_items.map((option, idx) => (
+                                            <li key={idx} className="flex flex-row gap-4 justify-start">
+                                                <span className="font-semibold">{option.item_variant?.product_variant?.name || '-'}</span>
+                                                <span className="text-gray-500 dark:text-gray-400">Qtd: {option.quantity}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <div className='text-gray-500 dark:text-gray-400'>Nenhuma opção fixa cadastrada.</div>
+                                )}
+
+                                <div className="mt-3 flex justify-start items-center gap-2">
+                                    {variant?.combo_items && variant.combo_items.length > 0 && (
+                                        <SecondaryButton onClick={() => setIsComboItemDeleteModalOpen(true)}>
+                                            <Trash2 className="w-4 h-4 mr-1 inline text-red-700 dark:text-red-300" />
+                                            Remover
+                                        </SecondaryButton>
+                                    )}
+
+                                    <SecondaryButton onClick={() => setIsComboItemModalOpen(true)}>
+                                        <PlusCircle className="w-4 h-4 mr-1 inline text-blue-700 dark:text-blue-300" />
+                                    </SecondaryButton>
+                                </div>
+
+                                <ComboItemFormModal
+                                    isOpen={isComboItemModalOpen}
+                                    onClose={() => setIsComboItemModalOpen(false)}
+                                    sp_variant_id={variant?.id ?? 0}
+                                    quantity={1}
+                                />
+
+                                {variant?.combo_items && variant.combo_items.length > 0 && (
+                                    <ComboItemDeleteFormModal
+                                        isOpen={isComboItemDeleteModalOpen}
+                                        onClose={() => setIsComboItemDeleteModalOpen(false)}
+                                        comboItems={variant.combo_items}
+                                    />
+                                )}
+                            </Card>
+                        )}
+
+                        {((tab === 'opcoes-variaveis') && (variant?.is_combo)) && (
+                            <Card className="p-3 relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
+                                <h3 className='text-lg font-bold mb-2 text-blue-700 dark:text-blue-300'>Opções Variáveis</h3>
+                                {variant?.combo_option_groups && variant.combo_option_groups.length > 0 ? (
+                                    <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-base">
+                                        {variant.combo_option_groups.map((optionGroup, idx) => (
+                                            <li key={idx} className="flex flex-col gap-1">
+                                                <span className="font-semibold">{optionGroup.name || '-'}</span>
+                                                <span className="text-gray-500 dark:text-gray-400 text-sm">
+                                                    Mínimo: {optionGroup.min_options} | Máximo: {optionGroup.max_options} | {optionGroup.is_required ? 'Obrigatório' : 'Opcional'}
+                                                </span>
+                                                <div className="flex flex-col gap-1 mt-1">
+                                                    {optionGroup.combo_option_items && optionGroup.combo_option_items.length > 0 ? (
+                                                        <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
+                                                            {optionGroup.combo_option_items.map((option, optionIdx) => (
+                                                                <li key={optionIdx} className="flex flex-row gap-4 justify-start">
+                                                                    <span className="font-semibold">{option.store_product_variant?.product_variant?.name || '-'}</span>
+                                                                    <span className="text-gray-500 dark:text-gray-400">Qtd: {option.quantity}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    ) : (
+                                                        <div className='text-gray-500 dark:text-gray-400 text-sm'>Nenhuma opção cadastrada.</div>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex gap-2 mt-2 mb-3">
+                                                    <SecondaryButton
+                                                        className="flex items-center px-2 py-1 text-xs"
+                                                        onClick={() => (setIsComboOptionItemModalOpen(true), setComboOptionGroupId(optionGroup.id))}
+                                                    >
+                                                        <PlusCircle className="w-4 h-4 mr-1 text-blue-700 dark:text-blue-300" />
+                                                        Add Item
+                                                    </SecondaryButton>
+
+                                                    {optionGroup.combo_option_items && optionGroup.combo_option_items.length > 0 && (
+                                                        <>
+                                                            <SecondaryButton
+                                                                className="flex items-center px-2 py-1 text-xs"
+                                                                onClick={() => (setIsComboOptionItemDeleteModalOpen(true), setComboOptionGroupId(optionGroup.id))}
+                                                            >
+                                                                <Trash2 className="w-4 h-4 mr-1 text-red-700 dark:text-red-300" />
+                                                                Remover Item
+                                                            </SecondaryButton>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <div className='text-gray-500 dark:text-gray-400 text-base'>Nenhum grupo de opções variável cadastrado.</div>
+                                )}
+
+                                <div className="mt-3 flex gap-2">
+                                    <SecondaryButton
+                                        className="flex items-center px-2 py-1 text-xs"
+                                        onClick={() => setIsComboOptionGroupModalOpen(true)}
+                                    >
+                                        <PlusCircle className="w-4 h-4 mr-1 text-blue-700 dark:text-blue-300" />
+                                        Add Grupo
+                                    </SecondaryButton>
+
+                                    {variant?.combo_option_groups && variant.combo_option_groups.length > 0 && (
+                                        <>
+                                            <SecondaryButton
+                                                className="flex items-center px-2 py-1 text-xs"
+                                                onClick={() => setIsComboOptionGroupDeleteModalOpen(true)}
+                                            >
+                                                <Trash2 className="w-4 h-4 mr-1 text-red-700 dark:text-red-300" />
+                                                Remover Grupo
+                                            </SecondaryButton>
+
+                                            <ComboOptionGroupDeleteFormModal
+                                                isOpen={isComboOptionGroupDeleteModalOpen}
+                                                onClose={() => setIsComboOptionGroupDeleteModalOpen(false)}
+                                                comboOptionGroups={variant?.combo_option_groups}
+                                            />
+                                        </>
+                                    )}
+                                </div>
+
+                                <ComboOptionGroupFormModal
+                                    isOpen={isComboOptionGroupModalOpen}
+                                    sp_variant_id={variant?.id ?? 0}
+                                    onClose={() => setIsComboOptionGroupModalOpen(false)}
+                                />
+
+                                {comboOptionGroupId !== 0 && (
+                                    <>
+                                        <ComboOptionItemFormModal
+                                            isOpen={isComboOptionItemModalOpen}
+                                            onClose={() => setIsComboOptionItemModalOpen(false)}
+                                            option_group_id={comboOptionGroupId}
+                                        />
+
+                                        <ComboOptionItemDeleteFormModal
+                                            isOpen={isComboOptionItemDeleteModalOpen}
+                                            onClose={() => setIsComboOptionItemDeleteModalOpen(false)}
+                                            comboOptionItems={(variant?.combo_option_groups ?? [])
+                                                .find(group => group.id === comboOptionGroupId)
+                                                ?.combo_option_items || []}
+                                        />
+                                    </>
+                                )}
+                            </Card>
+                        )}
+
+                        {((tab === 'ingredientes') && (!variant?.is_combo)) && (
                             <Card className="p-3 relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
                                 <h3 className='text-base font-bold mb-2 text-blue-700 dark:text-blue-300'>Ingredientes</h3>
                                 {variant?.variant_ingredients && variant.variant_ingredients.length > 0 ? (
@@ -152,7 +334,7 @@ export default function Index({
                             </Card>
                         )}
 
-                        {tab === 'grupos-de-opcoes' && (
+                        {((tab === 'grupos-de-opcoes') && (!variant?.is_combo)) && (
                             <Card className="p-3 relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
                                 <h3 className='text-lg font-bold mb-2 text-blue-700 dark:text-blue-300'>Grupos de Opções</h3>
                                 {variant?.variant_addon_groups && variant.variant_addon_groups.length > 0 ? (

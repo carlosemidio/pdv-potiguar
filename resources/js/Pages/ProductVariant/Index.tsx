@@ -68,29 +68,7 @@ export default function Index({
                         {data.map((item) => (
                             <li key={item.id} className="p-2 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800">
                                 <div className="flex items-center justify-between gap-2 relative">
-                                    {can('product-variants_view') ? (
-                                        <Link href={route('product-variant.show', { id: item.id })} className="flex items-center gap-3 flex-1 min-w-0 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800">
-                                            {item?.image && <Image src={item?.image?.file_url} alt={item.name} className='w-10 h-10 object-cover rounded-md bg-gray-100 dark:bg-gray-800 flex-shrink-0' />}
-                                            <div className='min-w-0 flex-1'>
-                                                <p className='font-semibold text-sm truncate'>{item.name}</p>
-                                                <div className='mt-1 flex flex-wrap items-end gap-1.5 text-[11px] text-gray-700 dark:text-gray-300'>
-                                                    {item.product?.name && (
-                                                        <span className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800'>{item.product.name}</span>
-                                                    )}
-                                                    <span className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800'>SKU: {item.sku || '—'}</span>
-                                                    <button
-                                                        type="button"
-                                                        title="Copiar SKU"
-                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); item.sku && navigator.clipboard.writeText(item.sku); }}
-                                                        className='px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px] hover:bg-gray-200 dark:hover:bg-gray-700'
-                                                    >
-                                                        copiar
-                                                    </button>
-                                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-auto">{formatCustomDateTime(item.updated_at)}</span>
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    ) : (
+                                    {can('product-variants_view') && (
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
                                             {item?.image && <Image src={item?.image?.file_url} alt={item.name} className='w-10 h-10 object-cover rounded-md bg-gray-100 dark:bg-gray-800 flex-shrink-0' />}
                                             <div className='min-w-0 flex-1'>

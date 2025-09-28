@@ -44,7 +44,6 @@ class ProductVariantFormRequest extends FormRequest
                         return $query->where('tenant_id', $user->tenant_id);
                     }),
             ],
-            'attributes' => 'array|min:1',
         ];
     }
 

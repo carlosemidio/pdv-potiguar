@@ -21,7 +21,7 @@ export default function Create({ auth, subtypes, units }: PageProps<{ subtypes: 
         store_id: auth.user.store?.id ?? null,
         stockable_type: 'variant',
         stockable_id: null as number | null,
-        quantity: 0,
+        quantity: '',
         subtype: '',
         cost_price: '' as number | string,
         reason: '' as string,
@@ -145,7 +145,7 @@ export default function Create({ auth, subtypes, units }: PageProps<{ subtypes: 
                                             step="0.01"
                                             className="mt-1 w-full"
                                             value={data.quantity}
-                                            onChange={(e) => setData('quantity', Number(e.target.value))}
+                                            onChange={(e) => setData('quantity', e.target.value)}
                                             required
                                         />
                                         <InputError className="mt-2" message={errors.quantity} />

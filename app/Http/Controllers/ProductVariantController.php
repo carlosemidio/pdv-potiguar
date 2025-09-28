@@ -82,23 +82,34 @@ class ProductVariantController extends Controller
                 ->with('fail', 'Produto associado à variante não encontrado.');
         }
 
-        $dataForm['name'] = '';
-        $attributeNames = [];
-        foreach ($dataForm['attributes'] as $attribute) {
-            // Ensure the attribute exists
-            $attributeNames[] = $attribute['value'];
-        }
+        $dataForm['name'] = $product->name;
 
-        $dataForm['name'] = $product->name . ' - ' . implode(', ', $attributeNames);
+        if (isset($dataForm['attributes']) && is_array($dataForm['attributes']) && count($dataForm['attributes']) > 0) {
+            $attributeNames = [];
+
+            foreach ($dataForm['attributes'] as $attribute) {
+                $attributeNames[] = $attribute['value'];
+            }
+
+            $dataForm['name'] .= (count($attributeNames) > 0 ? ' - ' . implode(', ', $attributeNames) : '');
+        }
 
         // Verifica se a variante já existe
         $existingVariant = ProductVariant::where('product_id', $dataForm['product_id'])
             ->where('slug', Str::slug($dataForm['name']))
+            ->withTrashed()
             ->first();
 
-        if ($existingVariant) {
+        if (($existingVariant instanceof ProductVariant) && ($existingVariant->deleted_at === null)) {
             return redirect()->back()
                 ->with('fail', 'Já existe uma variante de produto com essas características para o produto selecionado.');
+        }
+
+        // Se a variante existir mas estiver soft-deleted, restaura-a
+        if (($existingVariant instanceof ProductVariant) && ($existingVariant->deleted_at !== null)) {
+            $existingVariant->restore();
+            return redirect()->route('product-variant.edit', $existingVariant->id)
+                ->with('success', 'Variante de produto restaurada com sucesso. Você pode atualizar-la se necessário.');
         }
 
         try {
@@ -183,14 +194,17 @@ class ProductVariantController extends Controller
         $dataForm = $request->all();
 
         try {
-            $dataForm['name'] = '';
-            $attributeNames = [];
-            foreach ($dataForm['attributes'] as $attribute) {
-                // Ensure the attribute exists
-                $attributeNames[] = $attribute['value'];
-            }
+            $dataForm['name'] = $productVariant->product->name;
 
-            $dataForm['name'] = $productVariant->product->name . ' - ' . implode(', ', $attributeNames);
+            if (isset($dataForm['attributes']) && is_array($dataForm['attributes']) && count($dataForm['attributes']) > 0) {
+                $attributeNames = [];
+
+                foreach ($dataForm['attributes'] as $attribute) {
+                    $attributeNames[] = $attribute['value'];
+                }
+
+                $dataForm['name'] .= (count($attributeNames) > 0 ? ' - ' . implode(', ', $attributeNames) : '');
+            }
 
             // Verifica se a variante já existe
             $existingVariant = ProductVariant::where('product_id', $dataForm['product_id'])

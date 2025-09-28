@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StoreProductVariant extends Model
@@ -21,6 +22,7 @@ class StoreProductVariant extends Model
         'is_produced',
         'featured',
         'manage_stock',
+        'is_combo',
         'is_published',
         'view_count',
     ];
@@ -48,5 +50,15 @@ class StoreProductVariant extends Model
     public function variantAddonGroups()
     {
         return $this->hasMany(VariantAddonGroup::class, 'sp_variant_id');
+    }
+
+    public function comboItems() : HasMany
+    {
+        return $this->hasMany(ComboItem::class, 'sp_variant_id');
+    }
+
+    public function comboOptionGroups() : HasMany
+    {
+        return $this->hasMany(ComboOptionGroup::class, 'sp_variant_id');
     }
 }

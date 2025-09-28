@@ -173,6 +173,10 @@ class StoreProductVariantController extends Controller
             'variantAddons.addon',
             'variantAddonGroups',
             'variantAddonGroups.addonGroupOptions.addon',
+            'comboItems.itemVariant.productVariant.product',
+            'comboItems.itemVariant.productVariant.image',
+            'comboOptionGroups.comboOptionItems.storeProductVariant.productVariant.product',
+            'comboOptionGroups.comboOptionItems.storeProductVariant.productVariant.image',
         ]);
 
         $unitList = Unit::all();

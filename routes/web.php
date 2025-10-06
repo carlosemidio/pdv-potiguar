@@ -24,6 +24,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\IngredientsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderDiscountController;
+use App\Http\Controllers\OrderItemsController;
 use App\Http\Controllers\OrderPaymentsController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\PermissionController;
@@ -152,6 +153,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/pedidos/{id}/rejeitar', [OrdersController::class, 'reject'])
         ->name('orders.reject');
 
+    Route::patch('/pedidos/{id}/enviar', [OrdersController::class, 'ship'])
+        ->name('orders.ship');
+
     Route::patch('/pedidos/{id}/confirmar', [OrdersController::class, 'confirm'])
         ->name('orders.confirm');
 
@@ -161,9 +165,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/pedidos/{id}/desconto', [OrderDiscountController::class, 'applyDiscount'])
         ->name('orders.applyDiscount');
 
-    Route::resource('/itens-pedido', App\Http\Controllers\OrderItemsController::class)
+    Route::resource('/itens-pedido', OrderItemsController::class)
         ->only(['store', 'destroy'])
         ->names('orders.items');
+
+    Route::patch('/itens-pedido/{id}/status', [OrderItemsController::class, 'nextStatus'])
+        ->name('orders.items.nextStatus');
 
     Route::post('/pagamentos', [OrderPaymentsController::class, 'store'])
         ->name('payments.store');

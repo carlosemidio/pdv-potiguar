@@ -1,4 +1,3 @@
-import Card from '@/Components/Card';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import DangerButton from '@/Components/DangerButton';
@@ -16,6 +15,8 @@ import OrderStatusColors from '@/utils/OrderStatusColors';
 import { MdWhatsapp } from 'react-icons/md';
 import OrderDiscountFormModal from '@/Components/OrderDiscountFormModal';
 import { BiEdit } from 'react-icons/bi';
+import { orderItemStatuses, orderItemStatusesColor } from '@/utils/OrderItemStatuses';
+import { it } from 'node:test';
 
 export default function Index({
     auth,
@@ -92,6 +93,21 @@ export default function Index({
         });
     };
 
+    const handleShipOrder = () => {
+        Swal.fire({
+            title: 'Enviar pedido',
+            text: `Tem certeza que deseja enviar o pedido #${order?.data.id}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, enviar',
+            cancelButtonText: 'Manter pedido',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                patch(route('orders.ship', order!.data.id));
+            }
+        });
+    };
+
     const handleFinishOrder = () => {
         Swal.fire({
             title: 'Finalizar pedido',
@@ -103,6 +119,21 @@ export default function Index({
         }).then((result) => {
             if (result.isConfirmed) {
                 patch(route('orders.finish', order!.data.id));
+            }
+        });
+    };
+
+    const nextStatus = (itemId: number) => {
+        Swal.fire({
+            title: 'Avançar status do item',
+            text: `Tem certeza que deseja avançar o status deste item?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, avançar',
+            cancelButtonText: 'Cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                patch(route('orders.items.nextStatus', { id: itemId }));
             }
         });
     };
@@ -133,7 +164,7 @@ export default function Index({
                         </Link>
                     </div>
 
-                    <div className="p-2 md:p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm relative">
+                    <div className="p-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm relative">
                         {/* Status badge */}
                         <div className="absolute top-2 right-2">
                             <span className={`px-2 py-1 rounded text-xs font-semibold ${OrderStatusColors[order?.data?.status ?? 'pending']}`}>
@@ -142,8 +173,8 @@ export default function Index({
                         </div>
 
                         <div className="mt-1">
-                            {order?.data.customer_name && (
-                                <Info label="Cliente" value={order.data.customer_name} />
+                            {order?.data.customer && (
+                                <Info label="Cliente" value={order.data.customer.name} />
                             )}
 
                             {order?.data.table && (
@@ -155,7 +186,13 @@ export default function Index({
                                 <ul className="space-y-1">
                                     {order.data.items.map((item) => (
                                         <li key={item.id}>
-                                            <div className="flex items-start justify-between gap-1.5 p-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 relative">
+                                            <div className="flex items-start justify-between gap-1.5 p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 relative">
+                                                <div className="absolute top-2 right-10">
+                                                    <span className={`p-1 rounded inline-flex items-center gap-1 text-xs font-semibold ${orderItemStatusesColor[item.status as keyof typeof orderItemStatusesColor]}`}>
+                                                        {orderItemStatuses[item.status as keyof typeof orderItemStatuses]}
+                                                    </span>
+                                                </div>
+
                                                 <div className="flex-1">
                                                     <div className="font-medium text-gray-800 dark:text-gray-200 text-sm">
                                                         {item.quantity}x {item.store_product_variant?.product_variant?.name || 'N/A'}
@@ -166,6 +203,36 @@ export default function Index({
                                                             <span className="ml-2 text-green-700 dark:text-green-300 font-semibold">(acréscimo por opções)</span>
                                                         )}
                                                     </div>
+
+                                                    {item.store_product_variant?.combo_items && item.store_product_variant.combo_items.length > 0 && (
+                                                        <div className="mt-1">
+                                                            <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Items fixos:</span>
+                                                            <ul className="ml-1 mt-1 space-y-0.5">
+                                                                {item.store_product_variant.combo_items.map((ci) => (
+                                                                    <li key={ci.id} className='text-[11px] text-gray-700 dark:text-gray-300'>
+                                                                        {ci.quantity}x {ci.item_variant?.product_variant?.name || 'N/A'}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+
+                                                    {item.combo_option_items && item.combo_option_items.length > 0 && (
+                                                        <div className="mt-1">
+                                                            <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Opções do Combo:</span>
+                                                            <ul className="ml-1 mt-1 space-y-0.5">
+                                                                {item.combo_option_items.map((coi) => (
+                                                                    <li key={coi.id} className='text-[11px] text-gray-700 dark:text-gray-300'>
+                                                                        {coi.quantity}x {coi.combo_option_item?.store_product_variant?.product_variant?.name || 'N/A'}
+                                                                        {coi.unit_price > 0 && (
+                                                                            <span className="text-green-700 dark:text-green-300 font-semibold ml-1">+ R$ {Number(coi.unit_price).toFixed(2)}</span>
+                                                                        )}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+
                                                     {item.order_item_options && item.order_item_options.length > 0 && (
                                                         <div className="mt-1">
                                                             <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase">Opções:</span>
@@ -218,6 +285,13 @@ export default function Index({
                                                         </div>
                                                     )}
 
+                                                    {item.notes && (
+                                                        <div className="mt-2">
+                                                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Observações:</span>
+                                                            <p className="text-[11px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{item.notes}</p>
+                                                        </div>
+                                                    )}
+
                                                     <div className="mt-2">
                                                         <span className="font-semibold text-gray-700 dark:text-gray-300">Subtotal:</span>
                                                         <span className="ml-1">{item.total_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
@@ -232,6 +306,18 @@ export default function Index({
                                                     >
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                )}
+
+                                                {item.status !== 'served' && orderCanBeModified && (
+                                                    <button
+                                                        className="absolute bottom-2 right-2 p-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+                                                        title="Avançar status do item"
+                                                        onClick={() => nextStatus(item.id)}
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                                         </svg>
                                                     </button>
                                                 )}
@@ -358,7 +444,7 @@ export default function Index({
                                         </PrimaryButton>
                                         </>
                                     )}
-                                    {(order?.data.status === 'confirmed' || order?.data.status === 'in_progress') && (
+                                    {(order?.data.status === 'confirmed' || order?.data.status === 'in_progress' || order?.data.status === 'shipped') && (
                                         <>
                                             <DangerButton size="sm" onClick={handleCancelOrder} className="whitespace-nowrap">
                                                 <span className="inline-flex items-center gap-1">
@@ -385,6 +471,17 @@ export default function Index({
                                                 </span>
                                             </SecondaryButton>
                                         </>
+                                    )}
+
+                                    {(order?.data.status === 'in_progress') && !order?.data?.items.some(i => i.status !== 'ready') && (
+                                        <SecondaryButton size="sm" onClick={handleShipOrder} className="whitespace-nowrap">
+                                            <span className="inline-flex items-center gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h11M9 21V3m0 0L5 7m4-4l4 4m6 6h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5M16 5l3 3-3 3" />
+                                                </svg>
+                                                Marcar como Enviado
+                                            </span>
+                                        </SecondaryButton>
                                     )}
                                 </div>
                             </div>

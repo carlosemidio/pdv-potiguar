@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use App\Models\AddonGroupOption;
+use App\Models\ComboOptionGroup;
+use App\Models\ComboOptionItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\StoreProductVariant;
+use App\Models\VariantAddon;
 use App\Models\VariantAddonGroup;
+use App\Services\OrderItemStockMovementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,11 +20,60 @@ class OrderItemsController extends Controller
 {
     protected $order;
     protected $orderItem;
+    protected $orderItemStockMovementService;
 
-    public function __construct(Order $order, OrderItem $orderItem)
+    public function __construct(Order $order, OrderItem $orderItem, OrderItemStockMovementService $orderItemStockMovementService)
     {
         $this->order = $order;
         $this->orderItem = $orderItem;
+        $this->orderItemStockMovementService = $orderItemStockMovementService;
+    }
+
+    public function nextStatus($id)
+    {
+        $orderItem = $this->orderItem->findOrFail($id);
+        $this->authorize('update', $orderItem->order);
+
+        try {
+            $order = Order::find($orderItem->order_id);
+
+            if (($order->status == OrderStatus::COMPLETED->value) || ($order->status == OrderStatus::CANCELED->value)) {
+                return redirect()->back()
+                    ->with('fail', 'Não é possível alterar o status de itens de um pedido finalizado ou cancelado.');
+            }
+
+            $validTransitions = [
+                OrderItemStatus::PENDING->value => OrderItemStatus::IN_PROGRESS->value,
+                OrderItemStatus::IN_PROGRESS->value => OrderItemStatus::READY->value,
+                OrderItemStatus::READY->value => OrderItemStatus::SERVED->value,
+            ];
+
+            if (!array_key_exists($orderItem->status, $validTransitions)) {
+                return redirect()->back()
+                    ->with('fail', 'Não é possível alterar o status deste item.');
+            }
+
+            DB::transaction(function () use ($orderItem, $validTransitions, $order) {
+                $orderItem->status = $validTransitions[$orderItem->status];
+                $orderItem->save();
+
+                // registrar movimentação de estoque, se aplicável
+                if ($orderItem->status == OrderItemStatus::IN_PROGRESS->value) {
+                    $this->orderItemStockMovementService->registerSaleFromOrderItem($orderItem);
+
+                    if ($order->status != OrderStatus::IN_PROGRESS->value) {
+                        $order->status = OrderStatus::IN_PROGRESS->value;
+                        $order->save();
+                    }
+                }
+            });
+
+            return redirect()->back()
+                ->with('success', 'Status do item atualizado com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao atualizar status do item: ' . $e->getMessage());
+        }
     }
 
     public function store(Request $request)
@@ -31,7 +85,7 @@ class OrderItemsController extends Controller
                 'order_id' => 'required|exists:orders,id',
                 'store_product_variant_id' => 'nullable|exists:store_product_variants,id',
                 'quantity' => 'required|integer|min:1',
-                'unit_price' => 'required|numeric|min:0',
+                'notes' => 'nullable|string|max:1000',
             ]);
 
             $data = $request->all();
@@ -42,19 +96,19 @@ class OrderItemsController extends Controller
             // Validação customizada dos limites dos grupos de opções
             if (count($variantRequiredGroups) > 0) {
                 $validationErrors = [];
-                if (isset($data['addonGroupOptionQuantities']) && is_array($data['addonGroupOptionQuantities'])) {
-                    $groupTotals = [];
-                    foreach ($data['addonGroupOptionQuantities'] as $key => $qty) {
-                        if ($qty > 0) {
-                            // chave: groupId_optionId
-                            [$groupId, $optionId] = explode('_', $key);
-                            $groupTotals[$groupId] = ($groupTotals[$groupId] ?? 0) + $qty;
 
-                            $data['addonGroupOptions'][] = [
-                                'group_id' => $groupId,
-                                'option_id' => $optionId,
-                                'quantity' => $qty,
-                            ];
+                $variantGroupTotals = [];
+
+                if (isset($data['options']) && is_array($data['options'])) {
+                    foreach ($data['options'] as $optionData) {
+                        $addonOption = AddonGroupOption::where('id', $optionData['id'])->first();
+
+                        if ($addonOption instanceof AddonGroupOption) {
+                            if (!isset($variantGroupTotals[$addonOption->addon_group_id])) {
+                                $variantGroupTotals[$addonOption->addon_group_id] = 0;
+                            }
+
+                            $variantGroupTotals[$addonOption->addon_group_id] += intval($optionData['quantity']);
                         }
                     }
                 }
@@ -65,20 +119,69 @@ class OrderItemsController extends Controller
                         $min = (int) $group->min_options;
                         $max = (int) $group->max_options;
 
-                        if (!isset($groupTotals[$groupId])) {
+                        if (!isset($variantGroupTotals[$groupId])) {
                             $validationErrors["addonGroupOptionQuantities.$groupId"] = "Selecione ao menos $min" . ($min > 1 ? ' opções' : ' opção');
                         } else {
-                            if ($min > 0 && $groupTotals[$groupId] < $min) {
+                            if ($min > 0 && $variantGroupTotals[$groupId] < $min) {
                                 $validationErrors["addonGroupOptionQuantities.$groupId"] = "Selecione ao menos $min" . ($min > 1 ? ' opções' : ' opção');
                             }
 
-                            if ($max > 0 && $groupTotals[$groupId] > $max) {
+                            if ($max > 0 && $variantGroupTotals[$groupId] > $max) {
                                 $validationErrors["addonGroupOptionQuantities.$groupId"] = "Selecione no máximo $max" . ($max > 1 ? ' opções' : ' opção');
                             }
                         }
                     }
                 }
 
+                if (!empty($validationErrors)) {
+                    throw \Illuminate\Validation\ValidationException::withMessages($validationErrors);
+                }
+            }
+
+            $requiredComboOptionGroups = ComboOptionGroup::where('sp_variant_id', $data['store_product_variant_id'] ?? 0)
+                ->where('is_required', 1)
+                ->get();
+
+            // Validação customizada dos limites dos grupos de opções de combo
+            if (count($requiredComboOptionGroups) > 0) {
+                $validationErrors = [];
+
+                $comboGroupTotals = [];
+
+                if (isset($data['combo_options']) && is_array($data['combo_options'])) {
+                    foreach ($data['combo_options'] as $optionData) {
+                        $comboOptionItem = ComboOptionItem::where('id', $optionData['id'])->first();
+
+                        if ($comboOptionItem instanceof ComboOptionItem) {
+                            if (!isset($comboGroupTotals[$comboOptionItem->option_group_id])) {
+                                $comboGroupTotals[$comboOptionItem->option_group_id] = 0;
+                            }
+
+                            $comboGroupTotals[$comboOptionItem->option_group_id] += intval($optionData['quantity']);
+                        }
+                    }
+                }
+
+                // Buscar limites dos grupos
+                foreach ($requiredComboOptionGroups as $group) {
+                    $groupId = $group->id;
+                    if ($group) {
+                        $min = (int) $group->min_options;
+                        $max = (int) $group->max_options;
+
+                        if (!isset($comboGroupTotals[$groupId])) {
+                            $validationErrors["comboOptionGroupQuantities.$groupId"] = "Selecione ao menos $min" . ($min > 1 ? ' opções' : ' opção');
+                        } else {
+                            if ($min > 0 && $comboGroupTotals[$groupId] < $min) {
+                                $validationErrors["comboOptionGroupQuantities.$groupId"] = "Selecione ao menos $min" . ($min > 1 ? ' opções' : ' opção');
+                            }
+                            if ($max > 0 && $comboGroupTotals[$groupId] > $max) {
+                                $validationErrors["comboOptionGroupQuantities.$groupId"] = "Selecione no máximo $max" . ($max > 1 ? ' opções' : ' opção');
+                            }
+                        }
+                    }
+                }
+             
                 if (!empty($validationErrors)) {
                     throw \Illuminate\Validation\ValidationException::withMessages($validationErrors);
                 }
@@ -108,15 +211,14 @@ class OrderItemsController extends Controller
                     'cost_price' => $storeProductVariant->cost_price,
                     'unit_price' => $storeProductVariant->price,
                     'total_price' => ($storeProductVariant->price * $data['quantity']),
+                    'notes' => $data['notes'] ?? null,
                 ]);
 
-                if (isset($data['addonGroupOptions']) && is_array($data['addonGroupOptions'])) {
-                    foreach ($data['addonGroupOptions'] as $optionData) {
-                        $addonOption = AddonGroupOption::where('addon_group_id', $optionData['group_id'])
-                            ->where('id', $optionData['option_id'])
-                            ->first();
+                if (isset($data['options']) && is_array($data['options'])) {
+                    foreach ($data['options'] as $optionData) {
+                        $addonOption = AddonGroupOption::where('id', $optionData['id'])->first();
 
-                        if ($addonOption) {
+                        if ($addonOption instanceof AddonGroupOption) {
                             $orderItem->orderItemOptions()->create([
                                 'addon_group_option_id' => $addonOption->id,
                                 'quantity' => $optionData['quantity'],
@@ -132,19 +234,43 @@ class OrderItemsController extends Controller
                     }
                 }
 
+                if ($data['combo_options'] ?? false) {
+                    foreach ($data['combo_options'] as $comboOption) {
+                        if (isset($comboOption['id']) && $comboOption['id'] > 0) {
+                            $comboOptionItem = ComboOptionItem::where('id', $comboOption['id'])->first();
+
+                            if ($comboOptionItem instanceof ComboOptionItem) {
+                                $orderItem->comboOptionItems()->create([
+                                    'combo_option_item_id' => $comboOptionItem->id,
+                                    'quantity' => $comboOption['quantity'],
+                                    'unit_price' => $comboOptionItem->additional_price,
+                                ]);
+
+                                // Incrementar no preço do item
+                                if ($comboOptionItem->additional_price > 0) {
+                                    $orderItem->total_price += ($comboOptionItem->additional_price * intval($comboOption['quantity']));
+                                    $orderItem->save();
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if ($data['addons'] ?? false) {
                     foreach ($data['addons'] as $addon) {
-                        if (isset($addon['variant_addon_id']) && $addon['variant_addon_id'] > 0) {
+                        if (isset($addon['id']) && $addon['id'] > 0) {
+                            $variantAddon = VariantAddon::where('id', $addon['id'])->first();
+
                             $orderItem->orderItemAddons()->create([
-                                'variant_addon_id' => $addon['variant_addon_id'],
+                                'variant_addon_id' => $variantAddon->id,
                                 'quantity' => $addon['quantity'],
-                                'unit_price' => $addon['unit_price'],
-                                'total_price' => (floatval($addon['unit_price']) * intval($addon['quantity'])),
+                                'unit_price' => $variantAddon->price,
+                                'total_price' => ($variantAddon->price * intval($addon['quantity'])),
                             ]);
 
                             // Incrementar no preço do item
-                            if (floatval($addon['unit_price']) > 0) {
-                                $orderItem->total_price += (floatval($addon['unit_price']) * intval($addon['quantity']));
+                            if ($variantAddon->price > 0) {
+                                $orderItem->total_price += ($variantAddon->price * intval($addon['quantity']));
                                 $orderItem->save();
                             }
                         }
@@ -164,6 +290,21 @@ class OrderItemsController extends Controller
                 return redirect()->back()
                     ->with('fail', 'Erro ao adicionar item ao pedido.');
             }
+
+            $orderItem->load('storeProductVariant', 'orderItemAddons.variantAddon.addon.addonIngredients');
+
+            if (!$orderItem->storeProductVariant->is_produced && (count($orderItem->orderItemAddons) < 1)) {
+                DB::transaction(function () use ($orderItem) {
+                    // marcar como preparado imediatamente
+                    $orderItem->status = OrderItemStatus::READY->value;
+                    $orderItem->save();
+
+                    // registrar movimentação de estoque, se aplicável
+                    if ($orderItem->storeProductVariant && $orderItem->storeProductVariant->manage_stock) {
+                        $this->orderItemStockMovementService->registerSaleFromOrderItem($orderItem);
+                    }
+                });
+            } 
 
             return redirect()->route('orders.show', $data['order_id'])
                 ->with('success', 'Pedido criado com sucesso!');

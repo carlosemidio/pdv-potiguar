@@ -14,7 +14,6 @@ export type Order = {
     table: Table | null;
     customer: Customer | null;
     number: number;
-    customer_name: string;
     status: string;
     status_name: string;
     total_amount: number;

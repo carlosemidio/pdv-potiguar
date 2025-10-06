@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Ajax;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\StoreProductVariantResource;
+use App\Models\Store;
 use App\Models\StoreProductVariant;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -23,7 +25,13 @@ class StoreProductVariantListController extends Controller
     {
         $search = $request->search ?? '';
         $storeProductVariantsQuery = $this->storeProductVariant->query()
-            ->with(['productVariant', 'variantAddonGroups.addonGroupOptions.addon', 'variantAddons.addon']);
+            ->with(['productVariant',
+                'variantAddonGroups.addonGroupOptions.addon',
+                'variantAddons.addon',
+                'productVariant.product',
+                'comboItems.itemVariant.productVariant',
+                'comboOptionGroups.comboOptionItems.storeProductVariant.productVariant'
+            ]);
 
         $user = User::find(Auth::id());
         
@@ -49,6 +57,6 @@ class StoreProductVariantListController extends Controller
 
         $storeProductVariants = $storeProductVariantsQuery->take(20)->get();
 
-        return response()->json($storeProductVariants);
+        return response()->json(StoreProductVariantResource::collection($storeProductVariants));
     }
 }

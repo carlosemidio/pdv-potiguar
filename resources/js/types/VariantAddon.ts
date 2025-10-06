@@ -2,8 +2,7 @@ import { Addon } from "./Addon";
 import { Unit } from "./Unit";
 
 export type VariantAddon = {
-    [x: string]: any;
-    id?: number;
+    id: number;
     sp_variant_id: number | null;
     addon_id: number | null;
     addon: Addon | null;

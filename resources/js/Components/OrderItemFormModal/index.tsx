@@ -6,13 +6,19 @@ import PrimaryButton from "../PrimaryButton";
 import InputLabel from "../InputLabel";
 import { useForm } from "@inertiajs/react";
 import { Order } from "@/types/Order";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { OrderItem } from "@/types/OrderItem";
-import OrderItemAddonsForm from "../OrderItemAddonsForm";
 import SearchableStoreProductVariantsSelect from "../SearchableStoreProductVariantsSelect";
 import { StoreProductVariant } from "@/types/StoreProductVariant";
 import { VariantAddon } from "@/types/VariantAddon";
-import Swal from "sweetalert2";
+import { SelectedAddonGroupOption } from "@/types/SelectedAddonGroupOption";
+import { SelectedVariantAddon } from "@/types/SelectedVariantAddon";
+import VariantAddonGroupsForm from "../VariantAddonGroupsForm";
+import VariantAddonsForm from "../VariantAddonsForm";
+import { VariantAddonGroup } from "@/types/VariantAddonGroup";
+import { ComboOptionGroup } from "@/types/ComboOptionGroup";
+import { SelectedComboOptionItem } from "@/types/SelectedComboOptionItem";
+import ComboOptionItemSelectionFormModal from "../ComboOptionItemSelectionFormModal";
 
 interface OrderItemFormModalProps {
     isOpen: boolean;
@@ -24,31 +30,89 @@ interface OrderItemFormModalProps {
 export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }: OrderItemFormModalProps) {
     const { data, setData, post, errors, processing } = useForm({
         order_id: order ? order.id : 0,
-        store_product_variant_id: orderItem?.store_product_variant_id || 0,
-        quantity: orderItem?.quantity || 1,
-        unit_price: orderItem?.unit_price || 0,
-        total_price: orderItem?.total_price || 0,
-        addons: orderItem?.order_item_addons || [],
-        addonGroupOptionQuantities: {}, // { [`${group.id}_${option.id}`]: quantidade }
+        store_product_variant_id: 0,
+        quantity: 1,
+        options: [] as { id: number, quantity: number }[],
+        combo_options: [] as { id: number, quantity: number }[],
+        addons: [] as { id: number, quantity: number }[],
+        notes: orderItem ? orderItem.notes : '',
     });
 
-    const [addons, setAddons] = useState<VariantAddon[]>([]);
     const [storeProductVariant, setStoreProductVariant] = useState<StoreProductVariant | null>(null);
 
+    const [addonGroupOptions, setAddonGroupOptions] = useState<VariantAddonGroup[]>([]);
+    const [selectedAddonGroupOptions, setSelectedAddonGroupOptions] = useState<SelectedAddonGroupOption[]>([]);
+    const [variantAddons, setVariantAddons] = useState<VariantAddon[]>([]);
+    const [selectedVariantAddons, setSelectedVariantAddons] = useState<SelectedVariantAddon[]>([]);
+    const [comboOptionGroups, setComboOptionGroups] = useState<ComboOptionGroup[]>([]);
+    const [selectedComboOptions, setSelectedComboOptions] = useState<SelectedComboOptionItem[]>([]);
+    const [isOptionsValid, setIsOptionsValid] = useState(true);
+    const [subTotal, setSubtotal] = useState(0.0);
+
+    useEffect(() => {
+        if (storeProductVariant?.variant_addon_groups && (storeProductVariant.variant_addon_groups.length > 0)) {
+            setIsOptionsValid(storeProductVariant.variant_addon_groups.every(g => {
+                const selectedCount = selectedAddonGroupOptions
+                    .filter(sa => sa.option.addon_group_id === g.id)
+                    .reduce((sum, sa) => sum + sa.qty, 0);
+                return (!g.is_required || (selectedCount >= (g.min_options || 0) && (g.max_options === null || selectedCount <= g.max_options)));
+            }));
+        } else if (comboOptionGroups.length > 0) {
+            setIsOptionsValid(comboOptionGroups.every(g => {
+                const selectedCount = selectedComboOptions
+                    .filter(sc => sc.option.option_group_id === g.id)
+                    .reduce((sum, sc) => sum + sc.qty, 0);
+                return (!g.is_required || (selectedCount >= (g.min_options || 0) && (g.max_options === null || selectedCount <= g.max_options)));
+            }));
+        } else {
+            setIsOptionsValid(true);
+        }
+
+        // Recalcula subtotal
+        let vPrice = storeProductVariant?.price || 0;
+        let optionAdditionalPrice = selectedAddonGroupOptions.filter(sa => (sa.option.additional_price > 0)).reduce((sum, sa) => sum + (sa.option.additional_price * sa.qty), 0);
+        let comboOptionsPrice = selectedComboOptions.filter(sc => (sc.option.additional_price > 0)).reduce((sum, sc) => sum + (sc.option.additional_price * sc.qty), 0);
+        let vAddonsPrice = selectedVariantAddons.filter(va => (va.variantAddon.price && va.variantAddon.price > 0)).reduce((sum, va) => sum + ((va.variantAddon.price ?? 0) * va.qty), 0);
+        let newSubtotal = (Number(vPrice) + Number(optionAdditionalPrice) + Number(comboOptionsPrice) + Number(vAddonsPrice));
+
+        setSubtotal(newSubtotal * (data.quantity || 1));
+    }, [storeProductVariant, selectedAddonGroupOptions, selectedComboOptions, selectedVariantAddons, data.quantity]);
+
     const handleQuantityChange = (quantity: number) => {
-        setData({...data, quantity: quantity, total_price: data.unit_price * quantity });
+        setData({...data, quantity: quantity });
+    }
+
+    const handleAddonGroupOptionsChange = (selectedOptions: SelectedAddonGroupOption[]) => {
+        setSelectedAddonGroupOptions(selectedOptions);
+        setData('options', selectedOptions.map(sa => ({ id: sa.option.id, quantity: sa.qty })));
+    }
+
+    const handleComboOptionsChange = (selectedOptions: SelectedComboOptionItem[]) => {
+        setSelectedComboOptions(selectedOptions);
+        setData('combo_options', selectedOptions.map(sc => ({ id: sc.option.id, quantity: sc.qty })));
+    }
+
+    const handleVariantAddonsChange = (selectedAddons: SelectedVariantAddon[]) => {
+        setSelectedVariantAddons(selectedAddons);
+        setData('addons', selectedAddons.map(va => ({ id: va.variantAddon.id, quantity: va.qty })));
     }
 
     const handleVariantChange = (storeProductVariant: StoreProductVariant | null) => {
         setStoreProductVariant(storeProductVariant);
-        setAddons(storeProductVariant ? storeProductVariant.variant_addons ?? [] : []);
-        const newUnitPrice = Number(storeProductVariant?.price ?? 0);
+        setAddonGroupOptions(storeProductVariant?.variant_addon_groups ? storeProductVariant.variant_addon_groups : []);
+        setComboOptionGroups(storeProductVariant?.combo_option_groups ? storeProductVariant.combo_option_groups : []);
+        setVariantAddons(storeProductVariant ? storeProductVariant.variant_addons ?? [] : []);
+        setSelectedAddonGroupOptions([]);
+        setSelectedComboOptions([]);
+        setSelectedVariantAddons([]);
+
         const newQuantity = Number(data.quantity ?? 1);
         setData({
             ...data,
             store_product_variant_id: storeProductVariant ? storeProductVariant.id : 0,
-            unit_price: newUnitPrice,
-            total_price: newUnitPrice * newQuantity
+            quantity: newQuantity,
+            options: [],
+            addons: []
         });
     };
 
@@ -57,24 +121,22 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
             order_id: order ? order.id : 0,
             store_product_variant_id: 0,
             quantity: 1,
-            unit_price: 0,
-            total_price: 0,
+            options: [],
+            combo_options: [],
             addons: [],
-            addonGroupOptionQuantities: {},
+            notes: orderItem ? orderItem.notes : '',
         });
         onClose();
     }
 
     const submit = () => {
-        const dataToSubmit = {
-            ...data,
-        };
-        post(route('orders.items.store', order.id), {
-            data: dataToSubmit,
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => closeModal(),
-        })
+        setTimeout(() => {
+            post(route('orders.items.store', order.id), {
+                preserveScroll: true,
+                preserveState: true,
+                onSuccess: () => closeModal(),
+            });
+        }, 300);
     };
 
     return <>
@@ -110,147 +172,69 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                                 />
                                 {errors.quantity && <p className="text-red-600 text-sm mt-1">{errors.quantity}</p>}
                             </div>
-
-                            <div className="flex-1">
-                                <InputLabel htmlFor="unit_price" value="Preço Unitário" />
-                                <input
-                                    type="number"
-                                    id="unit_price"
-                                    className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    value={data.unit_price}
-                                    min={0}
-                                    step="0.01"
-                                    disabled
-                                />
-                                {errors.unit_price && <p className="text-red-600 text-sm mt-1">{errors.unit_price}</p>}
-                            </div>
-
-                            <div className="flex-1">
-                                <InputLabel htmlFor="total_price" value="Preço Total" />
-                                <input
-                                    type="number"
-                                    id="total_price"
-                                    className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    value={data.total_price}
-                                    min={0}
-                                    step="0.01"
-                                    disabled
-                                    readOnly
-                                />
-                                {errors.total_price && <p className="text-red-600 text-sm mt-1">{errors.total_price}</p>}
-                            </div>
                         </div>
 
-                        {/* Estilo iFood para grupos de opções */}
-                        {storeProductVariant?.variant_addon_groups && storeProductVariant.variant_addon_groups.length > 0 && (
-                            <div className="space-y-4">
-                                {storeProductVariant.variant_addon_groups.map((group, groupIdx) => {
-                                    const quantities = data.addonGroupOptionQuantities as Record<string, number>;
-                                    const groupKeys = Object.keys(quantities).filter(k => k.startsWith(`${group.id}_`));
-                                    const totalSelected = groupKeys.reduce((sum, k) => sum + (quantities[k] || 0), 0);
-                                    const max = Number(group.max_options) || 0;
-                                    const min = Number(group.min_options) || 0;
-                                    const limiteAtingido = max > 0 && totalSelected >= max;
-                                    let groupError: string | undefined = undefined;
-                                    const addonGroupErrors = errors?.addonGroupOptionQuantities;
-                                    if (addonGroupErrors) {
-                                        if (typeof addonGroupErrors === 'string') {
-                                            groupError = addonGroupErrors;
-                                        } else if (typeof addonGroupErrors === 'object') {
-                                            groupError = (addonGroupErrors as Record<string, string | undefined>)[String(group.id)];
-                                        }
-                                    }
-                                    return (
-                                        <div key={groupIdx} className={`border-2 rounded-xl p-3 bg-white dark:bg-gray-900 shadow-sm ${limiteAtingido ? 'border-blue-600' : 'border-gray-200 dark:border-gray-700'}`}>
-                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
-                                                <span className="font-semibold text-base text-blue-700 dark:text-blue-300">{group.name} {group.is_required ? <span className="text-red-500">*</span> : null}</span>
-                                                <span className="text-xs text-gray-500 mt-1 sm:mt-0">(Escolha {min}{max > min ? ` até ${max}` : ''})</span>
-                                                {errors && (group.id && (errors as any)['addonGroupOptionQuantities.'+group.id]) && (
-                                                    <div className="text-red-500 text-xs mt-1">
-                                                        {(errors as any)['addonGroupOptionQuantities.'+group.id]}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="flex flex-col gap-2">
-                                                {group.addon_group_options && group.addon_group_options.length > 0 ? (
-                                                    group.addon_group_options.map((option, optionIdx) => {
-                                                        const currentGroupKey = `${group.id}_${option.id}`;
-                                                        const value = quantities[currentGroupKey] ?? 0;
-                                                        return (
-                                                            <div key={optionIdx} className={`flex items-center gap-2 p-2 rounded transition-all ${value > 0 ? 'bg-blue-50 dark:bg-blue-800' : 'bg-gray-50 dark:bg-gray-900'}`}>
-                                                                <span className="flex-1 font-medium text-sm">{option.addon?.name}</span>
-                                                                {option.additional_price > 0 && (
-                                                                    <span className="text-xs text-green-700 dark:text-green-300 font-semibold">+ R$ {option.additional_price}</span>
-                                                                )}
-                                                                <input
-                                                                    type="number"
-                                                                    min={0}
-                                                                    max={(() => {
-                                                                        // Limite máximo por grupo e por opção
-                                                                        const optionMax = option.quantity ?? undefined;
-                                                                        if (max > 0 && optionMax !== undefined) {
-                                                                            return Math.min(max, optionMax);
-                                                                        }
-                                                                        if (optionMax !== undefined) {
-                                                                            return optionMax;
-                                                                        }
-                                                                        return max > 0 ? max : undefined;
-                                                                    })()}
-                                                                    className="w-14 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-xs text-center focus:ring-blue-500 focus:border-blue-500"
-                                                                    value={value}
-                                                                    onChange={e => {
-                                                                        let qty = Math.max(0, parseInt(e.target.value) || 0);
-                                                                        // Soma total de opções já selecionadas neste grupo (excluindo a atual)
-                                                                        const totalOther = groupKeys.reduce((sum, k) => k === currentGroupKey ? sum : sum + (quantities[k] || 0), 0);
-                                                                        // Limite do grupo
-                                                                        if (max > 0 && (totalOther + qty) > max) {
-                                                                            qty = Math.max(0, max - totalOther);
-                                                                        }
-                                                                        // Limite da opção
-                                                                        if (option.quantity !== undefined && qty > option.quantity) {
-                                                                            qty = option.quantity;
-                                                                        }
-                                                                        setData({
-                                                                            ...data,
-                                                                            addonGroupOptionQuantities: {
-                                                                                ...quantities,
-                                                                                [currentGroupKey]: qty
-                                                                            }
-                                                                        });
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        );
-                                                    })
-                                                ) : (
-                                                    <span className="text-xs text-gray-500">Nenhuma opção disponível.</span>
-                                                )}
-                                            </div>
-                                            {groupError && (
-                                                <div className="mt-2 text-xs text-red-600 font-semibold">{groupError}</div>
-                                            )}
-                                            {limiteAtingido && (
-                                                <div className="mt-2 text-xs text-blue-600 font-semibold">Limite máximo de opções atingido!</div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                        {(addonGroupOptions.length > 0) && (
+                            <VariantAddonGroupsForm
+                                variantAddonGroups={addonGroupOptions}
+                                selectedAddonGroupOptions={selectedAddonGroupOptions}
+                                onChange={handleAddonGroupOptionsChange}
+                                errors={errors}
+                            />
+                        )}
+
+                        {(storeProductVariant && storeProductVariant.combo_items && (storeProductVariant.combo_items.length > 0)) && (
+                            <div className="mt-3">
+                                <div className="font-medium mb-2">Items fixos</div>
+                                
+                                <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400">
+                                    {storeProductVariant.combo_items.map(ci => (
+                                        <li key={ci.id}>
+                                            {ci.quantity}x {ci.item_variant?.product_variant?.name}
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
                         )}
-                        {/* Addons avulsos */}
-                        {addons.length > 0 && (
-                            <div>
-                                <OrderItemAddonsForm
-                                    orderItemAddons={data.addons}
-                                    productAddons={addons as any}
-                                    onChange={(newAddons) => setData('addons', newAddons)}
-                                />
-                            </div>
+
+                        {(comboOptionGroups.length > 0) && (
+                            <ComboOptionItemSelectionFormModal
+                                comboOptionGroups={comboOptionGroups}
+                                selectedAddonGroupOptions={selectedComboOptions}
+                                onChange={handleComboOptionsChange}
+                                errors={errors}
+                            />
                         )}
+
+                        {(variantAddons.length > 0) && (
+                            <VariantAddonsForm
+                                variantAddons={variantAddons}
+                                selectedVariantAddons={selectedVariantAddons}
+                                setSelectedVariantAddons={handleVariantAddonsChange}
+                            />
+                        )}
+
+                        <div>
+                            <InputLabel htmlFor="notes" value="Observações" />
+                            <textarea
+                                id="notes"
+                                className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                value={data.notes ?? ''}
+                                onChange={(e) => setData('notes', e.target.value)}
+                                rows={3}
+                                maxLength={500}
+                            />
+                            {errors.notes && <p className="text-red-600 text-sm mt-1">{errors.notes}</p>}
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-neutral-500 leading-none">Subtotal</div>
+                            <div className="text-2xl font-bold text-neutral-800">R$ {(Number(subTotal) || 0).toFixed(2)}</div>
+                        </div>
 
                         <div className="mt-3 flex justify-end items-center gap-2">
                             <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>
-                            <PrimaryButton onClick={submit}>Salvar</PrimaryButton>
+                            <PrimaryButton onClick={submit} disabled={!isOptionsValid}>Adicionar</PrimaryButton>
                         </div>
                     </div>
                 </div>

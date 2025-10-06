@@ -63,9 +63,16 @@ class StockMovementController extends Controller
 
         $data = $query->paginate(20);
 
+        $filters['store_id'] = $request->get('store_id');
+        $filters['date_from'] = $dateFrom;
+        $filters['date_to'] = $dateTo;
+        $filters['stockable_type'] = $stockableType;
+        $filters['stockable_id'] = $request->get('stockable_id');
+
+
         return Inertia::render('StockMovement/Index', [
             'stockMovements' => StockMovementResource::collection($data),
-            'filters' => $request->only(['store_id', 'stockable_type', 'stockable_id', 'date_from', 'date_to']),
+            'filters' => $filters,
         ]);
     }
 
@@ -73,8 +80,10 @@ class StockMovementController extends Controller
     {
         $this->authorize('create', StockMovement::class);
 
+        $subtypes = collect(StockMovementSubtype::cases())->map(fn($c) => ['value' => $c->value, 'label' => $c->labelPtBr()])->values();
+
         return Inertia::render('StockMovement/Form', [
-            'subtypes' => collect(StockMovementSubtype::cases())->map(fn($c) => ['value' => $c->value, 'label' => $c->name])->values(),
+            'subtypes' => $subtypes,
             'units' => UnitResource::collection(Unit::all()),
         ]);
     }
@@ -84,7 +93,7 @@ class StockMovementController extends Controller
         $this->authorize('create', StockMovement::class);
 
         $validated = $request->validate([
-            'store_id' => 'required|exists:stores,id',
+            'store_id' => 'nullable|exists:stores,id',
             'stockable_type' => 'required|string|in:variant,ingredient',
             'stockable_id' => [
                 'required',
@@ -120,6 +129,10 @@ class StockMovementController extends Controller
                 : Ingredient::class;
 
             $unit = Unit::find($validated['unit_id']) ?? null;
+
+            if (!isset($validated['store_id']) && $user->store) {
+                $validated['store_id'] = $user->store->id;
+            }
 
             $movement = $service->register(
                 $user->id,

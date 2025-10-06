@@ -1,5 +1,5 @@
 const OrderStatusColors: Record<string, string> = {
-    'pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    'pending': 'bg-yellow-500 dark:bg-orange-600',
     'confirmed': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
     'rejected': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
     'shipped': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',

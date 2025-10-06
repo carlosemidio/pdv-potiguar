@@ -18,7 +18,6 @@ class UnitConversionsSeeder extends Seeder
 
         $conversions = [
             // Peso
-            ['from' => 't', 'to' => 'kg', 'factor' => 1000],
             ['from' => 'kg', 'to' => 'g', 'factor' => 1000],
             ['from' => 'g', 'to' => 'kg', 'factor' => 0.001],
 

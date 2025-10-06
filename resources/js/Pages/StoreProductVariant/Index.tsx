@@ -80,9 +80,11 @@ export default function Index({
                                                             ? Number((item as any).price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                                                             : '—'}
                                                     </span>
-                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] ${(item?.stock_quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'}`}>
-                                                        Estoque: {item?.stock_quantity ?? 0}
-                                                    </span>
+                                                    {!item.is_produced && (
+                                                        <span className={`px-1.5 py-0.5 rounded text-[10px] ${(item?.stock_quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'}`}>
+                                                            Estoque: {item?.stock_quantity ?? 0}
+                                                        </span>
+                                                    )}
                                                     <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-auto">{formatCustomDateTime(item.updated_at ?? '')}</span>
                                                 </div>
                                             </div>

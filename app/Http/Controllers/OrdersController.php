@@ -10,7 +10,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Table;
 use App\Models\User;
-use App\Services\StockMovementService;
+use App\Services\OrderItemStockMovementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,12 +19,12 @@ use Inertia\Inertia;
 class OrdersController extends Controller
 {
     protected $order;
-    protected $stockMovementService;
+    protected $orderItemStockMovementService;
 
-    public function __construct(Order $order, StockMovementService $stockMovementService)
+    public function __construct(Order $order, OrderItemStockMovementService $orderItemStockMovementService)
     {
         $this->order = $order;
-        $this->stockMovementService = $stockMovementService;
+        $this->orderItemStockMovementService = $orderItemStockMovementService;
     }
 
     public function index(Request $request)
@@ -165,7 +165,9 @@ class OrdersController extends Controller
             'items.storeProductVariant.productVariant',
             'items.orderItemOptions.addonGroupOption.addonGroup',
             'items.orderItemOptions.addonGroupOption.addon',
-            'items.orderItemAddons.variantAddon.addon'
+            'items.orderItemAddons.variantAddon.addon',
+            'items.storeProductVariant.comboItems.itemVariant.productVariant',
+            'items.comboOptionItems.comboOptionItem.storeProductVariant.productVariant'
         ]);
 
         // Gerar link do WhatsApp
@@ -189,6 +191,14 @@ class OrdersController extends Controller
                         $message .= " + (R$ " . number_format($option->unit_price, 2, ',', '.') . ")";
                     }
                     $message .= "\n";
+                    }
+                }
+
+                if ($item->comboOptionItems->isNotEmpty()) {
+                    $message .= "    Itens do Combo:\n";
+
+                    foreach ($item->comboOptionItems as $orderItemComboOption) {
+                        $message .= "      • {$orderItemComboOption->quantity}x {$orderItemComboOption->comboOptionItem->storeProductVariant->productVariant->name}\n";
                     }
                 }
 
@@ -278,8 +288,14 @@ class OrdersController extends Controller
 
             DB::transaction(function () use ($order) {
                 $order->update(['status' => OrderStatus::CONFIRMED->value]);
-                $order->load('items.storeProductVariant.productVariant');
-                $this->stockMovementService->registerSaleFromOrder($order);
+                $order->load('items');
+                
+                // update stock for each item in the order (if applicable)
+                foreach ($order->items as $item) {
+                    if ($item->storeProductVariant && $item->storeProductVariant->manage_stock) {
+                        $this->orderItemStockMovementService->registerSaleFromOrderItem($item);
+                    }
+                }
             });
 
             return redirect()->route('orders.index')
@@ -287,6 +303,29 @@ class OrdersController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao confirmar pedido: ' . $e->getMessage());
+        }
+    }
+
+    public function ship($id)
+    {
+        $order = $this->order->findOrFail($id);
+        $this->authorize('update', $order);
+
+        try {
+            if ($order->status == OrderStatus::COMPLETED->value || $order->status == OrderStatus::CANCELED->value) {
+                return redirect()->back()
+                    ->with('fail', 'Não é possível enviar um pedido que já está finalizado ou cancelado.');
+            }
+
+            DB::transaction(function () use ($order) {
+                $order->update(['status' => OrderStatus::SHIPPED->value]);
+            });
+
+            return redirect()->route('orders.index')
+                ->with('success', 'Pedido enviado com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao enviar pedido: ' . $e->getMessage());
         }
     }
 
@@ -315,10 +354,7 @@ class OrdersController extends Controller
                 $order->update(['status' => OrderStatus::COMPLETED->value]);
                 $order->load('items.storeProductVariant.productVariant');
 
-                // update stock for each item in the order
-                $stockMovement = $this->stockMovementService->registerSaleFromOrder($order);
-
-                if (isset($order->table_id) && $stockMovement) {
+                if (isset($order->table_id) && $order->table_id != null) {
                     $table = Table::find($order->table_id);
                     $table->status = 'available';
                     $table->save();
@@ -342,25 +378,6 @@ class OrdersController extends Controller
             DB::transaction(function () use ($order) {
                 if (!in_array($order->status, [OrderStatus::PENDING->value, OrderStatus::IN_PROGRESS->value])) {
                     $order->update(['status' => OrderStatus::CANCELED->value]);
-
-                    // Devolve estoque
-                    foreach ($order->items as $item) {
-                        if (!$item->storeProductVariant->is_produced) {
-                            $this->stockMovementService->register(
-                                Auth::user()->id,
-                                $order->tenant_id,
-                                $order->store_id,
-                                get_class($item->storeProductVariant),
-                                $item->storeProductVariant->product_variant_id,
-                                $item->quantity,
-                                StockMovementSubtype::RETURN_CUSTOMER,
-                                null,
-                                "Cancelamento - Pedido #{$order->id}",
-                                null,
-                                null
-                            );
-                        }
-                    }
                 } else {
                     $order->update(['status' => OrderStatus::REJECTED->value]);
                 }

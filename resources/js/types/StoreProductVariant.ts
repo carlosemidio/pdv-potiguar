@@ -12,6 +12,8 @@ export type StoreProductVariant = {
     tenant_id: number;
     store_id: number;
     product_variant_id: number;
+    name: string;
+    slug: string;
     store: Store | null;
     product: Product | null;
     product_variant: ProductVariant | null;

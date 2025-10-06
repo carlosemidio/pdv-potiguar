@@ -16,4 +16,22 @@ enum StockMovementSubtype: string
     case RETURN_SUPPLIER = 'return_supplier';
     case ADJUSTMENT_OUT = 'adjustment_out';
     case TRANSFER_OUT = 'transfer_out';
+
+    public function labelPtBr(): string
+    {
+        return match($this) {
+            // Entradas
+            self::PURCHASE => 'Compra',
+            self::RETURN_CUSTOMER => 'Devolução de Cliente',
+            self::ADJUSTMENT_IN => 'Ajuste de Entrada',
+            self::TRANSFER_IN => 'Transferência de Entrada',
+
+            // Saídas
+            self::SALE => 'Venda',
+            self::WASTE => 'Perda/Desperdício',
+            self::RETURN_SUPPLIER => 'Devolução ao Fornecedor',
+            self::ADJUSTMENT_OUT => 'Ajuste de Saída',
+            self::TRANSFER_OUT => 'Transferência de Saída',
+        };
+    }
 }

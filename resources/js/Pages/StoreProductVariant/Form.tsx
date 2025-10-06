@@ -105,7 +105,6 @@ export default function Edit({ auth, storeProductVariant, units }: PageProps<{ s
                                         value={data.price ?? ''}
                                         onChange={(e) => setData('price', Number(e.target.value))}
                                         required
-                                        autoComplete="off"
                                     />
                                     {data.price !== 0 && (
                                         <button type="button" className="text-xs text-gray-500 hover:text-red-600" onClick={() => setData('price', 0)}>

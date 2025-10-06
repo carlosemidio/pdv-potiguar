@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderItemStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -17,6 +18,8 @@ class OrderItem extends Model
         'cost_price',
         'unit_price',
         'total_price',
+        'status',
+        'notes',
     ];
 
     public function order()
@@ -37,5 +40,10 @@ class OrderItem extends Model
     public function orderItemOptions()
     {
         return $this->hasMany(OrderItemOption::class);
+    }
+
+    public function comboOptionItems()
+    {
+        return $this->hasMany(OrderItemComboOption::class);
     }
 }

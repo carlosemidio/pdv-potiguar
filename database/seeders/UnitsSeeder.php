@@ -14,7 +14,6 @@ class UnitsSeeder extends Seeder
     public function run(): void
     {
         $units = [
-            ['user_id' => 1, 'name' => 'Tonelada', 'symbol' => 't'],
             ['user_id' => 1, 'name' => 'Quilograma', 'symbol' => 'kg'],
             ['user_id' => 1, 'name' => 'Grama', 'symbol' => 'g'],
             ['user_id' => 1, 'name' => 'Litro', 'symbol' => 'l'],

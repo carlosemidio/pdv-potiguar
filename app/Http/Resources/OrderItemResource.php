@@ -17,10 +17,12 @@ class OrderItemResource extends JsonResource
             'store_product_variant' => $this->whenLoaded('storeProductVariant') ? new StoreProductVariantResource($this->storeProductVariant) : null,
             'order_item_options' => OrderItemOptionResource::collection($this->whenLoaded('orderItemOptions')),
             'order_item_addons' => OrderItemAddonResource::collection($this->whenLoaded('orderItemAddons')),
+            'combo_option_items' => OrderItemComboOptionResource::collection($this->whenLoaded('comboOptionItems')),
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
             'total_price' => $this->total_price,
-            'item_addons' => OrderItemAddonResource::collection($this->whenLoaded('itemAddons')),
+            'status' => $this->status,
+            'notes' => $this->notes,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

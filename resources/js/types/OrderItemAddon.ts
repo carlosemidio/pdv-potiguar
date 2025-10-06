@@ -1,4 +1,3 @@
-import { Addon } from "./Addon";
 import { VariantAddon } from "./VariantAddon";
 
 export type OrderItemAddon = {

@@ -136,14 +136,6 @@ export default function PrintOrderItemsFormModal({ isOpen, onClose, order, print
                                             <div className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
                                                 {item.quantity}x {item.store_product_variant?.product_variant?.name ?? ''}
                                             </div>
-                                            {item.notes && (
-                                                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 italic">
-                                                    Obs: {item.notes}
-                                                </div>
-                                            )}
-                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                R$ {(item.unit_price * item.quantity).toFixed(2).replace('.', ',')}
-                                            </div>
                                         </div>
                                     </label>
                                 ))}
@@ -191,7 +183,6 @@ export default function PrintOrderItemsFormModal({ isOpen, onClose, order, print
                                         required
                                         disabled={processing}
                                     >
-                                        <option value="">-- Selecione uma impressora --</option>
                                         {printers.map((printer) => (
                                             <option key={printer.id} value={printer.id}>
                                                 {printer.name} ({printer.type})

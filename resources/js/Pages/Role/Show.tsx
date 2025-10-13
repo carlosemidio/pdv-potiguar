@@ -67,7 +67,7 @@ export default function Index({
                         {roles.data.map((role) => (
                             <Card key={role.id}>
                                 <p className="font-semibold">
-                                    {role.display_name}
+                                    {role.name}
                                 </p>
                                 <div className="mt-3 space-y-2">
                                     <div className="">
@@ -130,7 +130,7 @@ export default function Index({
                     >
                         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                             Tem certeza que deseja deletar a função{" "}
-                            {roleToDelete.display_name}?
+                            {roleToDelete.name}?
                         </h2>
 
                         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">

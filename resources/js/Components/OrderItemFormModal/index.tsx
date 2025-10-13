@@ -1,6 +1,5 @@
 import { Plus, Package, Hash, Settings, FileText, ShoppingCart, DollarSign, X } from 'lucide-react';
 import Modal from "../Modal";
-import InputLabel from "../InputLabel";
 import { useForm } from "@inertiajs/react";
 import { Order } from "@/types/Order";
 import { useEffect, useState } from "react";
@@ -225,59 +224,6 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                             </div>
                         )}
 
-                        {/* Items Fixos do Combo */}
-                        {(storeProductVariant && storeProductVariant.combo_items && (storeProductVariant.combo_items.length > 0)) && (
-                            <div className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-xl p-6 border-l-4 border-cyan-500">
-                                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                                    <Package className="w-5 h-5" />
-                                    Itens Inclusos
-                                </h4>
-                                <div className="space-y-2">
-                                    {storeProductVariant.combo_items.map(ci => (
-                                        <div key={ci.id} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                                            <div className="w-8 h-8 bg-cyan-500 rounded-lg flex items-center justify-center">
-                                                <span className="text-white font-bold text-sm">{ci.quantity}</span>
-                                            </div>
-                                            <span className="text-gray-900 dark:text-gray-100 font-medium">
-                                                {ci.item_variant?.product_variant?.name}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Opções de Combo */}
-                        {(comboOptionGroups.length > 0) && (
-                            <div className="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 rounded-xl p-6 border-l-4 border-pink-500">
-                                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                                    <Settings className="w-5 h-5" />
-                                    Opções de Combo
-                                </h4>
-                                <ComboOptionItemSelectionFormModal
-                                    comboOptionGroups={comboOptionGroups}
-                                    selectedAddonGroupOptions={selectedComboOptions}
-                                    onChange={handleComboOptionsChange}
-                                    errors={errors}
-                                />
-                            </div>
-                        )}
-
-                        {/* Adicionais */}
-                        {(variantAddons.length > 0) && (
-                            <div className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-xl p-6 border-l-4 border-teal-500">
-                                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                                    <Plus className="w-5 h-5" />
-                                    Adicionais
-                                </h4>
-                                <VariantAddonsForm
-                                    variantAddons={variantAddons}
-                                    selectedVariantAddons={selectedVariantAddons}
-                                    setSelectedVariantAddons={handleVariantAddonsChange}
-                                />
-                            </div>
-                        )}
-
                         {/* Observações */}
                         <div className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-700/50 dark:to-slate-600/50 rounded-xl p-6 border-l-4 border-gray-400">
                             <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -360,6 +306,62 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                                 <X className="w-4 h-4" />
                                 Complete todas as opções obrigatórias antes de continuar.
                             </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Seções de Itens - Movidas para baixo dos botões */}
+                <div className="px-6 pb-6 space-y-6">
+                    {/* Items Fixos do Combo */}
+                    {(storeProductVariant && storeProductVariant.combo_items && (storeProductVariant.combo_items.length > 0)) && (
+                        <div className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-xl p-6 border-l-4 border-cyan-500">
+                            <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                                <Package className="w-5 h-5" />
+                                Itens Inclusos
+                            </h4>
+                            <div className="space-y-2">
+                                {storeProductVariant.combo_items.map(ci => (
+                                    <div key={ci.id} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                        <div className="w-8 h-8 bg-cyan-500 rounded-lg flex items-center justify-center">
+                                            <span className="text-white font-bold text-sm">{ci.quantity}</span>
+                                        </div>
+                                        <span className="text-gray-900 dark:text-gray-100 font-medium">
+                                            {ci.item_variant?.product_variant?.name}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Opções de Combo */}
+                    {(comboOptionGroups.length > 0) && (
+                        <div className="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 rounded-xl p-6 border-l-4 border-pink-500">
+                            <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                                <Settings className="w-5 h-5" />
+                                Opções de Combo
+                            </h4>
+                            <ComboOptionItemSelectionFormModal
+                                comboOptionGroups={comboOptionGroups}
+                                selectedAddonGroupOptions={selectedComboOptions}
+                                onChange={handleComboOptionsChange}
+                                errors={errors}
+                            />
+                        </div>
+                    )}
+
+                    {/* Adicionais */}
+                    {(variantAddons.length > 0) && (
+                        <div className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-xl p-6 border-l-4 border-teal-500">
+                            <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                                <Plus className="w-5 h-5" />
+                                Adicionais
+                            </h4>
+                            <VariantAddonsForm
+                                variantAddons={variantAddons}
+                                selectedVariantAddons={selectedVariantAddons}
+                                setSelectedVariantAddons={handleVariantAddonsChange}
+                            />
                         </div>
                     )}
                 </div>

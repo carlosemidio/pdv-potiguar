@@ -78,8 +78,8 @@ export default function VariantAddonDeleteFormModal({
                                     {variantAddons?.map(variantAddon => (
                                         <option key={variantAddon.id} value={variantAddon.id}>
                                             {variantAddon.addon
-                                                ? `${variantAddon.addon.name} - ${variantAddon.quantity} (${variantAddon.unit?.symbol ?? ''})`
-                                                : `Adicional desconhecido - ${variantAddon.quantity} (${variantAddon.unit?.symbol ?? ''})`
+                                                ? `${variantAddon.addon.name} - ${variantAddon.quantity}`
+                                                : `Adicional desconhecido - ${variantAddon.quantity}`
                                             }
                                         </option>
                                     ))}

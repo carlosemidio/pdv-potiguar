@@ -81,6 +81,7 @@ export default function Edit({
     return (
         <AuthenticatedLayout
             user={auth.user}
+            pendingOrdersCount={auth.pendingOrdersCount}
             header={
                 <h2 className="">
                     {isEdit ? `Editar produto` : 'Criar produto'}

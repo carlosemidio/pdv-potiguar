@@ -8,6 +8,7 @@ import { FormEventHandler } from "react";
 import { useEffect } from "react";
 import { Unit } from "@/types/Unit";
 import { Ingredient } from "@/types/Ingredient";
+import InputError from "../InputError";
 
 interface IngredientFormModalProps {
     isOpen: boolean;
@@ -17,7 +18,7 @@ interface IngredientFormModalProps {
 }
 
 export default function IngredientFormModal({ isOpen, onClose, units, ingredient }: IngredientFormModalProps) {
-    const { data, setData, patch, post, processing } = useForm({
+    const { data, setData, patch, post, processing, errors, reset } = useForm({
         name: ingredient?.name ?? '',
         unit_id: ingredient?.unit_id ?? (units?.[0]?.id ?? ''),
     });
@@ -37,14 +38,20 @@ export default function IngredientFormModal({ isOpen, onClose, units, ingredient
         if (isEdit) {
             patch(route('ingredients.update', ingredient!.id), {
                 preserveScroll: true,
-                preserveState: false,
-                onSuccess: () => onClose()
+                preserveState: true,
+                onSuccess: () => {
+                    reset();
+                    onClose();
+                }
             });
         } else {
             post(route('ingredients.store'), {
                 preserveScroll: true,
-                preserveState: false,
-                onSuccess: () => onClose()
+                preserveState: true,
+                onSuccess: () => {
+                    reset();
+                    onClose();
+                }
             });
         }
     };
@@ -74,6 +81,8 @@ export default function IngredientFormModal({ isOpen, onClose, units, ingredient
                                     required
                                     disabled={processing}
                                 />
+
+                                <InputError className="mt-1" message={errors.name} />
                             </div>
                             <div>
                                 <label htmlFor="unit_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -91,6 +100,8 @@ export default function IngredientFormModal({ isOpen, onClose, units, ingredient
                                         <option key={unit.id} value={unit.id}>{unit.name} ({unit.symbol})</option>
                                     ))}
                                 </select>
+
+                                <InputError className="mt-1" message={errors.unit_id} />
                             </div>
                             <div className="mt-3 flex justify-end items-center gap-2">
                                 <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>

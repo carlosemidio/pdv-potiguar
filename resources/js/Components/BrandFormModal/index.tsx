@@ -7,6 +7,7 @@ import { useForm } from "@inertiajs/react";
 import { FormEventHandler } from "react";
 import { useEffect } from "react";
 import { Brand } from "@/types/Brand";
+import InputError from "../InputError";
 
 interface BrandFormModalProps {
     isOpen: boolean;
@@ -15,7 +16,7 @@ interface BrandFormModalProps {
 }
 
 export default function BrandFormModal({ isOpen, onClose, brand }: BrandFormModalProps) {
-    const { data, setData, patch, post, processing } = useForm({
+    const { data, setData, patch, post, processing, errors, reset } = useForm({
         name: brand?.name ?? '',
         status: brand?.status ?? 1,
     });
@@ -35,14 +36,20 @@ export default function BrandFormModal({ isOpen, onClose, brand }: BrandFormModa
         if (isEdit) {
             patch(route('brands.update', brand!.id), {
                 preserveScroll: true,
-                preserveState: false,
-                onSuccess: () => onClose()
+                preserveState: true,
+                onSuccess: () => {
+                    reset();
+                    onClose();
+                }
             });
         } else {
             post(route('brands.store'), {
                 preserveScroll: true,
-                preserveState: false,
-                onSuccess: () => onClose()
+                preserveState: true,
+                onSuccess: () => {
+                    reset();
+                    onClose();
+                }
             });
         }
     };
@@ -72,6 +79,8 @@ export default function BrandFormModal({ isOpen, onClose, brand }: BrandFormModa
                                     required
                                     disabled={processing}
                                 />
+
+                                <InputError className="mt-1" message={errors.name} />
                             </div>
                             <div>
                                 <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -88,6 +97,8 @@ export default function BrandFormModal({ isOpen, onClose, brand }: BrandFormModa
                                     <option value={1}>Ativo</option>
                                     <option value={0}>Inativo</option>
                                 </select>
+
+                                <InputError className="mt-1" message={errors.status} />
                             </div>
                             <div className="mt-3 flex justify-end items-center gap-2">
                                 <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>

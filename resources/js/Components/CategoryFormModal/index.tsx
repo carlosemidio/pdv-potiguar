@@ -4,6 +4,7 @@ import Modal from "../Modal";
 import SecondaryButton from "../SecondaryButton";
 import PrimaryButton from "../PrimaryButton";
 import { useForm } from "@inertiajs/react";
+import InputError from "@/Components/InputError";
 import { FormEventHandler, useEffect, useState } from "react";
 import { Category } from "@/types/Category";
 import SearchableCategoriesSelect from "../SearchableCategoriesSelect";
@@ -15,7 +16,7 @@ interface CategoryFormModalProps {
 }
 
 export default function CategoryFormModal({ isOpen, onClose, category }: CategoryFormModalProps) {
-    const { data, setData, patch, post, processing } = useForm({
+    const { data, setData, patch, post, processing, errors, reset } = useForm({
         parent_id: category?.parent?.id ?? null,
         name: category?.name ?? '',
         status: category?.status ?? 1,
@@ -42,16 +43,22 @@ export default function CategoryFormModal({ isOpen, onClose, category }: Categor
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         if (isEdit) {
-            patch(route('categories.update', category!.id),
-                {
-                    preserveScroll: true,
-                    preserveState: false,
+            patch(route('categories.update', category!.id), {
+                preserveScroll: true,
+                preserveState: true,
+                onSuccess: () => {
+                    reset();
+                    onClose();
                 }
-            );
+            });
         } else {
             post(route('categories.store'), {
                 preserveScroll: true,
-                preserveState: false,
+                preserveState: true,
+                onSuccess: () => {
+                    reset();
+                    onClose();
+                }
             });
         }
     };
@@ -73,6 +80,7 @@ export default function CategoryFormModal({ isOpen, onClose, category }: Categor
                                 setCategory={handleCategoryChange}
                                 isDisabled={processing}
                             />
+                            <InputError className="mt-1" message={errors.parent_id} />
 
                             <div className="mt-2">
                                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -85,8 +93,10 @@ export default function CategoryFormModal({ isOpen, onClose, category }: Categor
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
                                     required
+                                    aria-invalid={!!errors.name}
                                     disabled={processing}
                                 />
+                                <InputError className="mt-1" message={errors.name} />
                             </div>
 
                             <div className="mt-2">
@@ -99,16 +109,20 @@ export default function CategoryFormModal({ isOpen, onClose, category }: Categor
                                     value={data.status}
                                     onChange={(e) => setData('status', Number(e.target.value))}
                                     required
+                                    aria-invalid={!!errors.status}
                                     disabled={processing}
                                 >
                                     <option value={1}>Ativo</option>
                                     <option value={0}>Inativo</option>
                                 </select>
+                                <InputError className="mt-1" message={errors.status} />
                             </div>
 
                             <div className="mt-3 flex justify-end items-center gap-2">
                                 <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>
-                                <PrimaryButton onClick={submit}>{isEdit ? 'Salvar' : 'Criar'}</PrimaryButton>
+                                <PrimaryButton type="submit" disabled={processing}>
+                                    {isEdit ? 'Salvar' : 'Criar'}
+                                </PrimaryButton>
                             </div>
                         </form>
                     </div>

@@ -77,4 +77,8 @@ return [
         'name' => 'stock-movements',
         'display_name' => 'Movimentações de Estoque',
     ],
+    [
+        'name' => 'printers',
+        'display_name' => 'Impressoras',
+    ],
 ];

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('ingredient_id')->constrained('ingredients')->onDelete('cascade');
             $table->foreignId('unit_id')->constrained()->onDelete('cascade');
             $table->decimal('quantity', 10, 2);
+            $table->unique(['addon_id', 'ingredient_id', 'unit_id']);
             $table->softDeletes();
             $table->timestamps();
         });

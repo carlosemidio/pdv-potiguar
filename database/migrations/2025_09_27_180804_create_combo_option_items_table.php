@@ -23,6 +23,7 @@ return new class extends Migration
                 ->onDelete('cascade');
             $table->decimal('additional_price', 10, 2)->default(0);
             $table->integer('quantity')->default(1);
+            $table->unique(['option_group_id', 'sp_variant_id']);
             $table->softDeletes();
             $table->timestamps();
         });

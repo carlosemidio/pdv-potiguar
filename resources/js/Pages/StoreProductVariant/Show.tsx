@@ -59,6 +59,7 @@ export default function Index({
     return (
         <AuthenticatedLayout
             user={auth.user}
+            pendingOrdersCount={auth.pendingOrdersCount}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     {variant?.product_variant?.name || 'N/A'}
@@ -75,13 +76,12 @@ export default function Index({
                     </div>
                     <div className="mb-2 flex gap-2 border-b border-gray-200 dark:border-gray-700 text-xs">
                         <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'detalhes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('detalhes')}>Detalhes</button>
-                        {variant?.is_combo && (
+                        {variant?.is_combo ? (
                             <>
                                 <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'opcoes-fixas' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('opcoes-fixas')}>Opções Fixas</button>
                                 <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'opcoes-variaveis' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('opcoes-variaveis')}>Opções Variáveis</button>
                             </>
-                        )}
-                        {!variant?.is_combo && (
+                        ) : (
                             <>
                                 <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'ingredientes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('ingredientes')}>Ingredientes</button>
                                 <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'grupos-de-opcoes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('grupos-de-opcoes')}>Opções</button>
@@ -212,7 +212,7 @@ export default function Index({
                                                         <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
                                                             {optionGroup.combo_option_items.map((option, optionIdx) => (
                                                                 <li key={optionIdx} className="flex flex-row gap-4 justify-start">
-                                                                    <span className="font-semibold">{option.store_product_variant?.product_variant?.name || '-'}</span>
+                                                                    <span className="font-semibold">{option.store_product_variant?.product_variant?.name + (option.additional_price && option.additional_price > 0 ? ` + (R$ ${option.additional_price})` : '') || '-'}</span>
                                                                     <span className="text-gray-500 dark:text-gray-400">Qtd: {option.quantity}</span>
                                                                 </li>
                                                             ))}

@@ -49,13 +49,15 @@ class BrandsController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Brand::class);
+        
+        $data = $request->validate([
+            'name' => 'required|string|max:255|unique:brands,name,NULL,id,tenant_id,' . Auth::user()->tenant_id,
+            'status' => 'required|in:0,1',
+        ], [
+            'name.unique' => 'Já existe uma marca com esse nome.',
+        ]);
 
         try {
-            $data = $request->validate([
-                'name' => 'required|string|max:255',
-                'status' => 'required|in:0,1',
-            ]);
-
             $data['user_id'] = Auth::user()->id;
             $data['tenant_id'] = Auth::user()->tenant_id;
 

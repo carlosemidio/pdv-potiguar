@@ -20,6 +20,7 @@ return new class extends Migration
                 ->onDelete('cascade');
             $table->foreignId('addon_id')->constrained()->onDelete('cascade');
             $table->decimal('additional_price', 10, 2)->default(0);
+            $table->unique(['addon_group_id', 'addon_id']);
             $table->softDeletes();
             $table->timestamps();
         });

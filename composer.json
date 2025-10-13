@@ -9,6 +9,7 @@
         "cknow/laravel-money": "^8.1",
         "inertiajs/inertia-laravel": "^1.0",
         "laravel/framework": "^11.9",
+        "laravel/reverb": "^1.6",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "league/flysystem-aws-s3-v3": "^3.29",

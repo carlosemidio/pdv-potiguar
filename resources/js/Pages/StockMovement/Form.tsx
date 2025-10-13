@@ -40,6 +40,7 @@ export default function Create({ auth, subtypes, units }: PageProps<{ subtypes: 
     return (
         <AuthenticatedLayout
             user={auth.user}
+            pendingOrdersCount={auth.pendingOrdersCount}
             header={<h2 className="">Nova movimentação de estoque</h2>}
         >
             <Head title={'Nova movimentação de estoque'} />

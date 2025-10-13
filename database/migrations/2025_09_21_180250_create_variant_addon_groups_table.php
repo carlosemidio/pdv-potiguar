@@ -22,6 +22,7 @@ return new class extends Migration
             $table->boolean('is_required')->default(false);
             $table->integer('min_options')->default(0);
             $table->integer('max_options')->default(0);
+            $table->unique(['sp_variant_id', 'name']);
             $table->softDeletes();
             $table->timestamps();
         });

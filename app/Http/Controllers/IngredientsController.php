@@ -55,13 +55,14 @@ class IngredientsController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Ingredient::class);
+        $data = $request->validate([
+            'name' => 'required|string|max:255|unique:ingredients,name,NULL,id,store_id,' . Auth::user()->store_id,
+            'unit_id' => 'required|exists:units,id'
+        ], [
+            'name.unique' => 'Já existe um ingrediente com esse nome, nessa loja.',
+        ]);
 
         try {
-            $data = $request->validate([
-                'name' => 'required|string|max:255',
-                'unit_id' => 'required|exists:units,id'
-            ]);
-
             $data['user_id'] = Auth::user()->id;
             $data['tenant_id'] = Auth::user()->tenant_id;
             $data['store_id'] = Auth::user()->store_id;
@@ -86,13 +87,15 @@ class IngredientsController extends Controller
         $ingredient = $this->ingredient->findOrFail($id);
 
         $this->authorize('update', $ingredient);
+        
+        $data = $request->validate([
+            'name' => 'required|string|max:255|unique:ingredients,name,' . $ingredient->id . ',id,store_id,' . Auth::user()->store_id,
+            'unit_id' => 'required|exists:units,id'
+        ], [
+            'name.unique' => 'Já existe um ingrediente com esse nome, nessa loja.',
+        ]);
 
         try {
-            $data = $request->validate([
-                'name' => 'required|string|max:255',
-                'unit_id' => 'required|exists:units,id'
-            ]);
-
             if (!$ingredient->update($data)) {
                 return redirect()->back()
                     ->with('fail', 'Erro ao atualizar ingrediente.');

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProductCreateFormRequest;
-use App\Http\Requests\ProductUpdateFormRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\User;
@@ -59,9 +57,21 @@ class ProductController extends Controller
     /**
      * Product a newly created resource in storage.
      */
-    public function store(ProductCreateFormRequest $request)
+    public function store(Request $request)
     {
         $this->authorize('create', Product::class);
+        $request->validate([
+            'name' => 'required|string|max:255|unique:products,name,NULL,id,tenant_id,' . Auth::user()->tenant_id,
+            'category_id' => 'required|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
+        ], [
+            'name.required' => 'O nome do produto é obrigatório.',
+            'name.unique' => 'Já existe um produto com este nome.',
+            'category_id.required' => 'A categoria é obrigatória.',
+            'category_id.exists' => 'A categoria selecionada não é válida.',
+            'brand_id.exists' => 'A marca selecionada não é válida.',
+        ]);
+
         $dataForm = $request->all();
         $dataForm['user_id'] = Auth::id();
         $dataForm['tenant_id'] = Auth::user()->tenant_id;
@@ -119,10 +129,24 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(ProductUpdateFormRequest $request, $id)
+    public function update(Request $request, $id)
     {
         $product = Product::where('id', $id)->firstOrFail();
         $this->authorize('update', $product);
+
+        $request->validate([
+            'name' => 'required|string|max:255|unique:products,name,' . $product->id . ',id,tenant_id,' . Auth::user()->tenant_id,
+            'category_id' => 'required|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
+            'description' => 'nullable|string',
+        ], [
+            'name.required' => 'O nome do produto é obrigatório.',
+            'name.unique' => 'Já existe um produto com este nome.',
+            'category_id.required' => 'A categoria é obrigatória.',
+            'category_id.exists' => 'A categoria selecionada não é válida.',
+            'brand_id.exists' => 'A marca selecionada não é válida.',
+        ]);
+
         $dataForm = $request->all();
 
         try {

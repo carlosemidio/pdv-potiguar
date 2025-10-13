@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Order;
 use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -34,6 +35,11 @@ class HandleInertiaRequests extends Middleware
     {
         $userPermissions = session()->get('user_permissions');
         $user = session()->get('user');
+        $pendingOrdersCount = Order::where('status', 'pending')
+            ->when($user && $user->store_id, function ($query) use ($user) {
+                $query->where('store_id', $user->store_id);
+            })
+            ->count();
 
         if ($request->user() && (($user === null) || ($userPermissions === null) || (count($userPermissions) === 0))) {
             $user = User::find($request->user()->id);
@@ -71,6 +77,7 @@ class HandleInertiaRequests extends Middleware
                     ? $user
                     : null,
                 'userPermissions' => $userPermissions,
+                'pendingOrdersCount' => $pendingOrdersCount,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

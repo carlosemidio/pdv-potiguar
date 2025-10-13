@@ -50,14 +50,15 @@ class CategoriesController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Category::class);
+        $data = $request->validate([
+            'name' => 'required|string|max:255|unique:categories,name,NULL,id,tenant_id,' . Auth::user()->tenant_id,
+            'parent_id' => 'nullable|exists:categories,id',
+            'status' => 'required|in:0,1',
+        ], [
+            'name.unique' => 'Já existe uma categoria com esse nome.',
+        ]);
 
         try {
-            $data = $request->validate([
-                'name' => 'required|string|max:255',
-                'parent_id' => 'nullable|exists:categories,id',
-                'status' => 'required|in:0,1',
-            ]);
-
             $data['user_id'] = Auth::user()->id;
             $data['tenant_id'] = Auth::user()->tenant_id;
 

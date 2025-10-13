@@ -63,17 +63,17 @@ class TablesController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Table::class);
+        
+        $data = $request->validate([
+            'name' => 'required|string|max:255|unique:tables,name,NULL,id,store_id,' . Auth::user()->store_id,
+        ], [
+            'name.required' => 'O nome da mesa é obrigatório.',
+            'name.string' => 'O nome da mesa deve ser uma string.',
+            'name.max' => 'O nome da mesa não pode exceder 255 caracteres.',
+            'name.unique' => 'Já existe uma mesa com este nome na loja.',
+        ]);
 
         try {
-            $data = $request->validate([
-                'name' => 'required|string|max:255|unique:tables,name,NULL,id,store_id,' . Auth::user()->store_id,
-            ], [
-                'name.required' => 'O nome da mesa é obrigatório.',
-                'name.string' => 'O nome da mesa deve ser uma string.',
-                'name.max' => 'O nome da mesa não pode exceder 255 caracteres.',
-                'name.unique' => 'Já existe uma mesa com este nome na loja.',
-            ]);
-
             $user = User::find(Auth::user()->id);
 
             $data['user_id'] = $user->id;
@@ -108,15 +108,14 @@ class TablesController extends Controller
 
     public function update(Request $request, $id)
     {
-        $table = $this->table->findOrFail($id);
+        $data = $request->validate([
+            'name' => 'required|string|max:255'
+        ]);
 
+        $table = $this->table->findOrFail($id);
         $this->authorize('update', $table);
 
         try {
-            $data = $request->validate([
-                'name' => 'required|string|max:255'
-            ]);
-
             if (!$table->update($data)) {
                 return redirect()->back()
                     ->with('fail', 'Erro ao atualizar mesa.');

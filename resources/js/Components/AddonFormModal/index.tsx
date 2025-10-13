@@ -7,6 +7,7 @@ import { useForm } from "@inertiajs/react";
 import { FormEventHandler } from "react";
 import { useEffect } from "react";
 import { Addon } from "@/types/Addon";
+import InputError from "../InputError";
 
 interface AddonFormModalProps {
     isOpen: boolean;
@@ -15,7 +16,7 @@ interface AddonFormModalProps {
 }
 
 export default function AddonFormModal({ isOpen, onClose, addon }: AddonFormModalProps) {
-    const { data, setData, patch, post, processing } = useForm({
+    const { data, setData, patch, post, processing, errors, reset } = useForm({
         name: addon?.name ?? '',
     });
 
@@ -33,14 +34,20 @@ export default function AddonFormModal({ isOpen, onClose, addon }: AddonFormModa
         if (isEdit) {
             patch(route('addons.update', addon!.id), {
                 preserveScroll: true,
-                preserveState: false,
-                onSuccess: () => onClose()
+                preserveState: true,
+                onSuccess: () => {
+                    reset();
+                    onClose();
+                }
             });
         } else {
             post(route('addons.store'), {
                 preserveScroll: true,
-                preserveState: false,
-                onSuccess: () => onClose()
+                preserveState: true,
+                onSuccess: () => {
+                    reset();
+                    onClose();
+                }
             });
         }
     };
@@ -70,6 +77,8 @@ export default function AddonFormModal({ isOpen, onClose, addon }: AddonFormModa
                                     required
                                     disabled={processing}
                                 />
+
+                                <InputError className="mt-1" message={errors.name} />
                             </div>
                             <div className="mt-3 flex justify-end items-center gap-2">
                                 <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>

@@ -21,6 +21,7 @@ return new class extends Migration
                 ->references('id')->on('combo_option_items')->onDelete('cascade');
             $table->integer('quantity')->default(1);
             $table->decimal('unit_price', 10, 2)->default(0);
+            $table->unique(['order_item_id', 'combo_option_item_id'], 'order_item_combo_opt_unique');
             $table->softDeletes();
             $table->timestamps();
         });

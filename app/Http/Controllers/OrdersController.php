@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\OrderStatus;
 use App\Enums\StockMovementSubtype;
 use App\Http\Resources\OrderResource;
+use App\Http\Resources\OrderResumeResource;
 use App\Http\Resources\TableResource;
 use App\Models\Customer;
 use App\Models\Order;

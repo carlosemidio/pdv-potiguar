@@ -7,7 +7,6 @@ import { PageProps } from '@/types';
 import { Addon } from '@/types/Addon';
 import { Unit } from '@/types/Unit';
 import { Head, Link } from '@inertiajs/react';
-import { add } from 'lodash';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -22,6 +21,7 @@ export default function Index({
     return (
         <AuthenticatedLayout
             user={auth.user}
+            pendingOrdersCount={auth.pendingOrdersCount}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     {addon?.data?.name || 'N/A'}

@@ -104,13 +104,18 @@ export default function EditVariant({
                 preserveState: false,
             });
         } else {
-            post(route('product-variant.store'));
+            post(route('product-variant.store'),
+            {
+                preserveScroll: true,
+                preserveState: false,
+            });
         }
     };
 
     return (
         <AuthenticatedLayout
             user={auth.user}
+            pendingOrdersCount={auth.pendingOrdersCount}
             header={
                 <h2>
                     {isEdit ? `Editar variante: ${productVariant.data.sku}` : 'Criar variante'}
@@ -132,6 +137,8 @@ export default function EditVariant({
                                     selectedProduct={product}
                                     setProduct={(product) => { setProduct(product); setData('product_id', product ? product.id : null); }}
                                 />
+
+                                <InputError className="mt-2" message={errors.product_id} />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                                 <div className="flex flex-col">
@@ -143,6 +150,7 @@ export default function EditVariant({
                                         onChange={e => setData('sku', e.target.value)}
                                         autoFocus
                                     />
+
                                     <InputError className="mt-2" message={errors.sku} />
                                 </div>
                             </div>

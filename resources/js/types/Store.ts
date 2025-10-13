@@ -19,6 +19,7 @@ export type Store = {
     description: string;
     content: string;
     status: number;
+    layout: string;
     created_at: string;
     updated_at: string;
 };

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\StoreProductVariant;
-use App\Models\ComboItem;
 use App\Models\ComboOptionItem;
 use Illuminate\Http\Request;
 
@@ -28,15 +27,32 @@ class ComboOptionItemsController extends Controller
                 ->where('sp_variant_id', $data['sp_variant_id'])
                 ->first();
 
-            if ($existingComboOptionItem) {
+            if (($existingComboOptionItem instanceof ComboOptionItem) && $existingComboOptionItem->deleted_at === null) {
                 return redirect()->back()
                     ->with('fail', 'Este item já está associado a este grupo de opções, se deseja alterar a quantidade ou preço adicional, remova o item e adicione novamente com os valores desejados.');
             }
 
-            $comboOptionItem = ComboOptionItem::create($data);
+            if (!isset($data['additional_price'])) {
+                $data['additional_price'] = 0;
+            }
+
+            $comboOptionItem = ComboOptionItem::withTrashed()->updateOrCreate(
+                [
+                    'option_group_id' => $data['option_group_id'],
+                    'sp_variant_id' => $data['sp_variant_id'],
+                ],
+                [
+                    'additional_price' => $data['additional_price'],
+                    'quantity' => $data['quantity']
+                ]
+            );
 
             if (!$comboOptionItem) {
                 return redirect()->back()->with('fail', 'Erro ao adicionar item ao grupo de opções.');
+            }
+
+            if ($comboOptionItem->trashed()) {
+                $comboOptionItem->restore();
             }
 
             return redirect()->back()

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
             $table->foreignId('store_id')->constrained()->onDelete('cascade');
             $table->string('name');
+            $table->unique(['store_id', 'name']);
             $table->softDeletes();
             $table->timestamps();
         });

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Resources\AddonResource;
 use App\Http\Resources\UnitResource;
 use App\Models\Addon;
-use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -63,12 +62,13 @@ class AddonsController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Addon::class);
+        $data = $request->validate([
+            'name' => 'required|string|max:255|unique:addons,name,NULL,id,store_id,' . Auth::user()->store_id,
+        ], [
+            'name.unique' => 'Já existe um complemento com esse nome, nessa loja.',
+        ]);
 
         try {
-            $data = $request->validate([
-                'name' => 'required|string|max:255',
-            ]);
-
             $data['user_id'] = Auth::user()->id;
             $data['tenant_id'] = Auth::user()->tenant_id;
             $data['store_id'] = Auth::user()->store_id;
@@ -80,7 +80,7 @@ class AddonsController extends Controller
                     ->with('fail', 'Erro ao criar complemento.');
             }
 
-            return redirect()->route('addons.show', $addon->id)
+            return redirect()->route('addons.index')
                 ->with('success', 'Complemento criado com sucesso, agora você pode adicionar os ingredientes!');
         } catch (\Exception $e) {
             return redirect()->back()
@@ -112,11 +112,13 @@ class AddonsController extends Controller
 
         $this->authorize('update', $addon);
 
-        try {
-            $data = $request->validate([
-                'name' => 'required|string|max:255',
-            ]);
+        $data = $request->validate([
+            'name' => 'required|string|max:255|unique:addons,name,' . $addon->id . ',id,store_id,' . Auth::user()->store_id,
+        ], [
+            'name.unique' => 'Já existe um complemento com esse nome, nessa loja.',
+        ]);
 
+        try {
             if (!$addon->update($data)) {
                 return redirect()->back()
                     ->with('fail', 'Erro ao atualizar complemento.');

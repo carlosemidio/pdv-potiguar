@@ -70,6 +70,7 @@ export default function Index({
     return (
         <AuthenticatedLayout
             user={auth.user}
+            pendingOrdersCount={auth.pendingOrdersCount}
             header={
                 <h2 className="text-2xl font-bold leading-tight text-gray-800 dark:text-gray-200">
                     Clientes

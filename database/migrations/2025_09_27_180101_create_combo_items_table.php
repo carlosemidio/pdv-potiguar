@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreign('item_variant_id', 'fk_combo_items_item_variants')
                 ->references('id')->on('store_product_variants')->onDelete('cascade');
             $table->integer('quantity')->default(1);
+            $table->unique(['sp_variant_id', 'item_variant_id']);
             $table->softDeletes();
             $table->timestamps();
         });

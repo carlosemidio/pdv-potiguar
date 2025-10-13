@@ -144,8 +144,13 @@ class StoreProductVariantController extends Controller
             });
 
             if ($storeProductVariant instanceof StoreProductVariant) {
-                return redirect(route('store-product-variant.show', $storeProductVariant->id))
-                    ->with('success', 'Variante de produto cadastrada com sucesso.');
+                if (!$storeProductVariant->is_produced) {
+                    return redirect(route('store-product-variant.index'))
+                        ->with('success', 'Variante de produto cadastrada com sucesso.');
+                } else {
+                    return redirect(route('store-product-variant.show', $storeProductVariant->id))
+                        ->with('success', 'Variante de produto cadastrada com sucesso.');
+                }
             }
 
             return redirect()->back()

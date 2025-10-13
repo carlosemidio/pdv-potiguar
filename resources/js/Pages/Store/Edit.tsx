@@ -8,7 +8,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { City } from '@/types/City';
 import { Store } from '@/types/Store';
-import { Switch, Transition } from '@headlessui/react';
+import { Select, Switch, Transition } from '@headlessui/react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler, useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
@@ -21,6 +21,7 @@ import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 import { User } from '@/types/User';
 import SearchableUsersSelect from '@/Components/SearchableUsersSelect';
+import storeLayouts from '@/utils/storeLayouts';
 registerPlugin(FilePondPluginImagePreview);
 
 export default function Edit({
@@ -43,6 +44,7 @@ export default function Edit({
             description: store ? store.data.description : '',
             content: store ? store.data.content : '',
             status: store ? store.data.status : 1, // Default to active
+            layout: store ? store.data.layout : 'default',
             files: Array<File>(),
         });
 
@@ -103,6 +105,7 @@ export default function Edit({
                     description: '',
                     content: '',
                     status: 1,
+                    layout: 'default',
                     files: [],
                 }),
             });
@@ -143,6 +146,7 @@ export default function Edit({
     return (
         <AuthenticatedLayout
             user={auth.user}
+            pendingOrdersCount={auth.pendingOrdersCount}
             header={
                 <h2 className="">
                     {isEdit ? `Editar loja: ${store.data.name}` : 'Criar Loja'}
@@ -351,6 +355,25 @@ export default function Edit({
                                     maxFiles={10}
                                     labelIdle='Arraste e solte arquivos ou <span class="filepond--label-action">Selecione</span>'
                                 />
+                            </div>
+
+                            <div className="w-full">
+                                <InputLabel htmlFor="layout" value="Layout" />
+
+                                <Select
+                                    id="layout"
+                                    value={data.layout}
+                                    onChange={(e) => setData('layout', e.target.value)}
+                                    required
+                                >
+                                    {storeLayouts.map((layout) => (
+                                        <option key={layout} value={layout}>
+                                            {layout}
+                                        </option>
+                                    ))}
+                                </Select>
+
+                                <InputError className="mt-2" message={errors.layout} />
                             </div>
 
                             <div className="w-full col-span-1 md:col-span-2 lg:col-span-3">

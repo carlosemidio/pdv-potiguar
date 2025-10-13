@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('city_id')->nullable()->constrained('cities')->onDelete('set null');
+            $table->uuid('uuid')->unique();
             $table->string('name');
             $table->string('slug');
             $table->string('email')->nullable();
@@ -27,6 +28,7 @@ return new class extends Migration
             $table->string('longitude');
             $table->boolean('status')->default(true);
             $table->boolean('is_default')->default(false);
+            $table->string('layout')->default('default')->comment('default, modern, classic, restaurant, etc...');
 
             // View count for the store
             $table->bigInteger('view_count')->default(0);

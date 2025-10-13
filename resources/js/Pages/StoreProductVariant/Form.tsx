@@ -59,6 +59,7 @@ export default function Edit({ auth, storeProductVariant, units }: PageProps<{ s
     return (
         <AuthenticatedLayout
             user={auth.user}
+            pendingOrdersCount={auth.pendingOrdersCount}
             header={
                 <h2 className="">
                     {isEdit ? `Editar variante da loja` : 'Cadastrar variante da loja'}

@@ -1,0 +1,30 @@
+import { Store } from "./Store";
+import { Table } from "./Table";
+import { OrderItem } from "./OrderItem";
+import { Payment } from "./Payment";
+import { Customer } from "./Customer";
+
+export type Order = {
+    id: number;
+    user_id: number;
+    store_id: number;
+    table_id: number | null;
+    customer_id: number | null;
+    store: Store;
+    table: Table | null;
+    customer: Customer | null;
+    number: number;
+    status: string;
+    status_name: string;
+    total_amount: number;
+    discount_type: number;
+    discount_value: number;
+    discount: number;
+    service_fee: number;
+    paid_amount: number;
+    payment_status: number;
+    items: OrderItem[];
+    payments?: Payment[];
+    created_at: string;
+    updated_at: string;
+};

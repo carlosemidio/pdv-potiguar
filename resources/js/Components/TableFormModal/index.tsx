@@ -7,6 +7,7 @@ import { useForm } from "@inertiajs/react";
 import { FormEventHandler } from "react";
 import { useEffect } from "react";
 import { Table } from "@/types/Table";
+import InputError from "../InputError";
 
 interface TableFormModalProps {
     isOpen: boolean;
@@ -15,7 +16,7 @@ interface TableFormModalProps {
 }
 
 export default function TableFormModal({ isOpen, onClose, table }: TableFormModalProps) {
-    const { data, setData, patch, post, processing } = useForm({
+    const { data, setData, patch, post, processing, errors, reset } = useForm({
         name: table?.name ?? '',
     });
 
@@ -33,14 +34,20 @@ export default function TableFormModal({ isOpen, onClose, table }: TableFormModa
         if (isEdit) {
             patch(route('tables.update', table!.id), {
                 preserveScroll: true,
-                preserveState: false,
-                onSuccess: () => onClose()
+                preserveState: true,
+                onSuccess: () => {
+                    reset();
+                    onClose();
+                }
             });
         } else {
             post(route('tables.store'), {
                 preserveScroll: true,
-                preserveState: false,
-                onSuccess: () => onClose()
+                preserveState: true,
+                onSuccess: () => {
+                    reset();
+                    onClose();
+                }
             });
         }
     };
@@ -70,6 +77,8 @@ export default function TableFormModal({ isOpen, onClose, table }: TableFormModa
                                     required
                                     disabled={processing}
                                 />
+
+                                <InputError className="mt-1" message={errors.name} />
                             </div>
                             <div className="mt-3 flex justify-end items-center gap-2">
                                 <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>

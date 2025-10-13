@@ -5,9 +5,9 @@ import { PageProps } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Eye, X } from 'lucide-react';
 import { can } from '@/utils/authorization';
-import { Notification } from '@/types/notification';
 import { useState } from 'react';
 import Modal from '@/Components/Modal';
+import { Notification } from '@/types/Notification';
 
 export default function Index({
     auth,
@@ -43,6 +43,7 @@ export default function Index({
     return (
         <AuthenticatedLayout
             user={auth.user}
+            pendingOrdersCount={auth.pendingOrdersCount}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Notificações

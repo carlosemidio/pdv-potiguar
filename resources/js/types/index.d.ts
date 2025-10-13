@@ -31,6 +31,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     auth: {
         user: User;
         userPermissions: string[];
+        pendingOrdersCount: number;
     };
     flash: {
         success: string | null;

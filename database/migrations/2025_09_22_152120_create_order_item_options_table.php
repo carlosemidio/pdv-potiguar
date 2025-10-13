@@ -21,6 +21,7 @@ return new class extends Migration
                 ->onDelete('restrict');
             $table->integer('quantity')->default(1);
             $table->decimal('unit_price', 10, 2)->default(0);
+            $table->unique(['order_item_id', 'addon_group_option_id']);
             $table->softDeletes();
             $table->timestamps();
         });

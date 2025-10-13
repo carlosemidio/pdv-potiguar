@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('name');
             $table->decimal('cost_price', 10, 2)->nullable();
             $table->decimal('stock_quantity', 10, 2)->default(0);
+            $table->unique(['store_id', 'name']);
             $table->softDeletes();
             $table->timestamps();
         });

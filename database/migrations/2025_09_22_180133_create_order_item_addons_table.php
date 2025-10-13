@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('quantity')->default(1);
             $table->decimal('unit_price', 10, 2)->default(0);
             $table->decimal('total_price', 10, 2)->default(0);
+            $table->unique(['order_item_id', 'variant_addon_id']);
             $table->softDeletes();
             $table->timestamps();
         });

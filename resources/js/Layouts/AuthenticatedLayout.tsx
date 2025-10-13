@@ -10,14 +10,15 @@ import { ChevronDown, Gauge, KeySquare, Mail, Menu, MonitorCog, Store, Table, Us
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import { AiFillProduct } from 'react-icons/ai';
 import { CgProductHunt } from 'react-icons/cg';
-import { MdAddCircle, MdBrandingWatermark, MdCategory, MdOutlineExtension, MdOutlineKitchen } from 'react-icons/md';
+import { MdBrandingWatermark, MdCategory, MdOutlineExtension, MdOutlineKitchen, MdPrint } from 'react-icons/md';
 import { TbArrowsRightLeft, TbMenuOrder } from 'react-icons/tb';
 
 export default function Authenticated({
     user,
+    pendingOrdersCount,
     header,
     children,
-}: PropsWithChildren<{ user: User; header?: ReactNode }>) {
+}: PropsWithChildren<{ user: User; pendingOrdersCount: number; header?: ReactNode }>) {
     const [sidebarOpen, setSidebarOpen] = useState(false);  // Estado para controlar a sidebar
     const { data, setData, get } = useForm({
         id: user?.store?.id,
@@ -109,7 +110,14 @@ export default function Authenticated({
                                 <NavLink href={route('orders.index')} active={route().current('orders.index')}>
                                     <div className='flex gap-2 items-center'>
                                         <TbMenuOrder className="w-6 h-6" />
-                                        <p>Pedidos</p>
+                                        <p>
+                                            Pedidos
+                                            {pendingOrdersCount > 0 && (
+                                                <span className="ml-2 bg-red-500 text-white rounded-full px-2 py-0.5 text-xs animate-pulse">
+                                                    {pendingOrdersCount}
+                                                </span>
+                                            )}
+                                        </p>
                                     </div>
                                 </NavLink>
                             )}
@@ -164,6 +172,15 @@ export default function Authenticated({
                                     <div className='flex gap-2 items-center'>
                                         <MdBrandingWatermark className="w-6 h-6" />
                                         <p>Marcas</p>
+                                    </div>
+                                </NavLink>
+                            )}
+
+                            {can('printers_view') && (
+                                <NavLink href={route('printers.index')} active={route().current('printers.index')}>
+                                    <div className='flex gap-2 items-center'>
+                                        <MdPrint className="w-6 h-6" />
+                                        <p>Impressoras</p>
                                     </div>
                                 </NavLink>
                             )}

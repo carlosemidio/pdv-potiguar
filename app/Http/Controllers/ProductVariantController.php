@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProductVariantFormRequest;
 use App\Http\Resources\ProductVariantResource;
 use App\Models\AttributeValue;
 use App\Models\File;
@@ -66,9 +65,18 @@ class ProductVariantController extends Controller
     /**
      * Product a newly created resource in storage.
      */
-    public function store(ProductVariantFormRequest $request)
+    public function store(Request $request)
     {
         $this->authorize('create', ProductVariant::class);
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'sku' => 'nullable|string|max:100|unique:product_variants,sku,NULL,id,tenant_id,' . Auth::user()->tenant_id,
+        ], [
+            'product_id.required' => 'O produto é obrigatório.',
+            'product_id.exists' => 'O produto selecionado não é válido.',
+            'sku.unique' => 'Já existe uma variante com este SKU na loja.',
+        ]);
+
         $dataForm = $request->all();
         $dataForm['user_id'] = Auth::id();
         $dataForm['tenant_id'] = Auth::user()->tenant_id;
@@ -157,7 +165,7 @@ class ProductVariantController extends Controller
                     }
                 }
 
-                return redirect()->route('product-variant.index')
+                return redirect()->route('product-variant.edit', $productVariant->id)
                     ->with('success', 'Variante de produto cadastrada com sucesso.');
             }
 
@@ -187,10 +195,20 @@ class ProductVariantController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(ProductVariantFormRequest $request, $id)
+    public function update(Request $request, $id)
     {
         $productVariant = ProductVariant::where('id', $id)->firstOrFail();
         $this->authorize('update', $productVariant);
+
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'sku' => 'nullable|string|max:100|unique:product_variants,sku,' . $productVariant->id . ',id,tenant_id,' . Auth::user()->tenant_id,
+        ], [
+            'product_id.required' => 'O produto é obrigatório.',
+            'product_id.exists' => 'O produto selecionado não é válido.',
+            'sku.unique' => 'Já existe uma variante com este SKU na loja.',
+        ]);
+
         $dataForm = $request->all();
 
         try {

@@ -7,8 +7,10 @@ use App\Http\Controllers\Ajax\AddonsListController;
 use App\Http\Controllers\Ajax\BrandListController;
 use App\Http\Controllers\AttibuteController;
 use App\Http\Controllers\Ajax\CategoryListController;
+use App\Http\Controllers\Ajax\ConnectedPrintersController;
 use App\Http\Controllers\Ajax\CustomersListController;
 use App\Http\Controllers\Ajax\IngredientsListController;
+use App\Http\Controllers\Ajax\PrintersListController;
 use App\Http\Controllers\Ajax\ProductListController;
 use App\Http\Controllers\Ajax\ProductVariantListController;
 use App\Http\Controllers\Ajax\StoreProductVariantListController;
@@ -28,6 +30,8 @@ use App\Http\Controllers\OrderItemsController;
 use App\Http\Controllers\OrderPaymentsController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\PrintersController;
+use App\Http\Controllers\PrintJobsController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\StockMovementController;
@@ -147,6 +151,15 @@ Route::middleware('auth')->group(function () {
         ->except(['destroy'])
         ->names('orders');
 
+    Route::resource('/impressoras', PrintersController::class)
+        ->names('printers');
+
+    Route::post('/print-order/{orderId}/{printerId}', [PrintJobsController::class, 'printOrder'])
+        ->name('order.print');
+
+    Route::post('/print-order-items', [PrintJobsController::class, 'printOrderItems'])
+        ->name('order.items.print');
+
     Route::patch('/pedidos/{id}/cancelar', [OrdersController::class, 'cancel'])
         ->name('orders.cancel');
 
@@ -220,6 +233,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('search-users-select', [UserListController::class, 'index'])
         ->name('users-select.search');
+
+    // rota para listar impressoras conectadas
+    Route::get('search-printers', [PrintersListController::class, 'index'])
+        ->name('search-printers');
 
     Route::resource('/notificacoes', NotificationController::class)->names('notification');
     Route::patch('/notificacoes/{id}/ler', [NotificationController::class, 'markAsRead'])->name('notification.markAsRead');

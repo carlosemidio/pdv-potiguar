@@ -1,9 +1,7 @@
 import { Brand } from "./Brand";
 import { Category } from "./Category";
-import { ProductAddon } from "./ProductAddon";
 import { Store } from "./Store";
 import { User } from "./User";
-import { Variant } from "./Variant";
 
 export type Product = {
     id: number;
@@ -21,10 +19,6 @@ export type Product = {
     slug: string;
     description: string;
     short_description: string;
-
-    variants: Variant[] | null;
-
-    product_addons?: ProductAddon[] | null;
 
     created_at: string;
     updated_at: string;

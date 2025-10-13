@@ -19,6 +19,7 @@ import "filepond/dist/filepond.min.css";
 import { FilePondFile } from 'filepond'
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
+import { Package, Image, Tag, Plus, Save, ArrowLeft, Trash2, Star, Eye, Settings, Upload } from 'lucide-react';
 registerPlugin(FilePondPluginImagePreview);
 
 export default function EditVariant({
@@ -117,146 +118,288 @@ export default function EditVariant({
             user={auth.user}
             pendingOrdersCount={auth.pendingOrdersCount}
             header={
-                <h2>
-                    {isEdit ? `Editar variante: ${productVariant.data.sku}` : 'Criar variante'}
-                </h2>
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                        <Package className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                            {isEdit ? 'Editar Variante' : 'Nova Variante'}
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {isEdit ? `Modificar: ${productVariant.data.sku}` : 'Criar nova variante de produto'}
+                        </p>
+                    </div>
+                </div>
             }
         >
             <Head title={isEdit ? 'Editar variante' : 'Criar variante'} />
-            <section className='px-2 text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto">
-                    <div className="mb-4">
+            
+            <div className="py-8">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Navegação */}
+                    <div className="mb-8">
                         <Link href={route('product-variant.index')}>
-                            <SecondaryButton>Voltar</SecondaryButton>
+                            <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors duration-200">
+                                <ArrowLeft className="w-4 h-4" />
+                                Voltar
+                            </button>
                         </Link>
                     </div>
-                    <div className='bg-white border p-3 rounded dark:border-gray-600 dark:bg-slate-800'>
-                        <form onSubmit={submit} className="space-y-4">
-                            <div>
-                                <SearchableProductsSelect
-                                    selectedProduct={product}
-                                    setProduct={(product) => { setProduct(product); setData('product_id', product ? product.id : null); }}
-                                />
 
-                                <InputError className="mt-2" message={errors.product_id} />
+                    <form onSubmit={submit} className="space-y-8">
+                        {/* Seção: Informações Básicas */}
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                            <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                    <Package className="w-5 h-5 text-white" />
+                                    <h3 className="text-lg font-semibold text-white">Informações Básicas</h3>
+                                </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-                                <div className="flex flex-col">
-                                    <InputLabel htmlFor="sku" value="SKU" />
+                            
+                            <div className="p-6 space-y-6">
+                                {/* Produto */}
+                                <div className="space-y-2">
+                                    <InputLabel htmlFor="product" value="Produto Relacionado" className="text-base font-semibold flex items-center gap-2">
+                                        <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                        Produto
+                                    </InputLabel>
+                                    <SearchableProductsSelect
+                                        selectedProduct={product}
+                                        setProduct={(product) => { setProduct(product); setData('product_id', product ? product.id : null); }}
+                                    />
+                                    <InputError className="mt-2" message={errors.product_id} />
+                                </div>
+
+                                {/* SKU */}
+                                <div className="space-y-2">
+                                    <InputLabel htmlFor="sku" value="SKU (Código Único)" className="text-base font-semibold flex items-center gap-2">
+                                        <Settings className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                        SKU
+                                    </InputLabel>
                                     <TextInput
                                         id="sku"
-                                        className="mt-1 block w-full"
+                                        className="w-full pl-4 pr-4 py-3 text-base rounded-xl border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                                         value={data.sku}
                                         onChange={e => setData('sku', e.target.value)}
+                                        placeholder="Ex: PROD-VAR-001"
                                         autoFocus
                                     />
-
                                     <InputError className="mt-2" message={errors.sku} />
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="mt-6">
-                                <h5 className="text-sm font-semibold text-gray-700 mb-3">Adicionar Atributo</h5>
-                                <div className="flex gap-4 items-end">
-                                    <div className="flex-1">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Novo Atributo</label>
-                                        <SearchableAttibutesSelect selectedAttribute={selectedAttribute} setAttribute={setSelectedAttribute} setAttributeName={setAttributeName} isDisabled={false} />
-                                    </div>
-                                    <PrimaryButton
-                                        className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg shadow"
-                                        onClick={handleAddAttribute}
-                                        type="button"
-                                    >
-                                        Adicionar
-                                    </PrimaryButton>
+                        {/* Seção: Atributos */}
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                            <div className="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                    <Tag className="w-5 h-5 text-white" />
+                                    <h3 className="text-lg font-semibold text-white">Atributos da Variante</h3>
                                 </div>
                             </div>
+                            
+                            <div className="p-6 space-y-6">
+                                {/* Adicionar Atributo */}
+                                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
+                                    <h4 className="text-sm font-semibold text-green-800 dark:text-green-200 mb-4">
+                                        Adicionar Novo Atributo
+                                    </h4>
+                                    <div className="flex flex-col sm:flex-row gap-4 items-end">
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium text-green-700 dark:text-green-300 mb-2">
+                                                Selecionar ou Criar Atributo
+                                            </label>
+                                            <SearchableAttibutesSelect 
+                                                selectedAttribute={selectedAttribute} 
+                                                setAttribute={setSelectedAttribute} 
+                                                setAttributeName={setAttributeName} 
+                                                isDisabled={false} 
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleAddAttribute}
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            Adicionar
+                                        </button>
+                                    </div>
+                                </div>
 
-                            {data.attributes && data.attributes.length > 0 && (
-                                <div className="mt-6">
-                                    <h5 className="text-sm font-semibold text-gray-700 mb-3">Atributos</h5>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {data.attributes.map((attribute: Attribute, attrIndex: number) => (
-                                            <div key={attrIndex} className="flex flex-col">
-                                                <label className="mb-2 text-xs font-semibold text-gray-700">{attribute.name}</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder={`Valor de ${attribute.name}`}
-                                                    value={attribute.value}
-                                                    onChange={e => handleAttributeValueChange(attrIndex, e.target.value)}
-                                                />
+                                {/* Lista de Atributos */}
+                                {data.attributes && data.attributes.length > 0 && (
+                                    <div className="space-y-4">
+                                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                            Atributos Configurados
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {data.attributes.map((attribute: Attribute, attrIndex: number) => (
+                                                <div key={attrIndex} className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                        {attribute.name}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder={`Valor de ${attribute.name}`}
+                                                        value={attribute.value}
+                                                        onChange={e => handleAttributeValueChange(attrIndex, e.target.value)}
+                                                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:border-green-500 dark:focus:border-green-400 focus:ring-1 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-gray-800"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Seção: Imagens */}
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                            <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                    <Image className="w-5 h-5 text-white" />
+                                    <h3 className="text-lg font-semibold text-white">Galeria de Imagens</h3>
+                                </div>
+                            </div>
+                            
+                            <div className="p-6 space-y-6">
+                                {/* Imagem Principal */}
+                                {productVariant?.data?.image && (
+                                    <div className="space-y-4">
+                                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                            <Star className="w-4 h-4 text-yellow-500" />
+                                            Imagem Principal
+                                        </h4>
+                                        <div className="flex flex-wrap gap-4">
+                                            <div className="relative group">
+                                                <div className="w-32 h-32 rounded-xl overflow-hidden border-2 border-yellow-200 dark:border-yellow-800">
+                                                    <img 
+                                                        src={productVariant.data.image.file_url} 
+                                                        alt={productVariant.data.image.name} 
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (productVariant?.data?.image?.id !== undefined) {
+                                                            handleDeleteFile(productVariant.data.image.id);
+                                                        }
+                                                    }}
+                                                    className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
                                             </div>
-                                        ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Galeria */}
+                                {productVariant?.data?.images && productVariant.data.images.length > 0 && (
+                                    <div className="space-y-4">
+                                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                            <Eye className="w-4 h-4 text-blue-500" />
+                                            Galeria de Imagens
+                                        </h4>
+                                        <div className="flex flex-wrap gap-4">
+                                            {productVariant.data.images.map((image, index) => (
+                                                <div key={index} className="relative group">
+                                                    <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
+                                                        <img 
+                                                            src={image.file_url} 
+                                                            alt={image.name} 
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-xl flex items-center justify-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleSetFileAsDefault(image.id)}
+                                                            className="w-8 h-8 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full flex items-center justify-center shadow-lg"
+                                                            title="Definir como principal"
+                                                        >
+                                                            <Star className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDeleteFile(image.id)}
+                                                            className="w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg"
+                                                            title="Excluir imagem"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Upload de Novas Imagens */}
+                                <div className="space-y-4">
+                                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                        <Upload className="w-4 h-4 text-green-500" />
+                                        Adicionar Novas Imagens
+                                    </h4>
+                                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-4">
+                                        <FilePond
+                                            files={files}
+                                            onupdatefiles={(fileItems: FilePondFile[]) => {
+                                                setFiles(fileItems.map(fileItem => fileItem.file) as File[]);
+                                            }}
+                                            allowMultiple={true}
+                                            maxFiles={10}
+                                            labelIdle='Arraste e solte arquivos ou <span class="filepond--label-action">Selecione</span>'
+                                        />
                                     </div>
                                 </div>
-                            )}
-
-                            <div className="w-full col-span-1 md:col-span-2 lg:col-span-3">
-                                <label className="block font-medium text-xl text-gray-700 mt-10">Imagem principal (Card da listagem)</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {productVariant?.data?.image && (
-                                        <div className="w-1/4 h-24 bg-gray-200 rounded-lg flex justify-center items-center relative mr-2">
-                                            <img src={productVariant?.data?.image?.file_url} alt={productVariant?.data?.image?.name} className="h-24 w-full object-cover rounded-lg" />
-                                            <span
-                                                onClick={() => {
-                                                    if (productVariant?.data?.image?.id !== undefined) {
-                                                        handleDeleteFile(productVariant.data.image.id);
-                                                    }
-                                                }}
-                                                className="w-9 h-9 transition-all duration-200 flex justify-center items-center rounded-bl-2xl hover:text-red-600 text-gray-800 bg-slate-300/50 absolute top-0 right-0">
-                                                <MdDelete />
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <label className="block font-medium text-xl text-gray-700 mt-10">Galeria</label>
-                                <div className="flex flex-wrap gap-2 mb-10">
-                                    {productVariant?.data?.images && productVariant?.data?.images.map((image, index) => (
-                                        <div key={index} className="w-1/4 h-24 bg-gray-200 rounded-lg flex justify-center items-center relative mr-2">
-                                            <img src={image?.file_url} alt={image?.name} className="h-24 w-full object-cover rounded-lg" />
-                                            <span
-                                                onClick={() => handleDeleteFile(image?.id)}
-                                                className="w-9 h-9 transition-all duration-200 flex justify-center items-center rounded-bl-2xl hover:text-red-600 text-gray-800 bg-slate-300/50 absolute top-0 right-0">
-                                                <MdDelete />
-                                            </span>
-
-                                            <span className="w-9 h-9 transition-all duration-200 flex justify-center items-center rounded-bl-2xl hover:text-red-600 text-gray-800 bg-slate-300/50 absolute top-0 left-0"
-                                                onClick={() => handleSetFileAsDefault(image?.id)}>
-                                                <MdCheckBox />
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <FilePond
-                                    files={files}
-                                    onupdatefiles={(fileItems: FilePondFile[]) => {
-                                        setFiles(fileItems.map(fileItem => fileItem.file) as File[]);
-                                    }}
-                                    allowMultiple={true}
-                                    maxFiles={10}
-                                    labelIdle='Arraste e solte arquivos ou <span class="filepond--label-action">Selecione</span>'
-                                />
                             </div>
+                        </div>
 
-                            <div className='flex items-center gap-4'>
-                                <PrimaryButton disabled={processing}>
-                                    Salvar
-                                </PrimaryButton>
+                        {/* Ações */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-6">
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
+                            >
+                                {processing ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                        Salvando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="w-4 h-4" />
+                                        Salvar Variante
+                                    </>
+                                )}
+                            </button>
 
-                                <Transition
-                                    show={recentlySuccessful}
-                                    enterFrom="opacity-0"
-                                    leaveTo="opacity-0"
-                                >
-                                    <p className='text-sm text-gray-600 dark:text-gray-400'>Salvo.</p>
-                                </Transition>
-                            </div>
-                        </form>
-                    </div>
+                            <Transition
+                                show={recentlySuccessful}
+                                enter="transition ease-in-out duration-300"
+                                enterFrom="opacity-0 transform translate-x-2"
+                                enterTo="opacity-100 transform translate-x-0"
+                                leave="transition ease-in-out duration-300"
+                                leaveTo="opacity-0 transform translate-x-2"
+                            >
+                                <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                                    <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                                    </div>
+                                    <p className="text-sm font-medium">
+                                        Variante salva com sucesso!
+                                    </p>
+                                </div>
+                            </Transition>
+                        </div>
+                    </form>
                 </div>
-            </section>
+            </div>
         </AuthenticatedLayout>
     )
 }

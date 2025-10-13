@@ -1,8 +1,13 @@
 import { ComponentProps } from 'react';
+import { AlertCircle, ChevronDown } from 'lucide-react';
 
 interface SelectInputProps extends ComponentProps<'select'> {
   error?: string;
   options: { value: string; label: string }[];
+  label?: string;
+  icon?: React.ReactNode;
+  helpText?: string;
+  placeholder?: string;
 }
 
 export default function SelectInput({
@@ -10,22 +15,89 @@ export default function SelectInput({
   error,
   className,
   options = [],
+  label,
+  icon,
+  helpText,
+  placeholder = "Selecione uma opção...",
   ...props
 }: SelectInputProps) {
+  const baseClasses = `
+    w-full px-4 py-3 text-base rounded-xl transition-all duration-200
+    border-2 focus:outline-none appearance-none
+    bg-white dark:bg-gray-800 
+    text-gray-900 dark:text-gray-100
+    disabled:bg-gray-100 dark:disabled:bg-gray-700 
+    disabled:cursor-not-allowed disabled:opacity-60
+    cursor-pointer
+  `;
+
+  const normalClasses = `
+    border-gray-200 dark:border-gray-600
+    focus:border-blue-500 dark:focus:border-blue-400
+    focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20
+  `;
+
+  const errorClasses = `
+    border-red-300 dark:border-red-600
+    focus:border-red-500 dark:focus:border-red-400
+    focus:ring-2 focus:ring-red-500/20 dark:focus:ring-red-400/20
+  `;
+
   return (
-    <select
-      id={name}
-      name={name}
-      {...props}
-      className={`form-select w-full focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 border-gray-300 rounded ${
-        error ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : ''
-      }`}
-    >
-      {options?.map(({ value, label }, index) => (
-        <option key={index} value={value}>
-          {label}
-        </option>
-      ))}
-    </select>
+    <div className="space-y-2">
+      {label && (
+        <label 
+          htmlFor={name} 
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          {icon && <span className="inline-flex items-center gap-2">{icon} {label}</span>}
+          {!icon && label}
+        </label>
+      )}
+      
+      <div className="relative">
+        <select
+          id={name}
+          name={name}
+          {...props}
+          className={`
+            ${baseClasses}
+            ${error ? errorClasses : normalClasses}
+            ${className || ''}
+            pr-10
+          `}
+        >
+          <option value="" disabled>
+            {placeholder}
+          </option>
+          {options?.map(({ value, label }, index) => (
+            <option key={index} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        
+        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+          {error ? (
+            <AlertCircle className="w-5 h-5 text-red-500" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-gray-400" />
+          )}
+        </div>
+      </div>
+
+      {helpText && !error && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {helpText}
+        </p>
+      )}
+
+      {error && (
+        <div className="flex items-start gap-2 text-red-600 dark:text-red-400">
+          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <p className="text-sm">{error}</p>
+        </div>
+      )}
+    </div>
   );
 }

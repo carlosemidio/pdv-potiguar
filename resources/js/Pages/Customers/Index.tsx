@@ -5,7 +5,7 @@ import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus, MoreVertical } from 'lucide-react';
+import { Edit, Trash, Plus, Users, Phone, Mail, MapPin, UserCheck, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Customer } from '@/types/Customer';
@@ -63,109 +63,279 @@ export default function Index({
         ? customers.data.find(costumer => costumer.id === costumerIdToDelete)
         : null;
 
-    const {
-        meta: { links },
-    } = customers;
+    const { meta: { links } } = customers;
 
     return (
         <AuthenticatedLayout
             user={auth.user}
             pendingOrdersCount={auth.pendingOrdersCount}
             header={
-                <h2 className="text-2xl font-bold leading-tight text-gray-800 dark:text-gray-200">
-                    Clientes
-                </h2>
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl">
+                            <Users className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                                Clientes
+                            </h1>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Gerencie seus clientes e contatos
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => openCustomerFormModal(null)}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Novo Cliente
+                    </button>
+                </div>
             }
         >
             <Head title="Clientes" />
 
-            <section className='px-3 text-gray-800 dark:text-gray-200'>
-                <div className="max-w-5xl">
-                    <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2'>
-                        {customers?.data?.map((costumer) => (
-                            <li key={costumer.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800">
-                                <div className="flex items-center justify-between gap-2 relative p-3">
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <div className='min-w-0 flex-1'>
-                                            <div className="flex items-center gap-2">
-                                                <p className='font-semibold text-sm truncate'>{costumer.name}</p>
-                                                {costumer.type === 'pj' ? (
-                                                    <span className='px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200'>
-                                                        PJ
-                                                    </span>
-                                                ) : (
-                                                    <span className='px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'>
-                                                        PF
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='flex flex-col gap-1 absolute top-1 right-1'>
-                                        {(can('customers_edit') || can('customers_delete')) && (
-                                            <Dropdown>
-                                                <Dropdown.Trigger>
-                                                    <SecondaryButton size='sm' className='!px-2 !py-1' title='Ações'>
-                                                        <MoreVertical className='w-4 h-4' />
-                                                    </SecondaryButton>
-                                                </Dropdown.Trigger>
-                                                <Dropdown.Content align='right' width='48'>
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <div className="container mx-auto px-4 py-6 max-w-7xl">
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-blue-900 dark:text-blue-200 uppercase tracking-wide">Total de Clientes</p>
+                                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
+                                        {customers.meta.total}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-blue-500 rounded-lg">
+                                    <Users className="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-green-900 dark:text-green-200 uppercase tracking-wide">Pessoas Físicas</p>
+                                    <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
+                                        {customers.data.filter(c => c.type === 'pf').length}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-green-500 rounded-lg">
+                                    <UserCheck className="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-purple-900 dark:text-purple-200 uppercase tracking-wide">Pessoas Jurídicas</p>
+                                    <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 mt-1">
+                                        {customers.data.filter(c => c.type === 'pj').length}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-purple-500 rounded-lg">
+                                    <Users className="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Customers Grid */}
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        Lista de Clientes
+                                    </h3>
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    {customers.meta.total} clientes cadastrados
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-6">
+                            {customers?.data?.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {customers.data.map((costumer) => (
+                                        <div key={costumer.id} className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-200">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                                                        <span className="text-white font-semibold text-sm">
+                                                            {costumer.name.charAt(0).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                                                            {costumer.name}
+                                                        </h4>
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                            costumer.type === 'pj' 
+                                                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200' 
+                                                                : 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200'
+                                                        }`}>
+                                                            {costumer.type === 'pj' ? 'Pessoa Jurídica' : 'Pessoa Física'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
                                                     {can('customers_edit') && (
                                                         <button
-                                                            type='button'
                                                             onClick={() => openCustomerFormModal(costumer)}
-                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 focus:outline-none'
+                                                            className="p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400 transition-colors"
+                                                            title="Editar cliente"
                                                         >
-                                                            <span className='inline-flex items-center gap-2'>
-                                                                <Edit className='w-4 h-4' /> Editar
-                                                            </span>
+                                                            <Edit className="w-4 h-4" />
                                                         </button>
                                                     )}
                                                     {can('customers_delete') && (
                                                         <button
-                                                            type='button'
                                                             onClick={() => confirmCustomerDeletion(costumer.id)}
-                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none'
+                                                            className="p-1.5 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-800 text-red-600 dark:text-red-400 transition-colors"
+                                                            title="Excluir cliente"
                                                         >
-                                                            <span className='inline-flex items-center gap-2'>
-                                                                <Trash className='w-4 h-4' /> Excluir
-                                                            </span>
+                                                            <Trash className="w-4 h-4" />
                                                         </button>
                                                     )}
-                                                </Dropdown.Content>
-                                            </Dropdown>
+                                                </div>
+                                            </div>
+
+                                            {/* Customer Information */}
+                                            <div className="space-y-3 mt-4">
+                                                {costumer.doc && (
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                                        <span className="font-medium">Doc:</span>
+                                                        <span>{costumer.doc}</span>
+                                                    </div>
+                                                )}
+                                                
+                                                {costumer.phone && (
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                                        <Phone className="w-4 h-4" />
+                                                        <span>{costumer.phone}</span>
+                                                    </div>
+                                                )}
+                                                
+                                                {costumer.email && (
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                                        <Mail className="w-4 h-4" />
+                                                        <span className="truncate">{costumer.email}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                            <Users className="w-8 h-8 text-gray-400" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                                Nenhum cliente encontrado
+                                            </h3>
+                                            <p className="text-gray-500 dark:text-gray-400 text-sm">
+                                                Comece adicionando seu primeiro cliente.
+                                            </p>
+                                        </div>
+                                        {can('customers_create') && (
+                                            <button
+                                                onClick={() => openCustomerFormModal(null)}
+                                                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                Adicionar Cliente
+                                            </button>
                                         )}
                                     </div>
                                 </div>
-                            </li>
-                        ))}
-                    </ul>
-                    
-                    <Pagination links={links} />
-                    
-                    {customers?.data?.length === 0 && (
-                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                            Nenhum cliente cadastrado.
+                            )}
                         </div>
-                    )}
 
-                    <CustomerFormModal
-                        isOpen={isOpen}
-                        onClose={closeCustomerFormModal}
-                        customer={customerToEdit}
-                    />
-
-                    {can('customers_create') && (
-                        <button
-                            aria-label="Novo cliente"
-                            className="fixed bottom-16 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
-                            onClick={() => openCustomerFormModal(null)}
-                        >
-                            <Plus className="h-6 w-6" />
-                        </button>
-                    )}
+                        {/* Pagination */}
+                        {customers?.data?.length > 0 && (
+                            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center justify-center">
+                                    <nav className="flex items-center gap-2">
+                                        {links?.map((link, index) => {
+                                            if (index === 0) {
+                                                return (
+                                                    <Link
+                                                        key={index}
+                                                        href={link.url || '#'}
+                                                        className={`p-2 rounded-lg border transition-colors ${
+                                                            link.url 
+                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
+                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                        }`}
+                                                    >
+                                                        <ChevronLeft className="w-4 h-4" />
+                                                    </Link>
+                                                );
+                                            }
+                                            
+                                            if (index === links.length - 1) {
+                                                return (
+                                                    <Link
+                                                        key={index}
+                                                        href={link.url || '#'}
+                                                        className={`p-2 rounded-lg border transition-colors ${
+                                                            link.url 
+                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
+                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                        }`}
+                                                    >
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </Link>
+                                                );
+                                            }
+                                            
+                                            return (
+                                                <Link
+                                                    key={index}
+                                                    href={link.url || '#'}
+                                                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                                                        link.active 
+                                                            ? 'border-blue-500 bg-blue-500 text-white' 
+                                                            : link.url 
+                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
+                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                    }`}
+                                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                                />
+                                            );
+                                        })}
+                                    </nav>
+                                </div>
+                            </div>
+                                        )}
+                    </div>
                 </div>
-            </section>
+            </div>
+
+            <CustomerFormModal
+                isOpen={isOpen}
+                onClose={closeCustomerFormModal}
+                customer={customerToEdit}
+            />
+
+            {can('customers_create') && (
+                <button
+                    aria-label="Novo cliente"
+                    className="fixed bottom-16 right-4 z-40 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg h-14 w-14 transition-all duration-200 hover:shadow-xl"
+                    onClick={() => openCustomerFormModal(null)}
+                >
+                    <Plus className="h-6 w-6" />
+                </button>
+            )}
 
             {costumerToDelete && (
                 <Modal show={confirmingCustomerDeletion} onClose={closeModal}>

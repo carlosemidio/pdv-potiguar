@@ -6,7 +6,7 @@ import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus, MoreVertical } from 'lucide-react';
+import { Edit, Trash, Plus, MoreVertical, Search, Package } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Ingredient } from '@/types/Ingredient';
@@ -75,85 +75,172 @@ export default function Index({
             user={auth.user}
             pendingOrdersCount={auth.pendingOrdersCount}
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Ingredientes
-                </h2>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                            Ingredientes
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            Gerencie ingredientes, controle de estoque e custos
+                        </p>
+                    </div>
+                </div>
             }
         >
             <Head title="Ingredientes" />
 
-            <section className='px-3 text-gray-800 dark:text-gray-200'>
-                <div className="max-w-5xl">
-                    <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1'>
-                        {ingredients?.data?.map((ingredient) => (
-                            <li key={ingredient.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800">
-                                <div className="flex items-center justify-between gap-2 relative p-2">
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <div className='min-w-0 flex-1'>
-                                            <p className='font-semibold text-sm truncate'>{ingredient.name}</p>
-                                            <div className='mt-1 flex flex-wrap items-end gap-1.5 text-[11px] text-gray-700 dark:text-gray-300'>
-                                                <span className={`px-1.5 py-0.5 rounded text-[10px] ${(ingredient.stock_quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'}`}>
-                                                    Estoque: {ingredient.stock_quantity ?? '0'}{ingredient.unit?.symbol || ''}
-                                                </span>
-                                                {ingredient.cost_price && (
-                                                    <span className='px-1.5 py-0.5 rounded bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 text-[10px]'>
-                                                        {ingredient.cost_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                                    </span>
-                                                )}
-                                                <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-auto">
-                                                    {ingredient.created_at ? new Date(ingredient.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—'}
-                                                </span>
-                                            </div>
-                                        </div>
+            <div className="space-y-8 px-4 sm:px-6 lg:px-8">
+                {/* Lista de Ingredientes */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-0 overflow-hidden">
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-700 dark:to-gray-600 px-6 sm:px-8 py-6 border-b border-green-100 dark:border-gray-600">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                    <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                                        <Package className="w-5 h-5 text-green-600 dark:text-green-400" />
                                     </div>
-                                    <div className='flex flex-col gap-1 absolute top-1 right-1'>
-                                        {((can('ingredients_edit') && ingredient.user_id != null) || (can('ingredients_delete') && ingredient.user_id != null)) && (
-                                            <Dropdown>
-                                                <Dropdown.Trigger>
-                                                    <SecondaryButton size='sm' className='!px-2 !py-1' title='Ações'>
-                                                        <MoreVertical className='w-4 h-4' />
-                                                    </SecondaryButton>
-                                                </Dropdown.Trigger>
-                                                <Dropdown.Content align='right' width='48'>
-                                                    {(can('ingredients_edit') && ingredient.user_id != null) && (
-                                                        <button
-                                                            type='button'
-                                                            onClick={() => handleOpenModalForEdit(ingredient)}
-                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 focus:outline-none'
-                                                        >
-                                                            <span className='inline-flex items-center gap-2'>
-                                                                <Edit className='w-4 h-4' /> Editar
-                                                            </span>
-                                                        </button>
-                                                    )}
-                                                    {(can('ingredients_delete') && ingredient.user_id != null) && (
-                                                        <button
-                                                            type='button'
-                                                            onClick={() => confirmIngredientDeletion(ingredient.id)}
-                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none'
-                                                        >
-                                                            <span className='inline-flex items-center gap-2'>
-                                                                <Trash className='w-4 h-4' /> Excluir
-                                                            </span>
-                                                        </button>
-                                                    )}
-                                                </Dropdown.Content>
-                                            </Dropdown>
-                                        )}
-                                    </div>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                    <Pagination links={links} />
-                    {ingredients?.data?.length === 0 && (
-                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                            Nenhum ingrediente cadastrado.
+                                    Lista de Ingredientes
+                                </h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                    {ingredients?.data?.length || 0} ingredientes encontrados
+                                </p>
+                            </div>
                         </div>
-                    )}
-                </div>
-            </section>
+                    </div>
 
+                    <div className="p-6 sm:p-8">
+                        {ingredients?.data?.length === 0 ? (
+                            <div className="text-center py-16">
+                                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
+                                    <Package className="w-8 h-8 text-gray-400" />
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                    Nenhum ingrediente cadastrado
+                                </h3>
+                                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                                    Comece criando seu primeiro ingrediente para o sistema.
+                                </p>
+                                {can('ingredients_create') && (
+                                    <button
+                                        onClick={handleOpenModalForCreate}
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        Criar Primeiro Ingrediente
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {ingredients?.data?.map((ingredient) => (
+                                        <div
+                                            key={ingredient.id}
+                                            className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-600 transition-all duration-300 hover:-translate-y-1"
+                                        >
+                                            <div className="p-6">
+                                                {/* Header do Ingrediente */}
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <div className="flex-1">
+                                                        <h4 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200 line-clamp-2">
+                                                            {ingredient.name}
+                                                        </h4>
+                                                    </div>
+                                                </div>
+
+                                                {/* Informações de Estoque */}
+                                                <div className="space-y-3 mb-4">
+                                                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                            <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Estoque</span>
+                                                        </div>
+                                                        <span className="text-sm font-bold text-blue-800 dark:text-blue-200">
+                                                            {ingredient.stock_quantity ? `${ingredient.stock_quantity} ${ingredient.unit?.name || ''}` : '—'}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                                            <span className="text-xs font-medium text-green-700 dark:text-green-300">Custo</span>
+                                                        </div>
+                                                        <span className="text-sm font-bold text-green-800 dark:text-green-200">
+                                                            R$ {ingredient.cost_price ? Number(ingredient.cost_price).toFixed(2).replace('.', ',') : '0,00'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Tags */}
+                                                <div className="flex flex-wrap gap-2 mb-4">
+                                                    {ingredient.unit?.name && (
+                                                        <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium rounded-full">
+                                                            {ingredient.unit.name}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Data de criação */}
+                                                <div className="pt-3 border-t border-gray-100 dark:border-gray-600">
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        Criado em {ingredient.created_at ? new Date(ingredient.created_at).toLocaleDateString('pt-BR', { 
+                                                            day: '2-digit', 
+                                                            month: '2-digit', 
+                                                            year: 'numeric' 
+                                                        }) : '—'}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Menu de Ações */}
+                                            {((can('ingredients_edit') && ingredient.user_id != null) || (can('ingredients_delete') && ingredient.user_id != null)) && (
+                                                <div className="absolute top-4 right-4">
+                                                    <Dropdown>
+                                                        <Dropdown.Trigger>
+                                                            <button className="p-2 rounded-lg bg-white/80 dark:bg-gray-700/80 hover:bg-white dark:hover:bg-gray-600 shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100">
+                                                                <MoreVertical className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                                            </button>
+                                                        </Dropdown.Trigger>
+                                                        <Dropdown.Content align="right" width="48">
+                                                            {(can('ingredients_edit') && ingredient.user_id != null) && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleOpenModalForEdit(ingredient)}
+                                                                    className="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 focus:outline-none transition-colors"
+                                                                >
+                                                                    <span className="inline-flex items-center gap-2">
+                                                                        <Edit className="w-4 h-4" /> Editar
+                                                                    </span>
+                                                                </button>
+                                                            )}
+                                                            {(can('ingredients_delete') && ingredient.user_id != null) && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => confirmIngredientDeletion(ingredient.id)}
+                                                                    className="block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none transition-colors"
+                                                                >
+                                                                    <span className="inline-flex items-center gap-2">
+                                                                        <Trash className="w-4 h-4" /> Excluir
+                                                                    </span>
+                                                                </button>
+                                                            )}
+                                                        </Dropdown.Content>
+                                                    </Dropdown>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                {/* Paginação */}
+                                <div className="mt-8">
+                                    <Pagination links={links} />
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>            {/* Floating Action Button */}
             {can('ingredients_create') && (
                 <>
                     <IngredientFormModal
@@ -165,32 +252,46 @@ export default function Index({
 
                     <button
                         aria-label="Novo ingrediente"
-                        className="fixed bottom-16 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                        className="fixed bottom-6 right-6 z-50 group inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white shadow-2xl h-14 w-14 transition-all duration-300 hover:scale-110 active:scale-95"
                         onClick={handleOpenModalForCreate}
                     >
-                        <Plus className='w-6 h-6' />
+                        <Plus className="w-6 h-6 transition-transform group-hover:rotate-90" />
                     </button>
                 </>
             )}
 
+            {/* Modal de Confirmação de Exclusão */}
             {ingredientToDelete && (
                 <Modal show={confirmingIngredientDeletion} onClose={closeModal}>
-                    <form onSubmit={(e) => { e.preventDefault(); deleteIngredient(); }} className="p-6">
-                        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                            Tem certeza que deseja deletar o ingrediente <span className="font-bold">{ingredientToDelete.name}</span>?
-                        </h2>
+                    <form onSubmit={(e) => { e.preventDefault(); deleteIngredient(); }} className="p-8">
+                        <div className="text-center mb-6">
+                            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full mb-4">
+                                <Trash className="w-8 h-8 text-red-600 dark:text-red-400" />
+                            </div>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                                Confirmar Exclusão
+                            </h2>
+                            <p className="text-gray-600 dark:text-gray-400">
+                                Tem certeza que deseja deletar o ingrediente <span className="font-bold text-red-600">{ingredientToDelete?.name}</span>?
+                            </p>
+                        </div>
 
-                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            Uma vez que o ingrediente é deletado, todos os seus recursos e dados serão permanentemente deletados.
-                        </p>
+                        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 mb-6">
+                            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                                ⚠️ Uma vez que o ingrediente é deletado, todos os seus recursos e dados serão permanentemente removidos.
+                            </p>
+                        </div>
 
-                        <div className="mt-6 flex justify-end gap-3">
-                            <SecondaryButton onClick={closeModal}>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-end">
+                            <SecondaryButton onClick={closeModal} className="order-2 sm:order-1">
                                 Cancelar
                             </SecondaryButton>
 
-                            <DangerButton className="ms-3" disabled={processing}>
-                                Deletar Ingrediente
+                            <DangerButton 
+                                className="order-1 sm:order-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700" 
+                                disabled={processing}
+                            >
+                                {processing ? 'Deletando...' : 'Deletar Ingrediente'}
                             </DangerButton>
                         </div>
                     </form>

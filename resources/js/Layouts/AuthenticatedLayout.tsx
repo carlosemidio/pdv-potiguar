@@ -6,7 +6,7 @@ import { User } from '@/types/User';
 import { can } from '@/utils/authorization';
 import { Button } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
-import { ChevronDown, Gauge, KeySquare, Mail, Menu, MonitorCog, Store, Table, UserCircle2, X } from 'lucide-react';
+import { ChevronDown, Gauge, KeySquare, Mail, Menu, MonitorCog, Store, Table, UserCircle2, X, ShoppingCart, Package, Users, Settings, BarChart3, FileText, Utensils, Boxes, Tag, Palette } from 'lucide-react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import { AiFillProduct } from 'react-icons/ai';
 import { CgProductHunt } from 'react-icons/cg';
@@ -36,221 +36,279 @@ export default function Authenticated({
     };
 
     return (
-        <div className="min-h-screen flex bg-gray-100 dark:bg-gray-900">
+        <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900">
             {/* Sidebar */}
-            <div className={`lg:block lg:inset-y-0 lg:left-0 lg:w-80 lg:bg-white lg:dark:bg-gray-800 `}>
+            <div className={`lg:block lg:inset-y-0 lg:left-0 lg:w-80 lg:bg-white lg:dark:bg-gray-800`}>
                 <nav
-                    className={`transition-all duration-300 transform fixed inset-y-0 left-0 z-40 bg-white dark:bg-gray-800 shadow-lg lg:shadow-none w-64 lg:w-80
-                    ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:fixed lg:inset-y-0 lg:w-80`}
+                    className={`transition-all duration-300 transform fixed inset-y-0 left-0 z-40 bg-white dark:bg-gray-800 shadow-xl lg:shadow-none w-64 lg:w-80
+                    ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:fixed lg:inset-y-0 lg:w-80 border-r border-gray-200 dark:border-gray-700`}
                 >
                     <div className="flex flex-col h-full">
-                        <div className="flex justify-between items-center  border-gray-200 dark:border-gray-700 h-[73px] px-5 ">
+                        {/* Logo/Header */}
+                        <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 h-20 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700">
                             <Link href={route('home')} className="my-auto">
-                                <div className='flex items-center gap-4'>
-                                    <ApplicationLogo className="block transition-all duration-300 w-16" src={user?.store?.image?.file_url} />
-                                    <h1 className='tracking-wide uppercase'>{user?.store?.name}</h1>
+                                <div className='flex items-center gap-3'>
+                                    <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm p-2 flex items-center justify-center">
+                                        <ApplicationLogo className="block transition-all duration-300 w-8 h-8" src={user?.store?.image?.file_url} />
+                                    </div>
+                                    <div>
+                                        <h1 className='tracking-wide font-bold text-white text-lg'>{user?.store?.name || 'PDV Potiguar'}</h1>
+                                        <p className="text-blue-100 text-xs">Sistema de Gestão</p>
+                                    </div>
                                 </div>
                             </Link>
                             <button
                                 type="button"
                                 aria-label="Fechar menu"
                                 onClick={() => setSidebarOpen(false)}
-                                className='p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 text-gray-800 lg:hidden focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                className='p-2 rounded-lg hover:bg-white/10 text-white lg:hidden focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors'
                             >
                                 <X className='w-6 h-6' />
                             </button>
                         </div>
 
                         {/* Navigation links */}
-                        <div className="flex-grow flex flex-col gap-2 overflow-y-auto p-4 pb-20">
-                            <NavLink href={route('dashboard')} active={route().current('dashboard')}>
-                                <div className='flex gap-2 items-center'>
-                                    <Gauge size={24} />
-                                    <p>Dashboard</p>
-                                </div>
-                            </NavLink>
-                            
-                            {can('permissions_view') && (
-                                <NavLink href={route('permission.index')} active={route().current('permission.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <KeySquare className="w-6 h-6" />
-                                        <p>Permissões</p>
+                        <div className="flex-grow flex flex-col overflow-y-auto p-4 pb-20 space-y-1">
+                            {/* Dashboard - Sempre visível */}
+                            <div className="mb-4">
+                                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-3 mb-2">
+                                    Principal
+                                </h3>
+                                <NavLink href={route('dashboard')} active={route().current('dashboard')}>
+                                    <div className='flex gap-3 items-center'>
+                                        <Gauge className="w-5 h-5" />
+                                        <p>Dashboard</p>
                                     </div>
                                 </NavLink>
-                            )}
+                            </div>
 
-                            {can('tenants_view') && (
-                                <NavLink href={route('tenant.index')} active={route().current('tenant.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <Store className="w-6 h-6" />
-                                        <p>Empresas</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('roles_view') && (
-                                <NavLink href={route('role.index')} active={route().current('role.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <MonitorCog className="w-6 h-6" />
-                                        <p>Funções</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('users_view') && (
-                                <NavLink href={route('user.index')} active={route().current('user.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <UserCircle2 className="w-6 h-6" />
-                                        <p>Usuários</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('orders_view') && (
-                                <NavLink href={route('orders.index')} active={route().current('orders.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <TbMenuOrder className="w-6 h-6" />
-                                        <p>
-                                            Pedidos
-                                            {pendingOrdersCount > 0 && (
-                                                <span className="ml-2 bg-red-500 text-white rounded-full px-2 py-0.5 text-xs animate-pulse">
-                                                    {pendingOrdersCount}
-                                                </span>
-                                            )}
-                                        </p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('stock-movements_view') && (
-                                <NavLink href={route('stock-movement.index')} active={route().current('stock-movement.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <TbArrowsRightLeft className="w-6 h-6" />
-                                        <p>Estoque</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('customers_view') && (
-                                <NavLink href={route('customers.index')} active={route().current('customers.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <UserCircle2 className="w-6 h-6" />
-                                        <p>Clientes</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('tables_view') && (
-                                <NavLink href={route('tables.index')} active={route().current('tables.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <Table className="w-6 h-6" />
-                                        <p>Mesas</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('stores_view') && (
-                                <NavLink href={route('store.index')} active={route().current('store.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <Store className="w-6 h-6" />
-                                        <p>Lojas</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('categories_view') && (
-                                <NavLink href={route('categories.index')} active={route().current('categories.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <MdCategory className="w-6 h-6" />
-                                        <p>Categorias</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('brands_view') && (
-                                <NavLink href={route('brands.index')} active={route().current('brands.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <MdBrandingWatermark className="w-6 h-6" />
-                                        <p>Marcas</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('printers_view') && (
-                                <NavLink href={route('printers.index')} active={route().current('printers.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <MdPrint className="w-6 h-6" />
-                                        <p>Impressoras</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('ingredients_view') && (
-                                <NavLink href={route('ingredients.index')} active={route().current('ingredients.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <MdOutlineKitchen className="w-6 h-6" />
-                                        <p>Ingredientes</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {can('addons_view') && (
-                                <NavLink href={route('addons.index')} active={route().current('addons.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <MdOutlineExtension className="w-6 h-6" />
-                                        <p>Complementos</p>
-                                    </div>
-                                </NavLink>
-                            )}
-
-                            {(can('products_view') || can('store-product-variants_view') || can('product-variants_view')) && (
-                                <NavLinkGroup title="Produtos" icon={<AiFillProduct />} open={route().current('product.*') || route().current('store-product-variant.*') || route().current('product-variant.*')}>
-                                    {can('products_view') && (
-                                        <NavLink href={route('product.index')} active={route().current('product.index')}>
-                                            <div className='flex gap-2 items-center'>
-                                                <CgProductHunt className="w-5 h-5" />
-                                                <p>Modelos</p>
+                            {/* Operações do Dia a Dia */}
+                            <div className="mb-4">
+                                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-3 mb-2">
+                                    Operações
+                                </h3>
+                                
+                                {can('orders_view') && (
+                                    <NavLink href={route('orders.index')} active={route().current('orders.index')}>
+                                        <div className='flex gap-3 items-center'>
+                                            <ShoppingCart className="w-5 h-5" />
+                                            <div className="flex-1 flex items-center justify-between">
+                                                <p>Pedidos</p>
+                                                {pendingOrdersCount > 0 && (
+                                                    <span className="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs font-medium animate-pulse">
+                                                        {pendingOrdersCount}
+                                                    </span>
+                                                )}
                                             </div>
-                                        </NavLink>
-                                    )}
-                                    {can('product-variants_view') && (
-                                        <NavLink href={route('product-variant.index')} active={route().current('product-variant.index')}>
-                                            <div className='flex gap-2 items-center'>
-                                                <CgProductHunt className="w-5 h-5" />
-                                                <p>Variantes</p>
-                                            </div>
-                                        </NavLink>
-                                    )}
+                                        </div>
+                                    </NavLink>
+                                )}
+
+                                {can('stock-movements_view') && (
+                                    <NavLink href={route('stock-movement.index')} active={route().current('stock-movement.index')}>
+                                        <div className='flex gap-3 items-center'>
+                                            <Boxes className="w-5 h-5" />
+                                            <p>Controle de Estoque</p>
+                                        </div>
+                                    </NavLink>
+                                )}
+
+                                {can('tables_view') && (
+                                    <NavLink href={route('tables.index')} active={route().current('tables.index')}>
+                                        <div className='flex gap-3 items-center'>
+                                            <Table className="w-5 h-5" />
+                                            <p>Mesas</p>
+                                        </div>
+                                    </NavLink>
+                                )}
+                            </div>
+
+                            {/* Gestão de Clientes */}
+                            {(can('customers_view') || can('clients_view')) && (
+                                <div className="mb-4">
+                                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-3 mb-2">
+                                        Clientes
+                                    </h3>
                                     
-                                    {can('store-product-variants_view') && (
-                                        <NavLink href={route('store-product-variant.index')} active={route().current('store-product-variant.index')}>
-                                            <div className='flex gap-2 items-center'>
-                                                <CgProductHunt className="w-5 h-5" />
-                                                <p>Produtos</p>
+                                    {can('customers_view') && (
+                                        <NavLink href={route('customers.index')} active={route().current('customers.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <Users className="w-5 h-5" />
+                                                <p>Clientes</p>
                                             </div>
                                         </NavLink>
-                                    )}                                    
-                                </NavLinkGroup>
+                                    )}
+
+                                    {can('clients_view') && (
+                                        <NavLink href={route('clientes.index')} active={route().current('clientes.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <Users className="w-5 h-5" />
+                                                <p>Clientes (Legacy)</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+                                </div>
                             )}
 
-                            {can('clients_view') && (
-                                <NavLink href={route('clientes.index')} active={route().current('clientes.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <UserCircle2 className="w-6 h-6" />
-                                        <p>Clientes</p>
-                                    </div>
-                                </NavLink>
+                            {/* Catálogo de Produtos */}
+                            {(can('products_view') || can('store-product-variants_view') || can('product-variants_view') || can('categories_view') || can('brands_view') || can('ingredients_view') || can('addons_view')) && (
+                                <div className="mb-4">
+                                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-3 mb-2">
+                                        Catálogo
+                                    </h3>
+
+                                    {(can('products_view') || can('store-product-variants_view') || can('product-variants_view')) && (
+                                        <NavLinkGroup title="Produtos" icon={<Package className="w-5 h-5" />} open={route().current('product.*') || route().current('store-product-variant.*') || route().current('product-variant.*')}>
+                                            {can('products_view') && (
+                                                <NavLink href={route('product.index')} active={route().current('product.index')}>
+                                                    <div className='flex gap-3 items-center'>
+                                                        <FileText className="w-4 h-4" />
+                                                        <p>Modelos</p>
+                                                    </div>
+                                                </NavLink>
+                                            )}
+                                            {can('product-variants_view') && (
+                                                <NavLink href={route('product-variant.index')} active={route().current('product-variant.index')}>
+                                                    <div className='flex gap-3 items-center'>
+                                                        <Package className="w-4 h-4" />
+                                                        <p>Variantes</p>
+                                                    </div>
+                                                </NavLink>
+                                            )}
+                                            
+                                            {can('store-product-variants_view') && (
+                                                <NavLink href={route('store-product-variant.index')} active={route().current('store-product-variant.index')}>
+                                                    <div className='flex gap-3 items-center'>
+                                                        <ShoppingCart className="w-4 h-4" />
+                                                        <p>Produtos da Loja</p>
+                                                    </div>
+                                                </NavLink>
+                                            )}                                    
+                                        </NavLinkGroup>
+                                    )}
+
+                                    {can('categories_view') && (
+                                        <NavLink href={route('categories.index')} active={route().current('categories.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <Tag className="w-5 h-5" />
+                                                <p>Categorias</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+
+                                    {can('brands_view') && (
+                                        <NavLink href={route('brands.index')} active={route().current('brands.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <Palette className="w-5 h-5" />
+                                                <p>Marcas</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+
+                                    {can('ingredients_view') && (
+                                        <NavLink href={route('ingredients.index')} active={route().current('ingredients.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <Utensils className="w-5 h-5" />
+                                                <p>Ingredientes</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+
+                                    {can('addons_view') && (
+                                        <NavLink href={route('addons.index')} active={route().current('addons.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <MdOutlineExtension className="w-5 h-5" />
+                                                <p>Complementos</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+                                </div>
                             )}
 
-                            {can('notifications_view') && (
-                                <NavLink href={route('notification.index')} active={route().current('notification.index')}>
-                                    <div className='flex gap-2 items-center'>
-                                        <Mail className="w-6 h-6" />
-                                        <p>Notificações {unreadNotificationsCount > 0 && (
-                                            <span className='bg-red-500 text-white rounded-full px-2'>{unreadNotificationsCount}</span>
-                                        )}</p>
-                                    </div>
-                                </NavLink>
+                            {/* Gestão de Lojas */}
+                            {(can('stores_view') || can('printers_view')) && (
+                                <div className="mb-4">
+                                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-3 mb-2">
+                                        Lojas
+                                    </h3>
+                                    
+                                    {can('stores_view') && (
+                                        <NavLink href={route('store.index')} active={route().current('store.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <Store className="w-5 h-5" />
+                                                <p>Lojas</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+
+                                    {can('printers_view') && (
+                                        <NavLink href={route('printers.index')} active={route().current('printers.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <MdPrint className="w-5 h-5" />
+                                                <p>Impressoras</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Administração do Sistema */}
+                            {(can('permissions_view') || can('tenants_view') || can('roles_view') || can('users_view') || can('notifications_view')) && (
+                                <div className="mb-4">
+                                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-3 mb-2">
+                                        Administração
+                                    </h3>
+                                    
+                                    {can('tenants_view') && (
+                                        <NavLink href={route('tenant.index')} active={route().current('tenant.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <BarChart3 className="w-5 h-5" />
+                                                <p>Empresas</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+
+                                    {can('users_view') && (
+                                        <NavLink href={route('user.index')} active={route().current('user.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <UserCircle2 className="w-5 h-5" />
+                                                <p>Usuários</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+
+                                    {can('roles_view') && (
+                                        <NavLink href={route('role.index')} active={route().current('role.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <Settings className="w-5 h-5" />
+                                                <p>Funções</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+
+                                    {can('permissions_view') && (
+                                        <NavLink href={route('permission.index')} active={route().current('permission.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <KeySquare className="w-5 h-5" />
+                                                <p>Permissões</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
+
+                                    {can('notifications_view') && (
+                                        <NavLink href={route('notification.index')} active={route().current('notification.index')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <Mail className="w-5 h-5" />
+                                                <div className="flex-1 flex items-center justify-between">
+                                                    <p>Notificações</p>
+                                                    {unreadNotificationsCount > 0 && (
+                                                        <span className='bg-red-500 text-white rounded-full px-2 py-0.5 text-xs font-medium'>{unreadNotificationsCount}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </NavLink>
+                                    )}
+                                </div>
                             )}
                         </div>
                     </div>
@@ -352,11 +410,13 @@ export default function Authenticated({
                         </div>
                     </header>
                 )}
-                <main className="bg-gray-100 dark:bg-gray-900 h-full pb-20 lg:pb-0">
-                    <div className="uppercase tracking-widest px-2 pt-2 pb-2 lg:px-8 lg:pt-2 lg:pb-2">
-                        <div className='flex items-center gap-2'>
-                            {header}
-                            <div className='flex-1 h-[1px] bg-gray-400 dark:bg-gray-500'></div>
+                <main className="bg-gray-50 dark:bg-gray-900 h-full pb-20 lg:pb-0">
+                    <div className="px-2 pt-4 pb-2 lg:px-8 lg:pt-6 lg:pb-4">
+                        <div className='flex items-center gap-3'>
+                            <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                {header}
+                            </div>
+                            <div className='flex-1 h-px bg-gradient-to-r from-gray-300 to-transparent dark:from-gray-600'></div>
                         </div>
                     </div>
                     
@@ -379,23 +439,28 @@ export default function Authenticated({
                     { children }
                 </main>
                 {/* Bottom Navigation (mobile) */}
-                <nav className="fixed bottom-0 inset-x-0 z-40 bg-white/90 dark:bg-gray-800/90 backdrop-blur border-t border-gray-200 dark:border-gray-700 lg:hidden">
-                    <div className="grid grid-cols-4 text-xs">
-                        <Link href={route('dashboard')} className={`flex flex-col items-center py-3 ${route().current('dashboard') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
-                            <Gauge className="w-5 h-5" />
-                            <span>Home</span>
+                <nav className="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-700 lg:hidden shadow-lg">
+                    <div className="grid grid-cols-4 px-2 py-1">
+                        <Link href={route('dashboard')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 ${route().current('dashboard') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                            <Gauge className="w-5 h-5 mb-1" />
+                            <span className="text-xs font-medium">Home</span>
                         </Link>
-                        <Link href={route('orders.index')} className={`flex flex-col items-center py-3 ${route().current('orders.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
-                            <TbMenuOrder className="w-5 h-5" />
-                            <span>Pedidos</span>
+                        <Link href={route('orders.index')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 relative ${route().current('orders.*') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                            <ShoppingCart className="w-5 h-5 mb-1" />
+                            <span className="text-xs font-medium">Pedidos</span>
+                            {pendingOrdersCount > 0 && (
+                                <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                                    {pendingOrdersCount}
+                                </div>
+                            )}
                         </Link>
-                        <Link href={route('stock-movement.index')} className={`flex flex-col items-center py-3 ${route().current('stock-movement.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
-                            <TbArrowsRightLeft className="w-5 h-5" />
-                            <span>Estoque</span>
+                        <Link href={route('stock-movement.index')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 ${route().current('stock-movement.*') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                            <Boxes className="w-5 h-5 mb-1" />
+                            <span className="text-xs font-medium">Estoque</span>
                         </Link>
-                        <Link href={route('product-variant.index')} className={`flex flex-col items-center py-3 ${route().current('product-variant.*') || route().current('store-product-variant.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
-                            <CgProductHunt className="w-5 h-5" />
-                            <span>Produtos</span>
+                        <Link href={route('product-variant.index')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 ${route().current('product-variant.*') || route().current('store-product-variant.*') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                            <Package className="w-5 h-5 mb-1" />
+                            <span className="text-xs font-medium">Produtos</span>
                         </Link>
                     </div>
                 </nav>

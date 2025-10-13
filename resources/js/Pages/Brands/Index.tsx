@@ -6,7 +6,7 @@ import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus, MoreVertical } from 'lucide-react';
+import { Edit, Trash, Plus, Award, Star, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Brand } from '@/types/Brand';
@@ -68,86 +68,255 @@ export default function Index({
             user={auth.user}
             pendingOrdersCount={auth.pendingOrdersCount}
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Marcas
-                </h2>
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl">
+                            <Award className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                                Marcas
+                            </h1>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Gerencie as marcas dos produtos
+                            </p>
+                        </div>
+                    </div>
+                    {can('brands_create') && (
+                        <button
+                            onClick={() => openModal(null)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-sm font-medium rounded-lg shadow-lg hover:shadow-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-200"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Nova Marca
+                        </button>
+                    )}
+                </div>
             }
         >
             <Head title="Marcas" />
 
-            <section className='px-3 text-gray-800 dark:text-gray-200'>
-                <div className="max-w-5xl">
-                    <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1'>
-                        {brands?.data?.map((brand) => (
-                            <li key={brand.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800">
-                                <div className="flex items-center justify-between gap-2 relative p-2">
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <div className='min-w-0 flex-1'>
-                                            <div className="flex items-center gap-2">
-                                                <p className='font-semibold text-sm truncate'>{brand.name}</p>
-                                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${brand.status == 1 ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'}`}>
-                                                    {brand.status == 1 ? 'Ativo' : 'Inativo'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='flex flex-col gap-1 absolute top-1 right-1'>
-                                        {((can('brands_edit') && brand.user_id != null) || (can('brands_delete') && brand.user_id != null)) && (
-                                            <Dropdown>
-                                                <Dropdown.Trigger>
-                                                    <SecondaryButton size='sm' className='!px-2 !py-1' title='Ações'>
-                                                        <MoreVertical className='w-4 h-4' />
-                                                    </SecondaryButton>
-                                                </Dropdown.Trigger>
-                                                <Dropdown.Content align='right' width='48'>
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <div className="container mx-auto px-4 py-6 max-w-7xl">
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-2xl p-6 border border-orange-200 dark:border-orange-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-orange-900 dark:text-orange-200 uppercase tracking-wide">Total de Marcas</p>
+                                    <p className="text-2xl font-bold text-orange-900 dark:text-orange-100 mt-1">
+                                        {brands.meta.total}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-orange-500 rounded-lg">
+                                    <Award className="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-green-900 dark:text-green-200 uppercase tracking-wide">Marcas Ativas</p>
+                                    <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
+                                        {brands.data.filter(b => b.status === 1).length}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-green-500 rounded-lg">
+                                    <CheckCircle className="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-2xl p-6 border border-red-200 dark:border-red-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-red-900 dark:text-red-200 uppercase tracking-wide">Marcas Inativas</p>
+                                    <p className="text-2xl font-bold text-red-900 dark:text-red-100 mt-1">
+                                        {brands.data.filter(b => b.status === 0).length}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-red-500 rounded-lg">
+                                    <XCircle className="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Brands Grid */}
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Award className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        Lista de Marcas
+                                    </h3>
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    {brands.meta.total} marcas cadastradas
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-6">
+                            {brands?.data?.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {brands.data.map((brand) => (
+                                        <div key={brand.id} className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-200">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                    <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                                                        <span className="text-white font-semibold text-sm">
+                                                            {brand.name.charAt(0).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                                                            {brand.name}
+                                                        </h4>
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                            brand.status === 1 
+                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200' 
+                                                                : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200'
+                                                        }`}>
+                                                            {brand.status === 1 ? (
+                                                                <>
+                                                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                                                    Ativa
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <XCircle className="w-3 h-3 mr-1" />
+                                                                    Inativa
+                                                                </>
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex items-center gap-2">
                                                     {(can('brands_edit') && brand.user_id != null) && (
                                                         <button
-                                                            type='button'
                                                             onClick={() => openModal(brand)}
-                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 focus:outline-none'
+                                                            className="p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400 transition-colors"
+                                                            title="Editar marca"
                                                         >
-                                                            <span className='inline-flex items-center gap-2'>
-                                                                <Edit className='w-4 h-4' /> Editar
-                                                            </span>
+                                                            <Edit className="w-4 h-4" />
                                                         </button>
                                                     )}
                                                     {(can('brands_delete') && brand.user_id != null) && (
                                                         <button
-                                                            type='button'
                                                             onClick={() => confirmBrandDeletion(brand.id)}
-                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none'
+                                                            className="p-1.5 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-800 text-red-600 dark:text-red-400 transition-colors"
+                                                            title="Excluir marca"
                                                         >
-                                                            <span className='inline-flex items-center gap-2'>
-                                                                <Trash className='w-4 h-4' /> Excluir
-                                                            </span>
+                                                            <Trash className="w-4 h-4" />
                                                         </button>
                                                     )}
-                                                </Dropdown.Content>
-                                            </Dropdown>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                            <Award className="w-8 h-8 text-gray-400" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                                Nenhuma marca encontrada
+                                            </h3>
+                                            <p className="text-gray-500 dark:text-gray-400 text-sm">
+                                                Comece adicionando sua primeira marca.
+                                            </p>
+                                        </div>
+                                        {can('brands_create') && (
+                                            <button
+                                                onClick={() => openModal(null)}
+                                                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-sm font-medium rounded-lg shadow-lg hover:shadow-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-200"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                Adicionar Marca
+                                            </button>
                                         )}
                                     </div>
                                 </div>
-                            </li>
-                        ))}
-                    </ul>                    <Pagination links={links} />
-                    
-                    {brands?.data?.length === 0 && (
-                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                            Nenhuma marca cadastrada.
+                            )}
                         </div>
-                    )}
+
+                        {/* Pagination */}
+                        {brands?.data?.length > 0 && (
+                            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center justify-center">
+                                    <nav className="flex items-center gap-2">
+                                        {links?.map((link, index) => {
+                                            if (index === 0) {
+                                                return (
+                                                    <Link
+                                                        key={index}
+                                                        href={link.url || '#'}
+                                                        className={`p-2 rounded-lg border transition-colors ${
+                                                            link.url 
+                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
+                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                        }`}
+                                                    >
+                                                        <ChevronLeft className="w-4 h-4" />
+                                                    </Link>
+                                                );
+                                            }
+                                            
+                                            if (index === links.length - 1) {
+                                                return (
+                                                    <Link
+                                                        key={index}
+                                                        href={link.url || '#'}
+                                                        className={`p-2 rounded-lg border transition-colors ${
+                                                            link.url 
+                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
+                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                        }`}
+                                                    >
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </Link>
+                                                );
+                                            }
+                                            
+                                            return (
+                                                <Link
+                                                    key={index}
+                                                    href={link.url || '#'}
+                                                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                                                        link.active 
+                                                            ? 'border-orange-500 bg-orange-500 text-white' 
+                                                            : link.url 
+                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
+                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                    }`}
+                                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                                />
+                                            );
+                                        })}
+                                    </nav>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </section>
+            </div>
 
             <BrandFormModal isOpen={isOpen} onClose={() => setIsOpen(false)} brand={brandToEdit} />
 
             {can('brands_create') && (
                 <button
                     aria-label="Nova marca"
-                    className="fixed bottom-16 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                    className="fixed bottom-16 right-4 z-40 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white shadow-lg h-14 w-14 transition-all duration-200 hover:shadow-xl"
                     onClick={() => openModal(null)}
                 >
-                    <Plus className='w-6 h-6' />
+                    <Plus className="h-6 w-6" />
                 </button>
             )}
 

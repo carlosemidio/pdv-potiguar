@@ -5,7 +5,7 @@ import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Eye, Trash, Plus, MoreVertical } from 'lucide-react';
+import { Edit, Eye, Trash, Plus, Package2, Layers3, ChevronLeft, ChevronRight, Puzzle } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Addon } from '@/types/Addon';
@@ -67,130 +67,274 @@ export default function Index({
             user={auth.user}
             pendingOrdersCount={auth.pendingOrdersCount}
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Complementos
-                </h2>
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl">
+                            <Puzzle className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                                Complementos
+                            </h1>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Gerencie os complementos dos produtos
+                            </p>
+                        </div>
+                    </div>
+                    {can('addons_create') && (
+                        <button
+                            onClick={() => openModal(null)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white text-sm font-medium rounded-lg shadow-lg hover:shadow-xl hover:from-emerald-700 hover:to-emerald-800 transition-all duration-200"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Novo Complemento
+                        </button>
+                    )}
+                </div>
             }
         >
             <Head title="Complementos" />
 
-            <section className='px-3 text-gray-800 dark:text-gray-200'>
-                <div className="max-w-5xl">
-                    <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1'>
-                        {addons?.data?.map((addon) => (
-                            <li key={addon.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800">
-                                <div className="flex items-center justify-between gap-2 relative p-2">
-                                    {can('addons_view') ? (
-                                        <Link href={route('addons.show', { id: addon.id })} className="flex items-center gap-3 flex-1 min-w-0 rounded-md -m-1 p-1 hover:bg-gray-50 dark:hover:bg-gray-800">
-                                            <div className='min-w-0 flex-1'>
-                                                <p className='font-semibold text-sm truncate'>{addon.name}</p>
-                                                <div className='mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-gray-700 dark:text-gray-300'>
-                                                    {addon.addon_ingredients && addon.addon_ingredients.length > 0 ? (
-                                                        <>
-                                                            {addon.addon_ingredients.slice(0, 2).map((addonIngredient) => (
-                                                                <span key={addonIngredient.id} className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px]'>
-                                                                    {addonIngredient.ingredient?.name || '—'}
-                                                                </span>
-                                                            ))}
-                                                            {addon.addon_ingredients.length > 2 && (
-                                                                <span className='text-[10px] text-gray-500'>+{addon.addon_ingredients.length - 2} mais</span>
-                                                            )}
-                                                        </>
-                                                    ) : (
-                                                        <span className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'>Sem ingredientes</span>
-                                                    )}
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <div className="container mx-auto px-4 py-6 max-w-7xl">
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl p-6 border border-emerald-200 dark:border-emerald-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-emerald-900 dark:text-emerald-200 uppercase tracking-wide">Total de Complementos</p>
+                                    <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100 mt-1">
+                                        {addons.meta.total}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-emerald-500 rounded-lg">
+                                    <Puzzle className="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-blue-900 dark:text-blue-200 uppercase tracking-wide">Com Ingredientes</p>
+                                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
+                                        {addons.data.filter(a => a.addon_ingredients && a.addon_ingredients.length > 0).length}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-blue-500 rounded-lg">
+                                    <Package2 className="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-purple-900 dark:text-purple-200 uppercase tracking-wide">Sem Ingredientes</p>
+                                    <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 mt-1">
+                                        {addons.data.filter(a => !a.addon_ingredients || a.addon_ingredients.length === 0).length}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-purple-500 rounded-lg">
+                                    <Layers3 className="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Addons Grid */}
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Puzzle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        Lista de Complementos
+                                    </h3>
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    {addons.meta.total} complementos cadastrados
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-6">
+                            {addons?.data?.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {addons.data.map((addon) => (
+                                        <div key={addon.id} className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-200">
+                                            <div className="flex items-start justify-between mb-4">
+                                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                    <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center">
+                                                        <span className="text-white font-semibold text-sm">
+                                                            {addon.name.charAt(0).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                                                            {addon.name}
+                                                        </h4>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                            {addon.addon_ingredients && addon.addon_ingredients.length > 0 
+                                                                ? `${addon.addon_ingredients.length} ingrediente${addon.addon_ingredients.length > 1 ? 's' : ''}`
+                                                                : 'Sem ingredientes'
+                                                            }
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </Link>
-                                    ) : (
-                                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                                            <div className='min-w-0 flex-1'>
-                                                <p className='font-semibold text-sm truncate'>{addon.name}</p>
-                                                <div className='mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-gray-700 dark:text-gray-300'>
-                                                    {addon.addon_ingredients && addon.addon_ingredients.length > 0 ? (
-                                                        <>
-                                                            {addon.addon_ingredients.slice(0, 2).map((addonIngredient) => (
-                                                                <span key={addonIngredient.id} className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px]'>
-                                                                    {addonIngredient.ingredient?.name || '—'}
-                                                                </span>
-                                                            ))}
-                                                            {addon.addon_ingredients.length > 2 && (
-                                                                <span className='text-[10px] text-gray-500'>+{addon.addon_ingredients.length - 2} mais</span>
-                                                            )}
-                                                        </>
-                                                    ) : (
-                                                        <span className='px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'>Sem ingredientes</span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className='flex flex-col gap-1 absolute top-1 right-1'>
-                                        {(can('addons_view') || (can('addons_edit') && addon.user_id != null) || (can('addons_delete') && addon.user_id != null && typeof addon.id === 'number')) && (
-                                            <Dropdown>
-                                                <Dropdown.Trigger>
-                                                    <SecondaryButton size='sm' className='!px-2 !py-1' title='Ações'>
-                                                        <MoreVertical className='w-4 h-4' />
-                                                    </SecondaryButton>
-                                                </Dropdown.Trigger>
-                                                <Dropdown.Content align='right' width='48'>
+
+                                                <div className="flex items-center gap-2">
                                                     {can('addons_view') && (
-                                                        <Dropdown.Link href={route('addons.show', { id: addon.id })}>
-                                                            <span className='inline-flex items-center gap-2'>
-                                                                <Eye className='w-4 h-4' /> Ver detalhes
-                                                            </span>
-                                                        </Dropdown.Link>
+                                                        <Link
+                                                            href={route('addons.show', { id: addon.id })}
+                                                            className="p-1.5 rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/50 dark:hover:bg-green-800 text-green-600 dark:text-green-400 transition-colors"
+                                                            title="Ver detalhes"
+                                                        >
+                                                            <Eye className="w-4 h-4" />
+                                                        </Link>
                                                     )}
                                                     {(can('addons_edit') && addon.user_id != null) && (
                                                         <button
-                                                            type='button'
                                                             onClick={() => openModal(addon)}
-                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 focus:outline-none'
+                                                            className="p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400 transition-colors"
+                                                            title="Editar complemento"
                                                         >
-                                                            <span className='inline-flex items-center gap-2'>
-                                                                <Edit className='w-4 h-4' /> Editar
-                                                            </span>
+                                                            <Edit className="w-4 h-4" />
                                                         </button>
                                                     )}
                                                     {(can('addons_delete') && addon.user_id != null && typeof addon.id === 'number') && (
                                                         <button
-                                                            type='button'
                                                             onClick={() => confirmAddonDeletion(addon.id!)}
-                                                            className='block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none'
+                                                            className="p-1.5 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-800 text-red-600 dark:text-red-400 transition-colors"
+                                                            title="Excluir complemento"
                                                         >
-                                                            <span className='inline-flex items-center gap-2'>
-                                                                <Trash className='w-4 h-4' /> Excluir
-                                                            </span>
+                                                            <Trash className="w-4 h-4" />
                                                         </button>
                                                     )}
-                                                </Dropdown.Content>
-                                            </Dropdown>
+                                                </div>
+                                            </div>
+
+                                            {/* Ingredients List */}
+                                            {addon.addon_ingredients && addon.addon_ingredients.length > 0 && (
+                                                <div className="space-y-2">
+                                                    <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                                                        Ingredientes
+                                                    </h5>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {addon.addon_ingredients.slice(0, 3).map((addonIngredient) => (
+                                                            <span key={addonIngredient.id} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">
+                                                                {addonIngredient.ingredient?.name || '—'}
+                                                            </span>
+                                                        ))}
+                                                        {addon.addon_ingredients.length > 3 && (
+                                                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                                                                +{addon.addon_ingredients.length - 3} mais
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                            <Puzzle className="w-8 h-8 text-gray-400" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                                Nenhum complemento encontrado
+                                            </h3>
+                                            <p className="text-gray-500 dark:text-gray-400 text-sm">
+                                                Comece adicionando seu primeiro complemento.
+                                            </p>
+                                        </div>
+                                        {can('addons_create') && (
+                                            <button
+                                                onClick={() => openModal(null)}
+                                                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white text-sm font-medium rounded-lg shadow-lg hover:shadow-xl hover:from-emerald-700 hover:to-emerald-800 transition-all duration-200"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                Adicionar Complemento
+                                            </button>
                                         )}
                                     </div>
                                 </div>
-                            </li>
-                        ))}
-                    </ul>
-                    
-                    <Pagination links={links} />
-                    
-                    {addons?.data?.length === 0 && (
-                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                            Nenhum complemento cadastrado.
+                            )}
                         </div>
-                    )}
+
+                        {/* Pagination */}
+                        {addons?.data?.length > 0 && (
+                            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center justify-center">
+                                    <nav className="flex items-center gap-2">
+                                        {links?.map((link, index) => {
+                                            if (index === 0) {
+                                                return (
+                                                    <Link
+                                                        key={index}
+                                                        href={link.url || '#'}
+                                                        className={`p-2 rounded-lg border transition-colors ${
+                                                            link.url 
+                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
+                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                        }`}
+                                                    >
+                                                        <ChevronLeft className="w-4 h-4" />
+                                                    </Link>
+                                                );
+                                            }
+                                            
+                                            if (index === links.length - 1) {
+                                                return (
+                                                    <Link
+                                                        key={index}
+                                                        href={link.url || '#'}
+                                                        className={`p-2 rounded-lg border transition-colors ${
+                                                            link.url 
+                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
+                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                        }`}
+                                                    >
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </Link>
+                                                );
+                                            }
+                                            
+                                            return (
+                                                <Link
+                                                    key={index}
+                                                    href={link.url || '#'}
+                                                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                                                        link.active 
+                                                            ? 'border-emerald-500 bg-emerald-500 text-white' 
+                                                            : link.url 
+                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
+                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                    }`}
+                                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                                />
+                                            );
+                                        })}
+                                    </nav>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </section>
+            </div>
 
             <AddonFormModal isOpen={isOpen} onClose={() => setIsOpen(false)} addon={addonToEdit} />
 
             {can('addons_create') && (
                 <button
                     aria-label="Novo complemento"
-                    className="fixed bottom-16 right-4 z-40 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-12 w-12 md:h-14 md:w-14"
+                    className="fixed bottom-16 right-4 z-40 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-lg h-14 w-14 transition-all duration-200 hover:shadow-xl"
                     onClick={() => openModal(null)}
                 >
-                    <Plus className='w-6 h-6' />
+                    <Plus className="h-6 w-6" />
                 </button>
             )}
 

@@ -17,23 +17,23 @@ export default function NavLinkGroup({ title, icon, children, open }: NavLinkGro
     }
 
     return (
-        <div>
+        <div className="space-y-1">
             <button
                 onClick={toggle}
-                className="flex items-center justify-between w-full tracking-wide uppercase transition-all duration-150 ease-in-out py-3 px-3"
+                className="flex items-center justify-between w-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white px-3 py-2.5 rounded-lg transition-all duration-200 group"
             >
-                <div className="flex items-center gap-1 dark:text-gray-300">
+                <div className="flex items-center gap-3">
                     {icon}
-                    <span className="">{title}</span>
+                    <span>{title}</span>
                 </div>
                 <ChevronDown 
-                    className={`w-5 h-5 text-gray-400 transition-transform transform ${
+                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
                         isOpen ? 'rotate-180' : ''
                     }`} 
                 />
             </button>
             {isOpen && 
-                <div className="w-full flex flex-col gap-2 pl-4">
+                <div className="ml-6 space-y-1 border-l-2 border-gray-200 dark:border-gray-600 pl-4">
                     {children}
                 </div>
             }

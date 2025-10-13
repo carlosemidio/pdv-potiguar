@@ -118,7 +118,7 @@ class PrintJobsController extends Controller
                 'broadcast_driver' => config('broadcasting.default')
             ]);
 
-            event(new \App\Events\PrintOrderItems($orderItemsIds, $printer));
+            event(new \App\Events\PrintOrderItems($order->number, $orderItemsIds, $printer));
 
             Log::info('Evento PrintOrderItems disparado com sucesso');
             

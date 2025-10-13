@@ -161,7 +161,8 @@ class OrdersController extends Controller
         $order = $this->order->findOrFail($id);
         $this->authorize('view', $order);
 
-        $order->load(['store',
+        $order->load([
+            'store',
             'table',
             'customer',
             'payments',
@@ -172,6 +173,9 @@ class OrdersController extends Controller
             'items.storeProductVariant.comboItems.itemVariant.productVariant',
             'items.comboOptionItems.comboOptionItem.storeProductVariant.productVariant'
         ]);
+
+        // Ordenar items por id do maior para o menor
+        $order->setRelation('items', $order->items->sortByDesc('id')->values());
 
         // Gerar link do WhatsApp
         if ($order->customer && $order->customer->phone) {

@@ -19,7 +19,7 @@ export default function PrintOrderItemsFormModal({ isOpen, onClose, order, print
         order_id: number;
         order_items_ids: number[];
     }>({
-        printer_id: printers && printers.length > 0 ? printers[0].id.toString() : '',
+        printer_id: printers && (printers.length > 0) ? printers[0].id.toString() : '',
         order_id: order.id,
         order_items_ids: []
     });
@@ -29,7 +29,7 @@ export default function PrintOrderItemsFormModal({ isOpen, onClose, order, print
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        if (!selectedPrinter) {
+        if (data.printer_id === '') {
             Swal.fire({
                 icon: 'error',
                 title: 'Impressora não selecionada',
@@ -49,8 +49,9 @@ export default function PrintOrderItemsFormModal({ isOpen, onClose, order, print
             return;
         }
 
-        post(route('order.items.print', { orderId: order.id, printerId: selectedPrinter.id }), {
-            preserveScroll: true,
+        post(route('order.items.print', { orderId: order.id, printerId: data.printer_id }), {
+            preserveScroll: false,
+            preserveState: false,
             onSuccess: () => {
                 Swal.fire({
                     icon: 'success',
@@ -224,7 +225,7 @@ export default function PrintOrderItemsFormModal({ isOpen, onClose, order, print
                             
                             <button
                                 type="submit"
-                                disabled={processing || !selectedPrinter || data.order_items_ids.length === 0}
+                                disabled={processing || (data.printer_id === '' || data.order_items_ids.length === 0)}
                                 className="order-1 sm:order-2 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed transform hover:-translate-y-0.5"
                             >
                                 {processing ? (

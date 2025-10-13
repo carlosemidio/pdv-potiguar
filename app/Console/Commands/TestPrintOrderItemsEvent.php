@@ -54,7 +54,7 @@ class TestPrintOrderItemsEvent extends Command
         $this->info("Impressora: {$printer->name}");
 
         // Disparar o evento
-        event(new PrintOrderItems($orderItemsIds, $printer));
+        event(new PrintOrderItems($order->number, $orderItemsIds, $printer));
 
         $this->info('✅ Evento PrintOrderItems enviado com sucesso!');
         $this->info('📺 Verifique os logs em storage/logs/laravel.log');

@@ -6,8 +6,6 @@ use App\Http\Resources\OrderItemResumeResource;
 use App\Models\Printer;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -17,14 +15,15 @@ class PrintOrderItems implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    private $order_number;
     private array $orderItemsIds;
     private Printer $printer;
-    public $orderItems;
+    private $orderItems;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(array $orderItemsIds, Printer $printer)
+    public function __construct(int $orderNumber, array $orderItemsIds, Printer $printer)
     {
         $orderItems = \App\Models\OrderItem::whereIn('id', $orderItemsIds)
             ->with([
@@ -37,6 +36,7 @@ class PrintOrderItems implements ShouldBroadcastNow
             ])
         ->get();
 
+        $this->order_number = $orderNumber;
         $this->orderItems = OrderItemResumeResource::collection($orderItems);
         $this->printer = $printer;
         
@@ -76,6 +76,7 @@ class PrintOrderItems implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         $data = [
+            'order_number' => $this->order_number ?? null,
             'order_items' => $this->orderItems,
             'printer' => $this->printer,
             'timestamp' => now()->toISOString(),

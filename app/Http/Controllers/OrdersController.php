@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
-use App\Enums\StockMovementSubtype;
 use App\Http\Resources\OrderResource;
-use App\Http\Resources\OrderResumeResource;
+use App\Http\Resources\PrinterResource;
 use App\Http\Resources\TableResource;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\Printer;
 use App\Models\Table;
 use App\Models\User;
 use App\Services\OrderItemStockMovementService;
@@ -73,6 +73,8 @@ class OrdersController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(12)
             ->withQueryString();
+
+        $tables = [];
 
         if ($user->hasPermission('tables_view')) {
             $tables = Table::where('store_id', $user->store_id)->get();
@@ -187,11 +189,13 @@ class OrdersController extends Controller
                     $message .= "    Opções:\n";
 
                     foreach ($item->orderItemOptions as $option) {
-                    $message .= "      • {$option->quantity}x {$option->addonGroupOption->addon->name}";
-                    if ($option->unit_price > 0) {
-                        $message .= " + (R$ " . number_format($option->unit_price, 2, ',', '.') . ")";
-                    }
-                    $message .= "\n";
+                        $message .= "      • {$option->quantity}x {$option->addonGroupOption->addon->name}";
+                        
+                        if ($option->unit_price > 0) {
+                            $message .= " + (R$ " . number_format($option->unit_price, 2, ',', '.') . ")";
+                        }
+
+                        $message .= "\n";
                     }
                 }
 
@@ -207,7 +211,7 @@ class OrdersController extends Controller
                     $message .= "    Adicionais:\n";
 
                     foreach ($item->orderItemAddons as $addon) {
-                    $message .= "      • {$addon->quantity}x {$addon->variantAddon->addon->name} + (R$ " . number_format($addon->total_price, 2, ',', '.') . ")\n";
+                        $message .= "      • {$addon->quantity}x {$addon->variantAddon->addon->name} + (R$ " . number_format($addon->total_price, 2, ',', '.') . ")\n";
                     }
                 }
 
@@ -221,9 +225,17 @@ class OrdersController extends Controller
             $whatsappUrl = null;
         }
 
+        $printers = [];
+        $user = User::with('store')->find(Auth::id());
+        
+        if ($user->hasPermission('printers_view')) {
+            $printers = Printer::where('store_id', $user->store_id)->get();
+        }
+
         return Inertia::render('Orders/Show', [
             'order' => new OrderResource($order),
             'whatsappUrl' => $whatsappUrl,
+            'printers' => PrinterResource::collection($printers),
         ]);
     }
 

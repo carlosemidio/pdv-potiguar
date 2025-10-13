@@ -5,6 +5,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Order } from '@/types/Order';
+import { Printer } from '@/types/Printer';
 import OrderItemFormModal from '@/Components/OrderItemFormModal';
 import { useState } from 'react';
 import { OrderItem } from '@/types/OrderItem';
@@ -22,9 +23,10 @@ import PrintOrderItemsFormModal from '@/Components/PrintOrderItemsFormModal';
 export default function Index({
     auth,
     order,
+    printers,
     whatsappUrl
-}: PageProps<{ order?: { data: Order }, whatsappUrl?: string }>) {
-    const { delete: destroy, reset, patch } = useForm();
+}: PageProps<{ order?: { data: Order }, printers?: { data: Printer[] }, whatsappUrl?: string }>) {
+    const { delete: destroy, reset, patch, post } = useForm();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPaymentsModalOpen, setIsPaymentsModalOpen] = useState(false);
     const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
@@ -32,6 +34,64 @@ export default function Index({
     const [isPrintOrderItemsModalOpen, setIsPrintOrderItemsModalOpen] = useState(false);
 
     const orderCanBeModified = order?.data.status !== 'completed' && order?.data.status !== 'canceled';
+
+    // Função para impressão direta (quando há apenas uma impressora)
+    const printOrderDirectly = (printerId: number) => {
+        post(route('order.print', { orderId: order?.data.id, printerId: printerId }), {
+            preserveScroll: true,
+            onSuccess: () => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso',
+                    text: 'Pedido enviado para impressão.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            },
+            onError: () => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Houve um erro ao enviar o pedido para impressão.',
+                });
+            }
+        });
+    };
+
+    // Função para decidir se abre modal ou imprime diretamente
+    const handlePrintOrder = () => {
+        if (!printers || printers.data.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Nenhuma impressora',
+                text: 'Não há impressoras cadastradas para esta loja.',
+            });
+            return;
+        }
+
+        if (printers.data.length === 1) {
+            // Se há apenas uma impressora, imprime diretamente
+            printOrderDirectly(printers.data[0].id);
+        } else {
+            // Se há múltiplas impressoras, abre o modal de seleção
+            setIsPrintOrderModalOpen(true);
+        }
+    };
+
+    // Função para decidir se abre modal ou imprime itens diretamente
+    const handlePrintOrderItems = () => {
+        if (!printers || printers.data.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Nenhuma impressora',
+                text: 'Não há impressoras cadastradas para esta loja.',
+            });
+            return;
+        }
+
+        // Se há múltiplas impressoras, abre o modal de seleção
+        setIsPrintOrderItemsModalOpen(true)
+    };
 
     const handleDeleteItem = (item: OrderItem) => {
         Swal.fire({
@@ -621,14 +681,14 @@ export default function Index({
                                         </SecondaryButton>
                                     )}
 
-                                    <SecondaryButton onClick={() => setIsPrintOrderModalOpen(true)} className="inline-flex items-center gap-2 px-4 py-2.5">
+                                    <SecondaryButton onClick={handlePrintOrder} className="inline-flex items-center gap-2 px-4 py-2.5">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m10 0v1a3 3 0 01-3 3H8a3 3 0 01-3-3v-1m10 0H7m10-4H7m5 0V5a2 2 0 012-2h0a2 2 0 012 2v8z" />
                                         </svg>
                                         Imprimir Pedido
                                     </SecondaryButton>
 
-                                    <SecondaryButton onClick={() => setIsPrintOrderItemsModalOpen(true)} className="inline-flex items-center gap-2 px-4 py-2.5">
+                                    <SecondaryButton onClick={handlePrintOrderItems} className="inline-flex items-center gap-2 px-4 py-2.5">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m10 0v1a3 3 0 01-3 3H8a3 3 0 01-3-3v-1m10 0H7m10-4H7m5 0V5a2 2 0 012-2h0a2 2 0 012 2v8z" />
                                         </svg>
@@ -686,17 +746,23 @@ export default function Index({
                         order={order?.data ?? null}
                     />
 
-                    <PrintOrderFormModal
-                        isOpen={isPrintOrderModalOpen}
-                        onClose={() => setIsPrintOrderModalOpen(false)}
-                        order={order?.data as Order}
-                    />
+                    {printers && (printers.data as Printer[]).length > 0 && (
+                        <PrintOrderFormModal
+                            isOpen={isPrintOrderModalOpen}
+                            onClose={() => setIsPrintOrderModalOpen(false)}
+                            order={order?.data as Order}
+                            printers={printers.data as Printer[]}
+                        />
+                    )}
 
-                    <PrintOrderItemsFormModal
-                        isOpen={isPrintOrderItemsModalOpen}
-                        onClose={() => setIsPrintOrderItemsModalOpen(false)}
-                        order={order?.data as Order}
-                    />
+                    {printers && (printers.data as Printer[]).length > 0 && (
+                        <PrintOrderItemsFormModal
+                            isOpen={isPrintOrderItemsModalOpen}
+                            onClose={() => setIsPrintOrderItemsModalOpen(false)}
+                            order={order?.data as Order}
+                            printers={printers.data as Printer[]}
+                        />
+                    )}
                 </div>
             </section>
         </AuthenticatedLayout>

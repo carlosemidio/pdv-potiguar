@@ -7,6 +7,7 @@ use App\Models\Table;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class TablesController extends Controller
@@ -146,6 +147,43 @@ class TablesController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao remover mesa: ' . $e->getMessage());
+        }
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $data = $request->validate([
+            'status' => 'required|string|in:available,reserved'
+        ], [
+            'status.required' => 'O status é obrigatório.',
+            'status.in' => 'O status deve ser "available" ou "reserved".'
+        ]);
+
+        $table = $this->table->findOrFail($id);
+        $this->authorize('update', $table);
+
+        // Verifica se a mesa não está ocupada
+        if ($table->status === 'occupied') {
+            return redirect()->back()
+                ->with('fail', 'Não é possível alterar o status de uma mesa ocupada. A mesa será liberada automaticamente quando o pedido for finalizado.');
+        }
+
+        try {
+            if (!$table->update(['status' => $data['status']])) {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao atualizar status da mesa.');
+            }
+
+            $statusNames = [
+                'available' => 'Disponível',
+                'reserved' => 'Reservada'
+            ];
+
+            return redirect()->back()
+                ->with('success', "Status da mesa {$table->name} alterado para {$statusNames[$data['status']]} com sucesso!");
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao atualizar status da mesa: ' . $e->getMessage());
         }
     }
 }

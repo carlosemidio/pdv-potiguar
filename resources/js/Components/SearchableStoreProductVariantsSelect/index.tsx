@@ -1,11 +1,25 @@
 import { StoreProductVariant } from '@/types/StoreProductVariant';
 import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
+import { StylesConfig, GroupBase } from 'react-select';
 
 interface OptionType {
   value: string | number;
   label: string;
 }
+
+// Custom styles to fix z-index issues
+const customStyles: StylesConfig<OptionType, false, GroupBase<OptionType>> = {
+  menu: (provided) => ({
+    ...provided,
+    zIndex: 9999,
+    position: 'absolute',
+  }),
+  menuPortal: (provided) => ({
+    ...provided,
+    zIndex: 9999,
+  }),
+};
 
 type SearchableStoreProductVariantsSelectProps = {
   setVariant: (variant: StoreProductVariant | null) => void;
@@ -81,6 +95,10 @@ const SearchableStoreProductVariantsSelect: React.FC<SearchableStoreProductVaria
         value={selectedOption}
         isClearable
         isDisabled={isDisabled}
+        styles={customStyles}
+        menuPortalTarget={document.body}
+        menuPosition="fixed"
+        menuShouldScrollIntoView={false}
       />
     </div>
   );

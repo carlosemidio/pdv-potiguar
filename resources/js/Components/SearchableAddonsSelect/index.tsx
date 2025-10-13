@@ -1,12 +1,26 @@
 import { Addon } from '@/types/Addon';
 import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
+import { StylesConfig, GroupBase } from 'react-select';
 
 // Define the shape of the options
 interface OptionType {
   value: string | number;
   label: string;
 }
+
+// Custom styles to fix z-index issues
+const customStyles: StylesConfig<OptionType, false, GroupBase<OptionType>> = {
+  menu: (provided) => ({
+    ...provided,
+    zIndex: 9999,
+    position: 'absolute',
+  }),
+  menuPortal: (provided) => ({
+    ...provided,
+    zIndex: 9999,
+  }),
+};
 
 type SearchableAddonsSelectProps = {
   setAddon: (addon: Addon) => void;
@@ -76,6 +90,10 @@ const SearchableAddonsSelect: React.FC<SearchableAddonsSelectProps> = ({
         value={selectedOption}
         isClearable
         isDisabled={isDisabled}
+        styles={customStyles}
+        menuPortalTarget={document.body}
+        menuPosition="fixed"
+        menuShouldScrollIntoView={false}
       />
     </div>
   );

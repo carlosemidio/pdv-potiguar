@@ -19,7 +19,7 @@ import { PageProps } from '@/types';
 import { StoreProductVariant } from '@/types/StoreProductVariant';
 import { Unit } from '@/types/Unit';
 import { Head, Link } from '@inertiajs/react';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { PlusCircle, Trash2, Package, ArrowLeft, Info, Settings, Wrench, Plus, ChefHat, ListPlus } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Index({
@@ -61,414 +61,761 @@ export default function Index({
             user={auth.user}
             pendingOrdersCount={auth.pendingOrdersCount}
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    {variant?.product_variant?.name || 'N/A'}
-                </h2>
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
+                        <Package className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                            {variant?.product_variant?.name || 'Variante de Produto'}
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {variant?.product_variant?.sku && `SKU: ${variant.product_variant.sku}`}
+                        </p>
+                    </div>
+                </div>
             }
         >
             <Head title="Produtos" />
-            <section className='px-2 text-gray-800 dark:text-gray-200'>
+            <section className='px-2 text-gray-800 dark:text-gray-200 space-y-6'>
                 <div className="mx-auto">
-                    <div className="mb-4">
+                    {/* Botão Voltar */}
+                    <div className="flex items-center mb-6">
                         <Link href={route('store-product-variant.index')}>
-                            <SecondaryButton>Voltar</SecondaryButton>
+                            <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md">
+                                <ArrowLeft className="w-4 h-4" />
+                                Voltar
+                            </button>
                         </Link>
                     </div>
-                    <div className="mb-2 flex gap-2 border-b border-gray-200 dark:border-gray-700 text-xs">
-                        <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'detalhes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('detalhes')}>Detalhes</button>
-                        {variant?.is_combo ? (
-                            <>
-                                <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'opcoes-fixas' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('opcoes-fixas')}>Opções Fixas</button>
-                                <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'opcoes-variaveis' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('opcoes-variaveis')}>Opções Variáveis</button>
-                            </>
-                        ) : (
-                            <>
-                                <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'ingredientes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('ingredientes')}>Ingredientes</button>
-                                <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'grupos-de-opcoes' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('grupos-de-opcoes')}>Opções</button>
-                            </>
-                        )}
-                        <button className={`py-2 px-3 font-semibold rounded-t ${tab === 'complementos' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} onClick={() => setTab('complementos')}>Complementos</button>
-                    </div>
-                    <div className='grid grid-cols-1 gap-2 mt-2'>
-                        {tab === 'detalhes' && (
-                            <Card key={variant?.product_variant?.id} className="p-3 relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-                                <h3 className='text-base font-bold mb-2 text-blue-700 dark:text-blue-300'>Detalhes</h3>
-                                <div className="mb-2 text-xs">
-                                    <div>
-                                        <span className="block text-gray-500 dark:text-gray-400">Nome</span>
-                                        <span className="font-semibold">{variant?.product_variant?.name || 'N/A'}</span>
+
+                    {/* Navegação por Tabs Moderna */}
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div className="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                            <button 
+                                className={`flex items-center gap-2 py-4 px-6 font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+                                    tab === 'detalhes' 
+                                        ? 'bg-blue-500 text-white shadow-lg' 
+                                        : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                }`} 
+                                onClick={() => setTab('detalhes')}
+                            >
+                                <Info className="w-4 h-4" />
+                                Detalhes
+                            </button>
+                            {variant?.is_combo ? (
+                                <>
+                                    <button 
+                                        className={`flex items-center gap-2 py-4 px-6 font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+                                            tab === 'opcoes-fixas' 
+                                                ? 'bg-blue-500 text-white shadow-lg' 
+                                                : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                        }`} 
+                                        onClick={() => setTab('opcoes-fixas')}
+                                    >
+                                        <Settings className="w-4 h-4" />
+                                        Opções Fixas
+                                    </button>
+                                    <button 
+                                        className={`flex items-center gap-2 py-4 px-6 font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+                                            tab === 'opcoes-variaveis' 
+                                                ? 'bg-blue-500 text-white shadow-lg' 
+                                                : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                        }`} 
+                                        onClick={() => setTab('opcoes-variaveis')}
+                                    >
+                                        <Wrench className="w-4 h-4" />
+                                        Opções Variáveis
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button 
+                                        className={`flex items-center gap-2 py-4 px-6 font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+                                            tab === 'ingredientes' 
+                                                ? 'bg-blue-500 text-white shadow-lg' 
+                                                : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                        }`} 
+                                        onClick={() => setTab('ingredientes')}
+                                    >
+                                        <ChefHat className="w-4 h-4" />
+                                        Ingredientes
+                                    </button>
+                                    <button 
+                                        className={`flex items-center gap-2 py-4 px-6 font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+                                            tab === 'grupos-de-opcoes' 
+                                                ? 'bg-blue-500 text-white shadow-lg' 
+                                                : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                        }`} 
+                                        onClick={() => setTab('grupos-de-opcoes')}
+                                    >
+                                        <ListPlus className="w-4 h-4" />
+                                        Opções
+                                    </button>
+                                </>
+                            )}
+                            <button 
+                                className={`flex items-center gap-2 py-4 px-6 font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+                                    tab === 'complementos' 
+                                        ? 'bg-blue-500 text-white shadow-lg' 
+                                        : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                }`} 
+                                onClick={() => setTab('complementos')}
+                            >
+                                <Plus className="w-4 h-4" />
+                                Complementos
+                            </button>
+                        </div>
+                        {/* Conteúdo das Tabs */}
+                        <div className="p-6">
+                            {tab === 'detalhes' && (
+                                <div className="space-y-6">
+                                    {/* Informações Básicas */}
+                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border-l-4 border-blue-500">
+                                        <h3 className='text-xl font-bold mb-4 text-blue-700 dark:text-blue-300 flex items-center gap-2'>
+                                            <Info className="w-5 h-5" />
+                                            Informações Básicas
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                                                <span className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Nome do Produto</span>
+                                                <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{variant?.product_variant?.name || 'N/A'}</span>
+                                            </div>
+                                            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                                                <span className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">SKU</span>
+                                                <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{variant?.product_variant?.sku || 'N/A'}</span>
+                                            </div>
+                                            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                                                <span className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Categoria</span>
+                                                <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{variant?.product_variant?.product?.category?.name || 'N/A'}</span>
+                                            </div>
+                                            {variant?.product_variant?.product?.brand && (
+                                                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                                                    <span className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Marca</span>
+                                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{variant.product_variant.product.brand.name}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div>
-                                        <span className="text-gray-500 dark:text-gray-400">SKU: </span>
-                                        <span className="font-semibold">{variant?.product_variant?.sku || 'N/A'}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-gray-500 dark:text-gray-400">Categoria: </span>
-                                        <span>{variant?.product_variant?.product?.category?.name || 'N/A'}</span>
-                                    </div>
-                                    {variant?.product_variant?.product?.brand && (
-                                        <div>
-                                            <span className="text-gray-500 dark:text-gray-400">Marca: </span>
-                                            <span>{variant?.product_variant?.product?.brand?.name || 'N/A'}</span>
+
+                                    {/* Descrição */}
+                                    {variant?.product_variant?.product?.description && (
+                                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 border-l-4 border-purple-500">
+                                            <h3 className="text-xl font-bold mb-4 text-purple-700 dark:text-purple-300 flex items-center gap-2">
+                                                <Package className="w-5 h-5" />
+                                                Descrição do Produto
+                                            </h3>
+                                            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                                                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{
+                                                    __html: variant.product_variant.product.description
+                                                }} />
+                                            </div>
                                         </div>
                                     )}
-                                </div>
 
-                                <div className="mb-2">
-                                    <span className="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Descrição</span>
-                                    <div className="prose prose-xs dark:prose-invert max-w-none" dangerouslySetInnerHTML={{
-                                        __html: variant?.product_variant?.product?.description || ''
-                                    }} />
-                                </div>
-
-                                <div className="flex justify-start align-center gap-2 mb-2 w-full">
-                                    <div className="bg-blue-50 dark:bg-blue-900 rounded p-2 flex flex-col items-center justify-center max-w-[180px] w-1/2">
-                                        <span className="text-[10px] text-blue-700 dark:text-blue-300">Preço</span>
-                                        <span className="text-base font-bold text-blue-700 dark:text-blue-300">{variant?.price ? `R$ ${variant?.price}` : 'N/A'}</span>
-                                    </div>
-                                    <div className="bg-green-50 dark:bg-green-900 rounded p-2 flex flex-col items-center justify-center max-w-[180px] w-1/2">
-                                        <span className="text-[10px] text-green-700 dark:text-green-300">Estoque</span>
-                                        <span className="text-base font-bold text-green-700 dark:text-green-300">{variant?.stock_quantity !== null ? variant?.stock_quantity : 'N/A'}</span>
-                                    </div>
-                                </div>
-                                
-                                <div className="flex flex-col gap-0 mt-1">
-                                    <span className="block text-[10px] text-gray-500 dark:text-gray-400">Criado em</span>
-                                    <span className="text-xs text-gray-700 dark:text-gray-300">
-                                        {variant?.created_at
-                                            ? new Date(variant.created_at).toLocaleDateString('pt-BR', {
-                                                year: 'numeric',
-                                                month: '2-digit',
-                                                day: '2-digit',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })
-                                            : 'N/A'
-                                        }
-                                    </span>
-                                </div>
-                            </Card>
-                        )}
-
-                        {((tab === 'opcoes-fixas') && (variant?.is_combo)) && (
-                            <Card className="p-3 relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-                                <h3 className='text-lg font-bold mb-2 text-blue-700 dark:text-blue-300'>Opções Fixas</h3>
-                                {variant?.combo_items && variant.combo_items.length > 0 ? (
-                                    <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-base">
-                                        {variant.combo_items.map((option, idx) => (
-                                            <li key={idx} className="flex flex-row gap-4 justify-start">
-                                                <span className="font-semibold">{option.item_variant?.product_variant?.name || '-'}</span>
-                                                <span className="text-gray-500 dark:text-gray-400">Qtd: {option.quantity}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className='text-gray-500 dark:text-gray-400'>Nenhuma opção fixa cadastrada.</div>
-                                )}
-
-                                <div className="mt-3 flex justify-start items-center gap-2">
-                                    {variant?.combo_items && variant.combo_items.length > 0 && (
-                                        <SecondaryButton onClick={() => setIsComboItemDeleteModalOpen(true)}>
-                                            <Trash2 className="w-4 h-4 mr-1 inline text-red-700 dark:text-red-300" />
-                                            Remover
-                                        </SecondaryButton>
-                                    )}
-
-                                    <SecondaryButton onClick={() => setIsComboItemModalOpen(true)}>
-                                        <PlusCircle className="w-4 h-4 mr-1 inline text-blue-700 dark:text-blue-300" />
-                                    </SecondaryButton>
-                                </div>
-
-                                <ComboItemFormModal
-                                    isOpen={isComboItemModalOpen}
-                                    onClose={() => setIsComboItemModalOpen(false)}
-                                    sp_variant_id={variant?.id ?? 0}
-                                    quantity={1}
-                                />
-
-                                {variant?.combo_items && variant.combo_items.length > 0 && (
-                                    <ComboItemDeleteFormModal
-                                        isOpen={isComboItemDeleteModalOpen}
-                                        onClose={() => setIsComboItemDeleteModalOpen(false)}
-                                        comboItems={variant.combo_items}
-                                    />
-                                )}
-                            </Card>
-                        )}
-
-                        {((tab === 'opcoes-variaveis') && (variant?.is_combo)) && (
-                            <Card className="p-3 relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-                                <h3 className='text-lg font-bold mb-2 text-blue-700 dark:text-blue-300'>Opções Variáveis</h3>
-                                {variant?.combo_option_groups && variant.combo_option_groups.length > 0 ? (
-                                    <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-base">
-                                        {variant.combo_option_groups.map((optionGroup, idx) => (
-                                            <li key={idx} className="flex flex-col gap-1">
-                                                <span className="font-semibold">{optionGroup.name || '-'}</span>
-                                                <span className="text-gray-500 dark:text-gray-400 text-sm">
-                                                    Mínimo: {optionGroup.min_options} | Máximo: {optionGroup.max_options} | {optionGroup.is_required ? 'Obrigatório' : 'Opcional'}
-                                                </span>
-                                                <div className="flex flex-col gap-1 mt-1">
-                                                    {optionGroup.combo_option_items && optionGroup.combo_option_items.length > 0 ? (
-                                                        <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
-                                                            {optionGroup.combo_option_items.map((option, optionIdx) => (
-                                                                <li key={optionIdx} className="flex flex-row gap-4 justify-start">
-                                                                    <span className="font-semibold">{option.store_product_variant?.product_variant?.name + (option.additional_price && option.additional_price > 0 ? ` + (R$ ${option.additional_price})` : '') || '-'}</span>
-                                                                    <span className="text-gray-500 dark:text-gray-400">Qtd: {option.quantity}</span>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    ) : (
-                                                        <div className='text-gray-500 dark:text-gray-400 text-sm'>Nenhuma opção cadastrada.</div>
-                                                    )}
+                                    {/* Informações Comerciais */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="bg-gradient-to-br from-emerald-500 to-green-500 rounded-2xl p-6 text-white shadow-xl">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                                    <span className="text-2xl font-bold">R$</span>
                                                 </div>
+                                                <div>
+                                                    <span className="block text-sm opacity-90">Preço de Venda</span>
+                                                    <span className="text-2xl font-bold">{variant?.price ? `R$ ${Number(variant.price).toFixed(2).replace('.', ',')}` : 'N/A'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                                <div className="flex gap-2 mt-2 mb-3">
-                                                    <SecondaryButton
-                                                        className="flex items-center px-2 py-1 text-xs"
-                                                        onClick={() => (setIsComboOptionItemModalOpen(true), setComboOptionGroupId(optionGroup.id))}
+                                        <div className="bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl p-6 text-white shadow-xl">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                                    <Package className="w-6 h-6" />
+                                                </div>
+                                                <div>
+                                                    <span className="block text-sm opacity-90">Estoque Atual</span>
+                                                    <span className="text-2xl font-bold">{variant?.stock_quantity !== null ? variant.stock_quantity : 'N/A'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Informações de Criação */}
+                                    <div className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800/50 dark:to-slate-700/50 rounded-2xl p-6 border-l-4 border-gray-400">
+                                        <h3 className="text-lg font-bold mb-3 text-gray-700 dark:text-gray-300">Informações do Sistema</h3>
+                                        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                                            <span className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">Data de Criação</span>
+                                            <span className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                                                {variant?.created_at
+                                                    ? new Date(variant.created_at).toLocaleDateString('pt-BR', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: '2-digit',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })
+                                                    : 'N/A'
+                                                }
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {((tab === 'opcoes-fixas') && (variant?.is_combo)) && (
+                                <div className="space-y-6">
+                                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-2xl p-6 border-l-4 border-orange-500">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className='text-xl font-bold text-orange-700 dark:text-orange-300 flex items-center gap-2'>
+                                                <Settings className="w-5 h-5" />
+                                                Opções Fixas do Combo
+                                            </h3>
+                                            <div className="flex gap-2">
+                                                {variant?.combo_items && variant.combo_items.length > 0 && (
+                                                    <button 
+                                                        onClick={() => setIsComboItemDeleteModalOpen(true)}
+                                                        className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800/40 text-red-700 dark:text-red-300 rounded-xl font-medium transition-all duration-200"
                                                     >
-                                                        <PlusCircle className="w-4 h-4 mr-1 text-blue-700 dark:text-blue-300" />
-                                                        Add Item
-                                                    </SecondaryButton>
+                                                        <Trash2 className="w-4 h-4" />
+                                                        Remover
+                                                    </button>
+                                                )}
+                                                <button 
+                                                    onClick={() => setIsComboItemModalOpen(true)}
+                                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                                                >
+                                                    <PlusCircle className="w-4 h-4" />
+                                                    Adicionar Item
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                                    {optionGroup.combo_option_items && optionGroup.combo_option_items.length > 0 && (
-                                                        <>
-                                                            <SecondaryButton
-                                                                className="flex items-center px-2 py-1 text-xs"
-                                                                onClick={() => (setIsComboOptionItemDeleteModalOpen(true), setComboOptionGroupId(optionGroup.id))}
-                                                            >
-                                                                <Trash2 className="w-4 h-4 mr-1 text-red-700 dark:text-red-300" />
-                                                                Remover Item
-                                                            </SecondaryButton>
-                                                        </>
-                                                    )}
+                                        {variant?.combo_items && variant.combo_items.length > 0 ? (
+                                            <div className="grid gap-3">
+                                                {variant.combo_items.map((option, idx) => (
+                                                    <div key={idx} className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
+                                                                <Package className="w-5 h-5 text-white" />
+                                                            </div>
+                                                            <div>
+                                                                <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                                                                    {option.item_variant?.product_variant?.name || '-'}
+                                                                </h4>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    Item fixo do combo
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 rounded-full text-sm font-semibold">
+                                                                Qtd: {option.quantity}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="bg-white dark:bg-gray-800 rounded-xl p-8 border border-gray-200 dark:border-gray-700 text-center">
+                                                <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                                                <p className="text-gray-500 dark:text-gray-400 text-lg">Nenhuma opção fixa cadastrada</p>
+                                                <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Clique em "Adicionar Item" para começar</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <ComboItemFormModal
+                                        isOpen={isComboItemModalOpen}
+                                        onClose={() => setIsComboItemModalOpen(false)}
+                                        sp_variant_id={variant?.id ?? 0}
+                                        quantity={1}
+                                    />
+
+                                    {variant?.combo_items && variant.combo_items.length > 0 && (
+                                        <ComboItemDeleteFormModal
+                                            isOpen={isComboItemDeleteModalOpen}
+                                            onClose={() => setIsComboItemDeleteModalOpen(false)}
+                                            comboItems={variant.combo_items}
+                                        />
+                                    )}
+                                </div>
+                            )}
+
+                            {((tab === 'opcoes-variaveis') && (variant?.is_combo)) && (
+                                <div className="space-y-6">
+                                    <div className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-2xl p-6 border-l-4 border-teal-500">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="bg-teal-100 dark:bg-teal-800 p-2 rounded-lg">
+                                                    <Wrench className="w-6 h-6 text-teal-600 dark:text-teal-300" />
                                                 </div>
-                                            </li>
+                                                <div>
+                                                    <h3 className='text-xl font-bold text-teal-700 dark:text-teal-300'>
+                                                        Opções Variáveis do Combo
+                                                    </h3>
+                                                    <p className="text-sm text-teal-600 dark:text-teal-400">
+                                                        Configure grupos de opções que o cliente pode escolher
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => setIsComboOptionGroupModalOpen(true)}
+                                                className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-md hover:shadow-lg"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                <span>Novo Grupo</span>
+                                            </button>
+                                        </div>
+                                {variant?.combo_option_groups && variant.combo_option_groups.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {variant.combo_option_groups.map((optionGroup, idx) => (
+                                            <div key={idx} className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+                                                {/* Group Header */}
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className="bg-teal-100 dark:bg-teal-800 p-2 rounded-lg">
+                                                            <ListPlus className="w-5 h-5 text-teal-600 dark:text-teal-300" />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-bold text-gray-900 dark:text-white text-lg">
+                                                                {optionGroup.name || 'Grupo sem nome'}
+                                                            </h4>
+                                                            <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                                                                <span className="flex items-center space-x-1">
+                                                                    <span className="font-medium">Mín:</span>
+                                                                    <span className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                                                        {optionGroup.min_options}
+                                                                    </span>
+                                                                </span>
+                                                                <span className="flex items-center space-x-1">
+                                                                    <span className="font-medium">Máx:</span>
+                                                                    <span className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                                                        {optionGroup.max_options}
+                                                                    </span>
+                                                                </span>
+                                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                                    optionGroup.is_required 
+                                                                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' 
+                                                                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                                                }`}>
+                                                                    {optionGroup.is_required ? 'Obrigatório' : 'Opcional'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Group Items */}
+                                                {optionGroup.combo_option_items && optionGroup.combo_option_items.length > 0 ? (
+                                                    <div className="space-y-2 mb-4">
+                                                        {optionGroup.combo_option_items.map((option, optionIdx) => (
+                                                            <div key={optionIdx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                                                <div className="flex items-center space-x-3">
+                                                                    <div className="bg-white dark:bg-gray-600 p-2 rounded-lg">
+                                                                        <Package className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="font-semibold text-gray-900 dark:text-white">
+                                                                            {option.store_product_variant?.product_variant?.name || 'Item sem nome'}
+                                                                        </span>
+                                                                        {option.additional_price && option.additional_price > 0 && (
+                                                                            <span className="ml-2 text-green-600 dark:text-green-400 font-medium">
+                                                                                +R$ {parseFloat(String(option.additional_price)).toFixed(2)}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                                    <span className="bg-white dark:bg-gray-600 px-2 py-1 rounded">
+                                                                        Qtd: {option.quantity}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                                        <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                                        <p className="text-sm">Nenhum item neste grupo ainda</p>
+                                                        <p className="text-xs">Adicione itens para que os clientes possam escolher</p>
+                                                    </div>
+                                                )}
+
+                                                {/* Group Actions */}
+                                                <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-600">
+                                                    <div className="flex space-x-2">
+                                                        <button
+                                                            onClick={() => (setIsComboOptionItemModalOpen(true), setComboOptionGroupId(optionGroup.id))}
+                                                            className="bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-3 py-2 rounded-lg flex items-center space-x-2 text-sm transition-colors"
+                                                        >
+                                                            <Plus className="w-4 h-4" />
+                                                            <span>Adicionar Item</span>
+                                                        </button>
+                                                        
+                                                        {optionGroup.combo_option_items && optionGroup.combo_option_items.length > 0 && (
+                                                            <button
+                                                                onClick={() => (setIsComboOptionItemDeleteModalOpen(true), setComboOptionGroupId(optionGroup.id))}
+                                                                className="bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 px-3 py-2 rounded-lg flex items-center space-x-2 text-sm transition-colors"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                                <span>Remover Item</span>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {optionGroup.combo_option_items?.length || 0} item(ns)
+                                                    </div>
+                                                </div>
+                                            </div>
                                         ))}
-                                    </ul>
+                                    </div>
                                 ) : (
-                                    <div className='text-gray-500 dark:text-gray-400 text-base'>Nenhum grupo de opções variável cadastrado.</div>
+                                    <div className="text-center py-12">
+                                        <div className="bg-white dark:bg-gray-800 rounded-xl p-8 border-2 border-dashed border-gray-300 dark:border-gray-600">
+                                            <Wrench className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                                Nenhum grupo configurado
+                                            </h4>
+                                            <p className="text-gray-600 dark:text-gray-400 mb-4">
+                                                Crie grupos de opções para que seus clientes possam personalizar o combo
+                                            </p>
+                                            <button
+                                                onClick={() => setIsComboOptionGroupModalOpen(true)}
+                                                className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 mx-auto transition-all duration-200 shadow-md hover:shadow-lg"
+                                            >
+                                                <Plus className="w-5 h-5" />
+                                                <span>Criar Primeiro Grupo</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 )}
 
-                                <div className="mt-3 flex gap-2">
-                                    <SecondaryButton
-                                        className="flex items-center px-2 py-1 text-xs"
-                                        onClick={() => setIsComboOptionGroupModalOpen(true)}
-                                    >
-                                        <PlusCircle className="w-4 h-4 mr-1 text-blue-700 dark:text-blue-300" />
-                                        Add Grupo
-                                    </SecondaryButton>
+                                {/* Global Actions */}
+                                {variant?.combo_option_groups && variant.combo_option_groups.length > 0 && (
+                                    <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                                        <button
+                                            onClick={() => setIsComboOptionGroupDeleteModalOpen(true)}
+                                            className="bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg flex items-center space-x-2 text-sm transition-colors"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            <span>Remover Grupos</span>
+                                        </button>
+                                    </div>
+                                )}
+                                    </div>
 
-                                    {variant?.combo_option_groups && variant.combo_option_groups.length > 0 && (
+                                    {/* Modals */}
+                                    <ComboOptionGroupFormModal
+                                        isOpen={isComboOptionGroupModalOpen}
+                                        sp_variant_id={variant?.id ?? 0}
+                                        onClose={() => setIsComboOptionGroupModalOpen(false)}
+                                    />
+
+                                    <ComboOptionGroupDeleteFormModal
+                                        isOpen={isComboOptionGroupDeleteModalOpen}
+                                        onClose={() => setIsComboOptionGroupDeleteModalOpen(false)}
+                                        comboOptionGroups={variant?.combo_option_groups}
+                                    />
+
+                                    {comboOptionGroupId !== 0 && (
                                         <>
-                                            <SecondaryButton
-                                                className="flex items-center px-2 py-1 text-xs"
-                                                onClick={() => setIsComboOptionGroupDeleteModalOpen(true)}
-                                            >
-                                                <Trash2 className="w-4 h-4 mr-1 text-red-700 dark:text-red-300" />
-                                                Remover Grupo
-                                            </SecondaryButton>
+                                            <ComboOptionItemFormModal
+                                                isOpen={isComboOptionItemModalOpen}
+                                                onClose={() => setIsComboOptionItemModalOpen(false)}
+                                                option_group_id={comboOptionGroupId}
+                                            />
 
-                                            <ComboOptionGroupDeleteFormModal
-                                                isOpen={isComboOptionGroupDeleteModalOpen}
-                                                onClose={() => setIsComboOptionGroupDeleteModalOpen(false)}
-                                                comboOptionGroups={variant?.combo_option_groups}
+                                            <ComboOptionItemDeleteFormModal
+                                                isOpen={isComboOptionItemDeleteModalOpen}
+                                                onClose={() => setIsComboOptionItemDeleteModalOpen(false)}
+                                                comboOptionItems={(variant?.combo_option_groups ?? [])
+                                                    .find(group => group.id === comboOptionGroupId)
+                                                    ?.combo_option_items || []}
                                             />
                                         </>
                                     )}
                                 </div>
-
-                                <ComboOptionGroupFormModal
-                                    isOpen={isComboOptionGroupModalOpen}
-                                    sp_variant_id={variant?.id ?? 0}
-                                    onClose={() => setIsComboOptionGroupModalOpen(false)}
-                                />
-
-                                {comboOptionGroupId !== 0 && (
-                                    <>
-                                        <ComboOptionItemFormModal
-                                            isOpen={isComboOptionItemModalOpen}
-                                            onClose={() => setIsComboOptionItemModalOpen(false)}
-                                            option_group_id={comboOptionGroupId}
-                                        />
-
-                                        <ComboOptionItemDeleteFormModal
-                                            isOpen={isComboOptionItemDeleteModalOpen}
-                                            onClose={() => setIsComboOptionItemDeleteModalOpen(false)}
-                                            comboOptionItems={(variant?.combo_option_groups ?? [])
-                                                .find(group => group.id === comboOptionGroupId)
-                                                ?.combo_option_items || []}
-                                        />
-                                    </>
-                                )}
-                            </Card>
-                        )}
+                            )}
 
                         {((tab === 'ingredientes') && (!variant?.is_combo)) && (
-                            <Card className="p-3 relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-                                <h3 className='text-base font-bold mb-2 text-blue-700 dark:text-blue-300'>Ingredientes</h3>
-                                {variant?.variant_ingredients && variant.variant_ingredients.length > 0 ? (
-                                    <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
-                                        {variant.variant_ingredients.map((ingredient, idx) => (
-                                            <li key={idx} className="flex flex-row gap-4 justify-start">
-                                                <span className="font-semibold">{ingredient.ingredient?.name || '-'}</span>
-                                                <span className="text-gray-500 dark:text-gray-400">{ingredient.quantity}({ingredient.unit?.symbol || ''})</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className='text-gray-500 dark:text-gray-400'>Nenhum ingrediente cadastrado.</div>
-                                )}
-                                <div className="mt-3 flex justify-start items-center gap-2">
-                                    {variant?.variant_ingredients && variant.variant_ingredients.length > 0 && (
-                                        <SecondaryButton onClick={() => setIsIngredientDeleteModalOpen(true)}>
-                                            <Trash2 className="w-4 h-4 mr-1 inline text-red-700 dark:text-red-300" />
-                                            Remover
-                                        </SecondaryButton>
-                                    )}
+                            <div className="space-y-6">
+                                <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border-l-4 border-green-500">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className='text-xl font-bold text-green-700 dark:text-green-300 flex items-center gap-2'>
+                                            <ChefHat className="w-5 h-5" />
+                                            Ingredientes da Receita
+                                        </h3>
+                                        <div className="flex gap-2">
+                                            {variant?.variant_ingredients && variant.variant_ingredients.length > 0 && (
+                                                <button 
+                                                    onClick={() => setIsIngredientDeleteModalOpen(true)}
+                                                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800/40 text-red-700 dark:text-red-300 rounded-xl font-medium transition-all duration-200"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                    Remover
+                                                </button>
+                                            )}
+                                            <button 
+                                                onClick={() => setIsIngredientModalOpen(true)}
+                                                className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                                            >
+                                                <PlusCircle className="w-4 h-4" />
+                                                Adicionar Ingrediente
+                                            </button>
+                                        </div>
+                                    </div>
 
-                                    <SecondaryButton onClick={() => setIsIngredientModalOpen(true)}>
-                                        <PlusCircle className="w-4 h-4 mr-1 inline text-blue-700 dark:text-blue-300" />
-                                    </SecondaryButton>
+                                    {variant?.variant_ingredients && variant.variant_ingredients.length > 0 ? (
+                                        <div className="grid gap-3">
+                                            {variant.variant_ingredients.map((ingredient, idx) => (
+                                                <div key={idx} className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
+                                                            <ChefHat className="w-5 h-5 text-white" />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                                                                {ingredient.ingredient?.name || '-'}
+                                                            </h4>
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Ingrediente da receita
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full text-sm font-semibold">
+                                                            {ingredient.quantity} {ingredient.unit?.symbol || ''}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-white dark:bg-gray-800 rounded-xl p-8 border border-gray-200 dark:border-gray-700 text-center">
+                                            <ChefHat className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                                            <p className="text-gray-500 dark:text-gray-400 text-lg">Nenhum ingrediente cadastrado</p>
+                                            <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Clique em "Adicionar Ingrediente" para começar</p>
+                                        </div>
+                                    )}
                                 </div>
-                            </Card>
+                            </div>
                         )}
 
                         {((tab === 'grupos-de-opcoes') && (!variant?.is_combo)) && (
-                            <Card className="p-3 relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-                                <h3 className='text-lg font-bold mb-2 text-blue-700 dark:text-blue-300'>Grupos de Opções</h3>
-                                {variant?.variant_addon_groups && variant.variant_addon_groups.length > 0 ? (
-                                    <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-base">
-                                        {variant.variant_addon_groups.map((variantAddonGroup, idx) => {
-                                            const isOpen = openOptionGroupIdxs.includes(idx);
-                                            return (
-                                                <li key={idx} className="flex flex-col gap-1">
-                                                    <button
-                                                        className="flex justify-between items-center w-full py-2 px-2 rounded bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                                                        onClick={() => {
-                                                            setOpenOptionGroupIdxs(isOpen
-                                                                ? openOptionGroupIdxs.filter(i => i !== idx)
-                                                                : [...openOptionGroupIdxs, idx]
-                                                            );
-                                                        }}
-                                                        type="button"
-                                                    >
-                                                        <span className="font-semibold text-base">
-                                                            {variantAddonGroup.name || '-'} ({variantAddonGroup.is_required ? 'Obrigatório' : 'Opcional'})
-                                                        </span>
-                                                        <span className="ml-2 text-xs">{isOpen ? '▲' : '▼'}</span>
-                                                    </button>
-                                                    {isOpen && (
-                                                        <div className="mt-2">
-                                                            <span className="text-gray-500 dark:text-gray-400 text-sm">
-                                                                Mínimo: {variantAddonGroup.min_options} | Máximo: {variantAddonGroup.max_options}
-                                                            </span>
-                                                            <div className="flex flex-col gap-1 mt-1">
-                                                                {variantAddonGroup.addon_group_options && variantAddonGroup.addon_group_options.length > 0 ? (
-                                                                    <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
-                                                                        {variantAddonGroup.addon_group_options.map((option, optionIdx) => (
-                                                                            <li key={optionIdx} className="flex flex-row gap-4 justify-start">
-                                                                                <span className="font-semibold">{option.addon?.name || '-'}</span>
-                                                                                <span className="text-gray-500 dark:text-gray-400">Max: {option.quantity}</span>
-                                                                                <span className="text-gray-500 dark:text-gray-400">Add: R$ {option.additional_price || '0.00'}</span>
-                                                                            </li>
-                                                                        ))}
-                                                                    </ul>
-                                                                ) : (
-                                                                    <div className='text-gray-500 dark:text-gray-400 text-sm'>Nenhuma opção cadastrada.</div>
-                                                                )}
-                                                            </div>
+                            <div className="space-y-6">
+                                <div className="bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-2xl p-6 border-l-4 border-purple-500">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className='text-xl font-bold text-purple-700 dark:text-purple-300 flex items-center gap-2'>
+                                            <ListPlus className="w-5 h-5" />
+                                            Grupos de Opções
+                                        </h3>
+                                        <div className="flex gap-2">
+                                            {variant?.variant_addon_groups && variant.variant_addon_groups.length > 0 && (
+                                                <button 
+                                                    onClick={() => setIsOptionGroupDeleteModalOpen(true)}
+                                                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800/40 text-red-700 dark:text-red-300 rounded-xl font-medium transition-all duration-200"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                    Remover Grupo
+                                                </button>
+                                            )}
+                                            <button 
+                                                onClick={() => setIsOptionGroupModalOpen(true)}
+                                                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                                            >
+                                                <PlusCircle className="w-4 h-4" />
+                                                Adicionar Grupo
+                                            </button>
+                                        </div>
+                                    </div>
 
-                                                            <div className="flex gap-2 mt-2 mb-3">
-                                                                {variantAddonGroup.addon_group_options && variantAddonGroup.addon_group_options.length > 0 && (
-                                                                    <SecondaryButton
-                                                                        className="flex items-center px-2 py-1 text-xs"
+                                    {variant?.variant_addon_groups && variant.variant_addon_groups.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {variant.variant_addon_groups.map((variantAddonGroup, idx) => {
+                                                const isOpen = openOptionGroupIdxs.includes(idx);
+                                                return (
+                                                    <div key={idx} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                                        <button
+                                                            className="w-full p-4 flex justify-between items-center bg-gradient-to-r from-purple-100 to-violet-100 dark:from-purple-900/40 dark:to-violet-900/40 hover:from-purple-200 hover:to-violet-200 dark:hover:from-purple-800/60 dark:hover:to-violet-800/60 transition-all duration-200"
+                                                            onClick={() => {
+                                                                setOpenOptionGroupIdxs(isOpen
+                                                                    ? openOptionGroupIdxs.filter(i => i !== idx)
+                                                                    : [...openOptionGroupIdxs, idx]
+                                                                );
+                                                            }}
+                                                            type="button"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                                                                    <ListPlus className="w-4 h-4 text-white" />
+                                                                </div>
+                                                                <div className="text-left">
+                                                                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                                                                        {variantAddonGroup.name || '-'}
+                                                                    </h4>
+                                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                                        {variantAddonGroup.is_required ? 'Obrigatório' : 'Opcional'} • 
+                                                                        Min: {variantAddonGroup.min_options} • Max: {variantAddonGroup.max_options}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full">
+                                                                    {variantAddonGroup.addon_group_options?.length || 0} opções
+                                                                </span>
+                                                                <span className="text-purple-600 dark:text-purple-400 transform transition-transform duration-200" style={{
+                                                                    transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+                                                                }}>
+                                                                    ▼
+                                                                </span>
+                                                            </div>
+                                                        </button>
+                                                        
+                                                        {isOpen && (
+                                                            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                                                                {variantAddonGroup.addon_group_options && variantAddonGroup.addon_group_options.length > 0 ? (
+                                                                    <div className="space-y-3">
+                                                                        {variantAddonGroup.addon_group_options.map((option, optionIdx) => (
+                                                                            <div key={optionIdx} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 flex items-center justify-between">
+                                                                                <div className="flex items-center gap-3">
+                                                                                    <div className="w-6 h-6 bg-purple-400 rounded-full flex items-center justify-center">
+                                                                                        <Plus className="w-3 h-3 text-white" />
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <h5 className="font-medium text-gray-900 dark:text-gray-100">
+                                                                                            {option.addon?.name || '-'}
+                                                                                        </h5>
+                                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                                            Máximo: {option.quantity}
+                                                                                        </p>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div className="text-right">
+                                                                                    <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">
+                                                                                        + R$ {Number(option.additional_price || 0).toFixed(2).replace('.', ',')}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="text-center py-6">
+                                                                        <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                                                        <p className="text-gray-500 dark:text-gray-400">Nenhuma opção cadastrada</p>
+                                                                    </div>
+                                                                )}
+
+                                                                <div className="flex gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                                                    {variantAddonGroup.addon_group_options && variantAddonGroup.addon_group_options.length > 0 && (
+                                                                        <button
+                                                                            className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800/40 text-red-700 dark:text-red-300 rounded-lg text-xs font-medium transition-all duration-200"
+                                                                            onClick={() => {
+                                                                                setIsAddonGroupOptionsDeleteModalOpen(true);
+                                                                                setAddonGroupId(variantAddonGroup.id ?? null);
+                                                                            }}
+                                                                        >
+                                                                            <Trash2 className="w-3 h-3" />
+                                                                            Remover opção
+                                                                        </button>
+                                                                    )}
+
+                                                                    <button
+                                                                        className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-800/40 text-purple-700 dark:text-purple-300 rounded-lg text-xs font-medium transition-all duration-200"
                                                                         onClick={() => {
-                                                                            setIsAddonGroupOptionsDeleteModalOpen(true);
-                                                                            setAddonGroupId(variantAddonGroup.id ?? null);
+                                                                            setAddonGroupId(0);
+                                                                            setTimeout(() => {
+                                                                                setAddonGroupId(variantAddonGroup.id ?? null);
+                                                                                setIsAddonGroupOptionsModalOpen(true);
+                                                                            }, 100);
                                                                         }}
                                                                     >
-                                                                        <Trash2 className="w-4 h-4 mr-1 text-red-700 dark:text-red-300" />
-                                                                        Remover opção
-                                                                    </SecondaryButton>
-                                                                )}
-
-                                                                <SecondaryButton
-                                                                    className="flex items-center px-2 py-1 text-xs"
-                                                                    onClick={() => {
-                                                                        setAddonGroupId(0);
-                                                                        setTimeout(() => {
-                                                                            setAddonGroupId(variantAddonGroup.id ?? null);
-                                                                            setIsAddonGroupOptionsModalOpen(true);
-                                                                        }, 100);
-                                                                    }}
-                                                                >
-                                                                    <PlusCircle className="w-4 h-4 mr-1 text-blue-700 dark:text-blue-300" />
-                                                                    Add opção
-                                                                </SecondaryButton>
+                                                                        <PlusCircle className="w-3 h-3" />
+                                                                        Add opção
+                                                                    </button>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    )}
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                ) : (
-                                    <div className='text-gray-500 dark:text-gray-400 text-base'>Nenhum grupo de opções cadastrado.</div>
-                                )}
-
-                                <div className="mt-3 flex gap-2">
-                                    {variant?.variant_addon_groups && variant.variant_addon_groups.length > 0 && (
-                                        <SecondaryButton
-                                            className="flex items-center px-2 py-1 text-xs"
-                                            onClick={() => setIsOptionGroupDeleteModalOpen(true)}
-                                        >
-                                            <Trash2 className="w-4 h-4 mr-1 text-red-700 dark:text-red-300" />
-                                            Remover Grupo
-                                        </SecondaryButton>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-white dark:bg-gray-800 rounded-xl p-8 border border-gray-200 dark:border-gray-700 text-center">
+                                            <ListPlus className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                                            <p className="text-gray-500 dark:text-gray-400 text-lg">Nenhum grupo de opções cadastrado</p>
+                                            <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Clique em "Adicionar Grupo" para começar</p>
+                                        </div>
                                     )}
-
-                                    <SecondaryButton
-                                        className="flex items-center px-2 py-1 text-xs"
-                                        onClick={() => setIsOptionGroupModalOpen(true)}
-                                    >
-                                        <PlusCircle className="w-4 h-4 mr-1 text-blue-700 dark:text-blue-300" />
-                                        Add Grupo
-                                    </SecondaryButton>
                                 </div>
-                            </Card>
+                            </div>
                         )}
 
                         {tab === 'complementos' && (
-                            <Card className="p-3 relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-                                <h3 className='text-base font-bold mb-2 text-blue-700 dark:text-blue-300'>Complementos</h3>
-                                {variant?.variant_addons && variant.variant_addons.length > 0 ? (
-                                    <ul className="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
-                                        {variant.variant_addons.map((variantAddon, idx) => (
-                                            <li key={idx} className="flex flex-row gap-4 justify-start">
-                                                <span className="font-semibold">{variantAddon.addon?.name || '-'}</span>
-                                                <span className="text-gray-500 dark:text-gray-400">Qtd: {variantAddon.quantity}</span>
-                                                <span className="text-gray-500 dark:text-gray-400">Preço: R$ {variantAddon.price || '0.00'}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className='text-gray-500 dark:text-gray-400'>Nenhum complemento cadastrado.</div>
-                                )}
+                            <div className="space-y-6">
+                                <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl p-6 border-l-4 border-amber-500">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className='text-xl font-bold text-amber-700 dark:text-amber-300 flex items-center gap-2'>
+                                            <Plus className="w-5 h-5" />
+                                            Complementos Extras
+                                        </h3>
+                                        <div className="flex gap-2">
+                                            {variant?.variant_addons && variant.variant_addons.length > 0 && (
+                                                <button 
+                                                    onClick={() => setIsAddonDeleteModalOpen(true)}
+                                                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800/40 text-red-700 dark:text-red-300 rounded-xl font-medium transition-all duration-200"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                    Remover
+                                                </button>
+                                            )}
+                                            <button 
+                                                onClick={() => setIsAddonModalOpen(true)}
+                                                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                                            >
+                                                <PlusCircle className="w-4 h-4" />
+                                                Adicionar Complemento
+                                            </button>
+                                        </div>
+                                    </div>
 
-                                <div className="mt-3 flex justify-start items-center gap-2">
-                                    {variant?.variant_addons && variant.variant_addons.length > 0 && (
-                                        <SecondaryButton onClick={() => setIsAddonDeleteModalOpen(true)}>
-                                            <Trash2 className="w-4 h-4 mr-1 inline text-red-700 dark:text-red-300" />
-                                            Remover
-                                        </SecondaryButton>
+                                    {variant?.variant_addons && variant.variant_addons.length > 0 ? (
+                                        <div className="grid gap-3">
+                                            {variant.variant_addons.map((variantAddon, idx) => (
+                                                <div key={idx} className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
+                                                            <Plus className="w-5 h-5 text-white" />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                                                                {variantAddon.addon?.name || '-'}
+                                                            </h4>
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Complemento adicional
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right space-y-1">
+                                                        <div className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded-full text-sm font-semibold">
+                                                            Qtd: {variantAddon.quantity}
+                                                        </div>
+                                                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                            R$ {Number(variantAddon.price || 0).toFixed(2).replace('.', ',')}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-white dark:bg-gray-800 rounded-xl p-8 border border-gray-200 dark:border-gray-700 text-center">
+                                            <Plus className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                                            <p className="text-gray-500 dark:text-gray-400 text-lg">Nenhum complemento cadastrado</p>
+                                            <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Clique em "Adicionar Complemento" para começar</p>
+                                        </div>
                                     )}
-
-                                    <SecondaryButton onClick={() => setIsAddonModalOpen(true)}>
-                                        <PlusCircle className="w-4 h-4 mr-1 inline text-blue-700 dark:text-blue-300" />
-                                    </SecondaryButton>
                                 </div>
-                            </Card>
+                            </div>
                         )}
 
                         <VariantIngredientFormModal
@@ -534,9 +881,10 @@ export default function Index({
                                 variantAddons={variant.variant_addons}
                             />
                         )}
+                        </div>
                     </div>
                 </div>
             </section>
         </AuthenticatedLayout>
-    )
+    );
 }

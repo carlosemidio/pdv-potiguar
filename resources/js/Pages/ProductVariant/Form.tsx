@@ -1,7 +1,5 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -13,7 +11,6 @@ import { ProductVariant } from '@/types/ProductVariant';
 import SearchableProductsSelect from '@/Components/SearchableProductsSelect';
 import SearchableAttibutesSelect from '@/Components/SearchableAttributesSelect';
 import { Attribute } from '@/types/Attribute';
-import { MdCheckBox, MdDelete } from 'react-icons/md';
 import { FilePond, registerPlugin } from "react-filepond";
 import "filepond/dist/filepond.min.css";
 import { FilePondFile } from 'filepond'
@@ -149,7 +146,7 @@ export default function EditVariant({
 
                     <form onSubmit={submit} className="space-y-8">
                         {/* Seção: Informações Básicas */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
                             <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
                                 <div className="flex items-center gap-3">
                                     <Package className="w-5 h-5 text-white" />
@@ -191,7 +188,7 @@ export default function EditVariant({
                         </div>
 
                         {/* Seção: Atributos */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
                             <div className="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4">
                                 <div className="flex items-center gap-3">
                                     <Tag className="w-5 h-5 text-white" />
@@ -256,7 +253,7 @@ export default function EditVariant({
                         </div>
 
                         {/* Seção: Imagens */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
                             <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
                                 <div className="flex items-center gap-3">
                                     <Image className="w-5 h-5 text-white" />
@@ -274,7 +271,7 @@ export default function EditVariant({
                                         </h4>
                                         <div className="flex flex-wrap gap-4">
                                             <div className="relative group">
-                                                <div className="w-32 h-32 rounded-xl overflow-hidden border-2 border-yellow-200 dark:border-yellow-800">
+                                                <div className="w-32 h-32 rounded-xl border-2 border-yellow-200 dark:border-yellow-800">
                                                     <img 
                                                         src={productVariant.data.image.file_url} 
                                                         alt={productVariant.data.image.name} 
@@ -307,7 +304,7 @@ export default function EditVariant({
                                         <div className="flex flex-wrap gap-4">
                                             {productVariant.data.images.map((image, index) => (
                                                 <div key={index} className="relative group">
-                                                    <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
+                                                    <div className="w-32 h-32 rounded-xl border border-gray-200 dark:border-gray-600">
                                                         <img 
                                                             src={image.file_url} 
                                                             alt={image.name} 

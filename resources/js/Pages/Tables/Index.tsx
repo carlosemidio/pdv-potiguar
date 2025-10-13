@@ -1,11 +1,10 @@
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
-import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus, MoreVertical } from 'lucide-react';
+import { Head, useForm, router } from '@inertiajs/react';
+import { Edit, Trash, Plus, MoreVertical, RotateCcw, Clock, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import Pagination from '@/Components/Pagination/Pagination';
@@ -27,6 +26,28 @@ export default function Index({
         reset,
         clearErrors,
     } = useForm();
+
+    const { patch: updateStatus, processing: updatingStatus } = useForm();
+
+    const toggleTableStatus = (table: any) => {
+        const newStatus = table.status === 'available' ? 'reserved' : 'available';
+        
+        router.patch(route('tables.update-status', table.id), {
+            status: newStatus
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Toast de sucesso simples
+                const statusNames = {
+                    available: 'Disponível',
+                    reserved: 'Reservada'
+                };
+            },
+            onError: (errors: any) => {
+                console.error('❌ Erro ao alterar status:', errors);
+            }
+        });
+    };
 
     const confirmTableDeletion = (id: number) => {
         setTableIdToDelete(id);
@@ -172,40 +193,70 @@ export default function Index({
                                                     </div>
                                                 </div>
 
-                                                {/* Action Menu */}
+                                                {/* Action Buttons - Always Visible */}
                                                 {(can('tables_edit') || can('tables_delete')) && table.user_id != null && (
-                                                    <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                        <Dropdown>
-                                                            <Dropdown.Trigger>
-                                                                <button className="w-8 h-8 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center">
-                                                                    <MoreVertical className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                                                                </button>
-                                                            </Dropdown.Trigger>
-                                                            <Dropdown.Content align="right" width="48">
-                                                                {can('tables_edit') && table.user_id != null && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => handleOpenModalForEdit(table)}
-                                                                        className="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 focus:outline-none"
-                                                                    >
-                                                                        <span className="inline-flex items-center gap-2">
-                                                                            <Edit className="w-4 h-4" /> Editar
-                                                                        </span>
-                                                                    </button>
-                                                                )}
-                                                                {can('tables_delete') && table.user_id != null && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => confirmTableDeletion(table.id)}
-                                                                        className="block w-full px-4 py-2 text-start text-sm leading-5 text-red-600 hover:bg-red-50 dark:hover:bg-gray-800 focus:outline-none"
-                                                                    >
-                                                                        <span className="inline-flex items-center gap-2">
-                                                                            <Trash className="w-4 h-4" /> Excluir
-                                                                        </span>
-                                                                    </button>
-                                                                )}
-                                                            </Dropdown.Content>
-                                                        </Dropdown>
+                                                    <div className="absolute -top-2 -right-2 flex gap-1 z-50">
+                                                        {/* Status Toggle Button */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleTableStatus(table);
+                                                            }}
+                                                            disabled={table.status === 'occupied'}
+                                                            className={`w-8 h-8 ${
+                                                                table.status === 'available' 
+                                                                    ? 'bg-orange-600 hover:bg-orange-700' 
+                                                                    : table.status === 'occupied'
+                                                                    ? 'bg-gray-400 cursor-not-allowed'
+                                                                    : 'bg-green-600 hover:bg-green-700'
+                                                            } text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95`}
+                                                            title={
+                                                                table.status === 'occupied'
+                                                                    ? 'Mesa ocupada - não pode alterar'
+                                                                    : table.status === 'available'
+                                                                    ? 'Reservar mesa'
+                                                                    : 'Liberar reserva'
+                                                            }
+                                                        >
+                                                            {table.status === 'available' ? (
+                                                                <Clock className="w-4 h-4" />
+                                                            ) : table.status === 'occupied' ? (
+                                                                <MoreVertical className="w-4 h-4" />
+                                                            ) : (
+                                                                <CheckCircle className="w-4 h-4" />
+                                                            )}
+                                                        </button>
+                                                        
+                                                        {/* Edit Button */}
+                                                        {can('tables_edit') && table.user_id != null && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleOpenModalForEdit(table);
+                                                                }}
+                                                                className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
+                                                                title="Editar mesa"
+                                                            >
+                                                                <Edit className="w-4 h-4" />
+                                                            </button>
+                                                        )}
+                                                        
+                                                        {/* Delete Button */}
+                                                        {can('tables_delete') && table.user_id != null && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    confirmTableDeletion(table.id);
+                                                                }}
+                                                                className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
+                                                                title="Excluir mesa"
+                                                            >
+                                                                <Trash className="w-4 h-4" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>

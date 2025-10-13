@@ -27,6 +27,16 @@ const customStyles: StylesConfig<OptionType, false, GroupBase<OptionType>> = {
     ...provided,
     lineHeight: '38px', // Ensure single value aligns vertically
   }),
+  // Fix z-index and positioning for dropdown menu
+  menu: (provided) => ({
+    ...provided,
+    zIndex: 9999,
+    position: 'absolute',
+  }),
+  menuPortal: (provided) => ({
+    ...provided,
+    zIndex: 9999,
+  }),
 };
 
 interface OptionType {
@@ -99,6 +109,9 @@ const SearchableProductVariantsSelect: React.FC<SearchableProductVariantsSelectP
         isClearable
         isDisabled={isDisabled}
         styles={customStyles}
+        menuPortalTarget={document.body}
+        menuPosition="fixed"
+        menuShouldScrollIntoView={false}
       />
     </div>
   );

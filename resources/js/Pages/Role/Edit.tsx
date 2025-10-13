@@ -1,7 +1,6 @@
 import Checkbox from "@/Components/Checkbox";
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
-import PrimaryButton from "@/Components/PrimaryButton";
 import SecondaryButton from "@/Components/SecondaryButton";
 import TextInput from "@/Components/TextInput";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -36,7 +35,7 @@ export default function Edit({
         recentlySuccessful,
     } = useForm({
         name: role ? role.data.name : "",
-        display_name: role ? role.data.display_name : "",
+        slug: role ? role.data.slug : "",
         permissions: role
             ? role.data.permissions.map((permission) => ({
                   id: permission.id,
@@ -137,7 +136,7 @@ export default function Edit({
                             {isEdit ? 'Editar Função' : 'Nova Função'}
                         </h2>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            {isEdit ? `Modificar dados da função "${role.data.display_name}"` : 'Criar uma nova função no sistema'}
+                            {isEdit ? `Modificar dados da função "${role.data.slug}"` : 'Criar uma nova função no sistema'}
                         </p>
                     </div>
                 </div>
@@ -182,7 +181,7 @@ export default function Edit({
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2 mb-3">
                                         <Key className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                                        <InputLabel htmlFor="name" value="Código da Função" className="text-base font-semibold" />
+                                        <InputLabel htmlFor="name" value="Nome da Função" className="text-base font-semibold" />
                                     </div>
                                     
                                     <TextInput
@@ -193,12 +192,12 @@ export default function Edit({
                                         required
                                         isFocused
                                         autoComplete="name"
-                                        placeholder="ex: admin, manager, user"
+                                        placeholder="ex: Administrador, Gerente, Garçom, etc..."
                                     />
 
                                     <InputError className="mt-2 text-sm" message={errors.name} />
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        Use snake_case (ex: super_admin, store_manager)
+                                        Nome único
                                     </p>
                                 </div>
 
@@ -206,22 +205,22 @@ export default function Edit({
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2 mb-3">
                                         <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                                        <InputLabel htmlFor="display_name" value="Nome de Exibição" className="text-base font-semibold" />
+                                        <InputLabel htmlFor="slug" value="Slug" className="text-base font-semibold" />
                                     </div>
                                     
                                     <TextInput
-                                        id="display_name"
+                                        id="slug"
                                         className="mt-1 block w-full pl-4 pr-4 py-3 text-base rounded-xl border-gray-200 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-purple-500 dark:focus:ring-purple-400"
-                                        value={data.display_name}
-                                        onChange={(e) => setData("display_name", e.target.value)}
+                                        value={data.slug}
+                                        onChange={(e) => setData("slug", e.target.value)}
                                         required
-                                        autoComplete="display_name"
-                                        placeholder="ex: Administrador, Gerente, Usuário"
+                                        autoComplete="slug"
+                                        placeholder="ex: admin, manager, user"
                                     />
 
-                                    <InputError className="mt-2 text-sm" message={errors.display_name} />
+                                    <InputError className="mt-2 text-sm" message={errors.slug} />
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        Nome amigável que será exibido na interface
+                                        Use nomes em minúsculas e separados por barra (ex: store-manager, sales_rep)
                                     </p>
                                 </div>
                             </div>

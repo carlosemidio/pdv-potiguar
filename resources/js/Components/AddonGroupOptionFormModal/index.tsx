@@ -1,8 +1,6 @@
 import { Button } from "@headlessui/react";
-import { X } from "lucide-react";
+import { X, Plus, DollarSign, Save, Package } from "lucide-react";
 import Modal from "../Modal";
-import SecondaryButton from "../SecondaryButton";
-import PrimaryButton from "../PrimaryButton";
 import { useForm } from "@inertiajs/react";
 import { FormEventHandler, useState } from "react";
 import { Addon } from "@/types/Addon";
@@ -51,43 +49,96 @@ export default function AddonGroupOptionFormModal({
 
     return (
         <Modal show={isOpen} onClose={onClose}>
-            <div className="p-3">
-                <div className="flex justify-between">
-                    <p className="text-lg">Adicionar Opção</p>
-                    <Button onClick={onClose}>
-                        <X size={20} />
-                    </Button>
+            <div className="bg-white rounded-xl shadow-2xl overflow-hidden max-w-2xl w-full mx-4">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                            <div className="bg-white/20 p-2 rounded-lg">
+                                <Plus className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-white">
+                                    Adicionar Opção
+                                </h3>
+                                <p className="text-purple-100 text-sm">
+                                    Configure uma nova opção para o grupo
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            onClick={onClose}
+                            className="bg-white/20 hover:bg-white/30 p-2 rounded-lg transition-colors"
+                        >
+                            <X className="h-5 w-5 text-white" />
+                        </Button>
+                    </div>
                 </div>
-                <div className="mt-3">
-                    <div className="space-y-3">
-                        <form onSubmit={submit} className="space-y-4">
+
+                {/* Body */}
+                <div className="p-6 space-y-6">
+                    <form onSubmit={submit} className="space-y-6">
+                        {/* Seleção do Complemento */}
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center space-x-2 mb-3">
+                                <Package className="h-5 w-5 text-purple-600" />
+                                <h4 className="text-sm font-semibold text-gray-900">
+                                    Complemento
+                                </h4>
+                            </div>
                             <SearchableAddonsSelect
                                 selectedAddon={addon}
                                 setAddon={handleAddonChange}
                                 isDisabled={processing}
                             />
-                            <div>
-                                <label htmlFor="additional_price" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Preço adicional
-                                </label>
-                                <input
-                                    type="number"
-                                    id="additional_price"
-                                    min={0}
-                                    step={0.01}
-                                    className="mt-1 block w-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    value={data.additional_price}
-                                    onChange={(e) => setData('additional_price', e.target.value)}
-                                    required
-                                    disabled={processing}
-                                />
+                        </div>
+
+                        {/* Preço Adicional */}
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center space-x-2 mb-3">
+                                <DollarSign className="h-5 w-5 text-purple-600" />
+                                <h4 className="text-sm font-semibold text-gray-900">
+                                    Preço Adicional
+                                </h4>
                             </div>
-                            <div className="mt-3 flex justify-end items-center gap-2">
-                                <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>
-                                <PrimaryButton onClick={submit}>Salvar</PrimaryButton>
-                            </div>
-                        </form>
-                    </div>
+                            <input
+                                type="number"
+                                id="additional_price"
+                                min={0}
+                                step={0.01}
+                                value={data.additional_price}
+                                onChange={(e) => setData('additional_price', e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="Ex: 2.50"
+                                required
+                                disabled={processing}
+                            />
+                        </div>
+                    </form>
+                </div>
+
+                {/* Footer */}
+                <div className="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="button"
+                        onClick={submit}
+                        disabled={processing}
+                        className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                    >
+                        {processing ? (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                            <Save className="h-4 w-4" />
+                        )}
+                        <span>Salvar</span>
+                    </button>
                 </div>
             </div>
         </Modal>

@@ -1,7 +1,6 @@
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
-import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -162,32 +161,56 @@ export default function Index({
                             {addons?.data?.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {addons.data.map((addon) => (
-                                        <div key={addon.id} className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-200">
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                    <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center">
-                                                        <span className="text-white font-semibold text-sm">
-                                                            {addon.name.charAt(0).toUpperCase()}
-                                                        </span>
-                                                    </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <h4 className="font-semibold text-gray-900 dark:text-white truncate">
-                                                            {addon.name}
-                                                        </h4>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                            {addon.addon_ingredients && addon.addon_ingredients.length > 0 
-                                                                ? `${addon.addon_ingredients.length} ingrediente${addon.addon_ingredients.length > 1 ? 's' : ''}`
-                                                                : 'Sem ingredientes'
-                                                            }
-                                                        </p>
+                                        <div key={addon.id} className="group relative bg-gradient-to-br from-white via-purple-50 to-indigo-50 dark:from-gray-800 dark:via-purple-900/10 dark:to-indigo-900/10 rounded-2xl shadow-lg hover:shadow-2xl border border-purple-200 dark:border-purple-700/50 transition-all duration-300 hover:-translate-y-2 hover:rotate-1 overflow-hidden">
+                                            {/* Decoração de fundo */}
+                                            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-400/20 to-indigo-400/20 rounded-full transform translate-x-6 -translate-y-6"></div>
+                                            <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-indigo-400/10 to-purple-400/10 rounded-full transform -translate-x-4 translate-y-4"></div>
+                                            
+                                            <div className="p-6 relative">
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                                                            <span className="text-white font-bold text-lg">
+                                                                {addon.name.charAt(0).toUpperCase()}
+                                                            </span>
+                                                        </div>
+                                                        <div className="min-w-0 flex-1">
+                                                            <h4 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-200 truncate">
+                                                                {addon.name}
+                                                            </h4>
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                                                ID: #{addon.id}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-2">
+                                                {/* Informações dos Ingredientes */}
+                                                <div className="mb-4">
+                                                    <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-indigo-100 dark:from-purple-900/20 dark:to-indigo-800/20 rounded-xl border-l-4 border-purple-500">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                                                                <Package2 className="w-4 h-4 text-white" />
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-xs font-medium text-purple-700 dark:text-purple-300 block">Ingredientes</span>
+                                                                <span className="text-sm font-bold text-purple-800 dark:text-purple-200">
+                                                                    {addon.addon_ingredients && addon.addon_ingredients.length > 0 
+                                                                        ? `${addon.addon_ingredients.length} ingrediente${addon.addon_ingredients.length > 1 ? 's' : ''}`
+                                                                        : 'Sem ingredientes'
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Botões de Ação - Sempre Visíveis */}
+                                                <div className="absolute top-3 right-3 flex gap-1 z-50">
                                                     {can('addons_view') && (
                                                         <Link
                                                             href={route('addons.show', { id: addon.id })}
-                                                            className="p-1.5 rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/50 dark:hover:bg-green-800 text-green-600 dark:text-green-400 transition-colors"
+                                                            className="w-8 h-8 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
                                                             title="Ver detalhes"
                                                         >
                                                             <Eye className="w-4 h-4" />
@@ -196,7 +219,7 @@ export default function Index({
                                                     {(can('addons_edit') && addon.user_id != null) && (
                                                         <button
                                                             onClick={() => openModal(addon)}
-                                                            className="p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400 transition-colors"
+                                                            className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
                                                             title="Editar complemento"
                                                         >
                                                             <Edit className="w-4 h-4" />
@@ -205,35 +228,48 @@ export default function Index({
                                                     {(can('addons_delete') && addon.user_id != null && typeof addon.id === 'number') && (
                                                         <button
                                                             onClick={() => confirmAddonDeletion(addon.id!)}
-                                                            className="p-1.5 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-800 text-red-600 dark:text-red-400 transition-colors"
+                                                            className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
                                                             title="Excluir complemento"
                                                         >
                                                             <Trash className="w-4 h-4" />
                                                         </button>
                                                     )}
                                                 </div>
-                                            </div>
 
-                                            {/* Ingredients List */}
-                                            {addon.addon_ingredients && addon.addon_ingredients.length > 0 && (
-                                                <div className="space-y-2">
-                                                    <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                                                        Ingredientes
-                                                    </h5>
-                                                    <div className="flex flex-wrap gap-1">
-                                                        {addon.addon_ingredients.slice(0, 3).map((addonIngredient) => (
-                                                            <span key={addonIngredient.id} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">
-                                                                {addonIngredient.ingredient?.name || '—'}
-                                                            </span>
-                                                        ))}
-                                                        {addon.addon_ingredients.length > 3 && (
-                                                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
-                                                                +{addon.addon_ingredients.length - 3} mais
-                                                            </span>
-                                                        )}
+                                                {/* Lista de Ingredientes */}
+                                                {addon.addon_ingredients && addon.addon_ingredients.length > 0 && (
+                                                    <div className="space-y-2">
+                                                        <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide flex items-center gap-2">
+                                                            <Layers3 className="w-3 h-3" />
+                                                            Composição
+                                                        </h5>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {addon.addon_ingredients.slice(0, 3).map((addonIngredient) => (
+                                                                <span key={addonIngredient.id} className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-gradient-to-r from-emerald-100 to-green-200 dark:from-emerald-900/30 dark:to-green-800/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-700">
+                                                                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-2"></span>
+                                                                    {addonIngredient.ingredient?.name || '—'}
+                                                                </span>
+                                                            ))}
+                                                            {addon.addon_ingredients.length > 3 && (
+                                                                <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600">
+                                                                    +{addon.addon_ingredients.length - 3} mais
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
+                                                )}
+
+                                                {/* Data de criação */}
+                                                <div className="pt-3 border-t border-gray-100 dark:border-gray-600">
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        Criado em {addon.created_at ? new Date(addon.created_at).toLocaleDateString('pt-BR', { 
+                                                            day: '2-digit', 
+                                                            month: '2-digit', 
+                                                            year: 'numeric' 
+                                                        }) : '—'}
+                                                    </p>
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -342,7 +378,7 @@ export default function Index({
                 <Modal show={confirmingAddonDeletion} onClose={closeModal}>
                     <form onSubmit={(e) => { e.preventDefault(); deleteAddon(); }} className="p-6">
                         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                            Tem certeza que deseja deletar o complemento <span className="font-bold">{addonToDelete.name}</span>?
+                            Tem certeza que deseja deletar o complemento <span className="font-bold">{addonToDelete?.name}</span>?
                         </h2>
 
                         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">

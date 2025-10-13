@@ -1,13 +1,12 @@
 import DangerButton from "@/Components/DangerButton";
 import Modal from "@/Components/Modal";
 import SecondaryButton from "@/Components/SecondaryButton";
-import Dropdown from "@/Components/Dropdown";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
 import { Role } from "@/types/Role";
 import { can } from "@/utils/authorization";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { Edit, Eye, Trash, Plus, MoreVertical, Shield, Users, Key, Crown } from "lucide-react";
+import { Edit, Eye, Trash, Plus, Shield, Users, Key, Crown } from "lucide-react";
 import { useState } from "react";
 import { formatCustomDateTime } from "@/utils/date-format";
 
@@ -118,7 +117,7 @@ export default function Index({
                                                         </div>
                                                         <div className="flex-1">
                                                             <h4 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200 line-clamp-2">
-                                                                {role.display_name}
+                                                                {role.slug}
                                                             </h4>
                                                         </div>
                                                     </div>
@@ -222,7 +221,7 @@ export default function Index({
                                 Confirmar Exclusão
                             </h2>
                             <p className="text-gray-600 dark:text-gray-400">
-                                Tem certeza que deseja deletar a função <span className="font-bold text-red-600">{roleToDelete.display_name}</span>?
+                                Tem certeza que deseja deletar a função <span className="font-bold text-red-600">{roleToDelete.name}</span>?
                             </p>
                         </div>
 

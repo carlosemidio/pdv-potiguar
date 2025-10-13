@@ -1,13 +1,9 @@
-import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
-import PrimaryButton from '@/Components/PrimaryButton';
-import SecondaryButton from '@/Components/SecondaryButton';
-import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { User } from '@/types/User';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Edit, LogIn, ShieldCheck, ShieldX, Plus, MoreVertical } from 'lucide-react';
+import { Edit, LogIn, ShieldCheck, ShieldX, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import Pagination from '@/Components/Pagination/Pagination';

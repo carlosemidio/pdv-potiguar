@@ -65,8 +65,10 @@ class PrintersController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255|unique:printers,name,NULL,id,store_id,' . Auth::user()->store_id,
             'type' => 'nullable|string|max:255',
+            'product_name' => 'nullable|string|max:255',
             'vendor_id' => 'required|string|max:255|unique:printers,vendor_id,NULL,id,store_id,' . Auth::user()->store_id,
             'product_id' => 'required|string|max:255|unique:printers,product_id,NULL,id,store_id,' . Auth::user()->store_id,
+            'device_path' => 'nullable|string|max:255',
         ], [
             'name.unique' => 'Já existe uma impressora com esse nome, nessa loja.',
             'vendor_id.unique' => 'Já existe uma impressora com esse Vendor ID, nessa loja.',
@@ -102,8 +104,10 @@ class PrintersController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255|unique:printers,name,' . $printer->id . ',id,store_id,' . Auth::user()->store_id,
             'type' => 'nullable|string|max:255',
+            'product_name' => 'nullable|string|max:255',
             'vendor_id' => 'required|string|max:255|unique:printers,vendor_id,' . $printer->id . ',id,store_id,' . Auth::user()->store_id,
             'product_id' => 'required|string|max:255|unique:printers,product_id,' . $printer->id . ',id,store_id,' . Auth::user()->store_id,
+            'device_path' => 'nullable|string|max:255',
         ], [
             'name.unique' => 'Já existe uma impressora com esse nome, nessa loja.',
             'vendor_id.unique' => 'Já existe uma impressora com esse Vendor ID, nessa loja.',

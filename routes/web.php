@@ -143,6 +143,9 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/mesas', App\Http\Controllers\TablesController::class)
         ->names('tables');
+    
+    Route::patch('/mesas/{table}/status', [App\Http\Controllers\TablesController::class, 'updateStatus'])
+        ->name('tables.update-status');
 
     Route::resource('/clientes', CustomersController::class)
         ->names('customers');

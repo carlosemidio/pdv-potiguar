@@ -12,9 +12,8 @@ import { StoreProductVariant } from '@/types/StoreProductVariant';
 import { ProductVariant } from '@/types/ProductVariant';
 import SearchableProductVariantsSelect from '@/Components/SearchableProductVariantsSelect';
 import Checkbox from '@/Components/Checkbox';
-import { Unit } from '@/types/Unit';
 
-export default function Edit({ auth, storeProductVariant, units }: PageProps<{ storeProductVariant?: { data: StoreProductVariant }, units: { data: Unit[] } }>) {
+export default function Edit({ auth, storeProductVariant }: PageProps<{ storeProductVariant?: { data: StoreProductVariant } }>) {
     const isEdit = !!storeProductVariant;
     const { data, setData, post, errors, processing, recentlySuccessful } = useForm({
         _method: isEdit ? 'patch' : 'post',
@@ -68,8 +67,8 @@ export default function Edit({ auth, storeProductVariant, units }: PageProps<{ s
         >
             <Head title={isEdit ? 'Editar produto' : 'Criar produto'} />
             
-            <section className='px-2 text-gray-800 dark:text-gray-200'>
-                <div className="mx-auto">
+            <section className='px-2 text-gray-800 dark:text-gray-200 overflow-visible'>
+                <div className="mx-auto overflow-visible">
                     {/* Sticky header for mobile usability */}
                     <div className="sticky top-0 z-20 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-2 py-2 mb-2">
                         <Link href={route('store-product-variant.index')}>
@@ -82,8 +81,8 @@ export default function Edit({ auth, storeProductVariant, units }: PageProps<{ s
 
                     <form onSubmit={submit} className="space-y-6">
                         {/* Dados principais */}
-                        <div className="bg-white dark:bg-slate-800 border rounded p-4 space-y-4">
-                            <div>
+                        <div className="bg-white dark:bg-slate-800 border rounded p-4 space-y-4 overflow-visible">
+                            <div className="overflow-visible">
                                 <InputLabel htmlFor="product_variant_id" value="Variante" />
                                 <SearchableProductVariantsSelect
                                     selectedVariant={variant}

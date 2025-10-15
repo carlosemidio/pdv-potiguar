@@ -12,6 +12,8 @@ services:
         working_dir: /var/www
         volumes:
             - ./:/var/www
+        ports:
+            - "6001:6001"
         restart: unless-stopped
         depends_on:
             - mysql

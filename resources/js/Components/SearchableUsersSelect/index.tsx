@@ -1,4 +1,5 @@
 import { User } from '@/types/User';
+// Alternative import if alias doesn't work: import { User } from '../../types/User';
 import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 

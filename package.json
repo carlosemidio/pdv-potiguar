@@ -3,7 +3,9 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "tsc && vite build && vite build --ssr"
+        "build": "tsc && vite build && vite build --ssr",
+        "build:server": "tsc --project tsconfig.server.json && vite build --config vite.server.config.js && vite build --ssr --config vite.server.config.js",
+        "build:skip-types": "vite build && vite build --ssr"
     },
     "devDependencies": {
         "@headlessui/react": "^2.0.0",

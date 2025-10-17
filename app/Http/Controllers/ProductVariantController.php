@@ -150,18 +150,19 @@ class ProductVariantController extends Controller
                 // Handle variant images
                 if (isset($dataForm['files']) && is_array($dataForm['files']) && count($dataForm['files']) > 0) {
                     foreach ($dataForm['files'] as $file) {
-                        $filePath = Storage::disk('public')
-                            ->put('/products/variants/' . $productVariant->slug, $file);
+                        $uploadedFilePath = upload_file($file, '/products/variants/' . $productVariant->slug);
 
-                        $uploadedFile = new File([
-                            'user_id' => $request->user()->id,
-                            'name' => $file->getClientOriginalName(),
-                            'size' => $file->getSize(),
-                            'url' => $filePath,
-                            'extension' => $file->extension(),
-                        ]);
-                        
-                        $productVariant->images()->save($uploadedFile);
+                        if ($uploadedFilePath) {
+                            $uploadedFile = new File([
+                                'user_id' => $request->user()->id,
+                                'name' => $file->getClientOriginalName(),
+                                'url' => $uploadedFilePath,
+                                'size' => $file->getSize(),
+                                'extension' => $file->getClientOriginalExtension(),
+                            ]);
+                            
+                            $productVariant->images()->save($uploadedFile);
+                        }
                     }
                 }
 
@@ -266,18 +267,19 @@ class ProductVariantController extends Controller
                 // Handle variant images
                 if (isset($dataForm['files']) && is_array($dataForm['files']) && count($dataForm['files']) > 0) {
                     foreach ($dataForm['files'] as $file) {
-                        $filePath = Storage::disk('public')
-                            ->put('/products/variants/' . $productVariant->slug, $file);
+                        $uploadedFilePath = upload_file($file, '/products/variants/' . $productVariant->slug);
 
-                        $uploadedFile = new File([
-                            'user_id' => $request->user()->id,
-                            'name' => $file->getClientOriginalName(),
-                            'size' => $file->getSize(),
-                            'url' => $filePath,
-                            'extension' => $file->extension(),
-                        ]);
-                        
-                        $productVariant->images()->save($uploadedFile);
+                        if ($uploadedFilePath) {
+                            $uploadedFile = new File([
+                                'user_id' => $request->user()->id,
+                                'name' => $file->getClientOriginalName(),
+                                'url' => $uploadedFilePath,
+                                'size' => $file->getSize(),
+                                'extension' => $file->getClientOriginalExtension(),
+                            ]);
+                            
+                            $productVariant->images()->save($uploadedFile);
+                        }
                     }
                 }
 

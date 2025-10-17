@@ -77,18 +77,19 @@ class StoreController extends Controller
 
                 if ($dataForm['files']) {
                     foreach ($dataForm['files'] as $file) {
-                        $filePath = Storage::disk('public')
-                            ->put('/stores/' . $store->slug, $file);
-    
-                        $uploadedFile = new File([
-                            'user_id' => $request->user()->id,
-                            'name' => $file->getClientOriginalName(),
-                            'size' => $file->getSize(),
-                            'url' => $filePath,
-                            'extension' => $file->extension(),
-                        ]);
-                        
-                        $store->images()->save($uploadedFile);
+                        $uploadedFilePath = upload_file($file, '/stores/' . $store->slug);
+
+                        if ($uploadedFilePath) {
+                            $uploadedFile = new File([
+                                'user_id' => $request->user()->id,
+                                'name' => $file->getClientOriginalName(),
+                                'size' => $file->getSize(),
+                                'url' => $uploadedFilePath,
+                                'extension' => $file->extension(),
+                            ]);
+                            
+                            $store->images()->save($uploadedFile);   
+                        }
                     }
                 }
 
@@ -151,18 +152,19 @@ class StoreController extends Controller
 
             if ($dataForm['files']) {
                 foreach ($dataForm['files'] as $file) {
-                    $filePath = Storage::disk('public')
-                        ->put('/stores/' . $store->slug, $file);
+                    $uploadedFilePath = upload_file($file, '/stores/' . $store->slug);
 
-                    $uploadedFile = new File([
-                        'user_id' => $request->user()->id,
-                        'name' => $file->getClientOriginalName(),
-                        'size' => $file->getSize(),
-                        'url' => $filePath,
-                        'extension' => $file->extension(),
-                    ]);
-                    
-                    $store->images()->save($uploadedFile);
+                    if ($uploadedFilePath) {
+                        $uploadedFile = new File([
+                            'user_id' => $request->user()->id,
+                            'name' => $file->getClientOriginalName(),
+                            'size' => $file->getSize(),
+                            'url' => $uploadedFilePath,
+                            'extension' => $file->extension(),
+                        ]);
+                        
+                        $store->images()->save($uploadedFile);   
+                    }
                 }
             }
         

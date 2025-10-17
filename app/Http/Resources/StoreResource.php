@@ -14,6 +14,7 @@ class StoreResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
+            'uuid' => $this->uuid,
             'city_id' => $this->city_id,
             'city' => $this->whenLoaded('city', function () use ($statesCodes) {
                 return [

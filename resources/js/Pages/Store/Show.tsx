@@ -224,6 +224,32 @@ export default function Show({
                                 </div>
                             </div>
                             <div className="p-6 space-y-3">
+                                {/* copy uuid */}
+                                <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
+                                    <span className="text-xs text-gray-900 dark:text-white">
+                                        {store?.data?.uuid}
+                                    </span>
+                                    <span className="text-xs text-green-600 dark:text-green-400 font-medium hidden" id="copy-success">
+                                        Copiado!
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="ml-2 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                                        onClick={() => {
+                                            if (store?.data?.uuid) {
+                                                navigator.clipboard.writeText(store.data.uuid);
+                                                document.getElementById('copy-success')?.classList.remove('hidden');
+                                                setTimeout(() => {
+                                                    document.getElementById('copy-success')?.classList.add('hidden');
+                                                }, 5000);
+                                            }
+                                        }}
+                                        title="Copiar UUID"
+                                    >
+                                        Copiar
+                                    </button>
+                                </div>
+
                                 <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
                                     <span className="text-sm text-gray-600 dark:text-gray-400">Layout:</span>
                                     <span className="font-medium text-gray-900 dark:text-white capitalize">

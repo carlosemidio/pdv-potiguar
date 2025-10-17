@@ -157,7 +157,6 @@ export default function Index({
                                                 >
                                                     <span className="inline-flex items-center justify-center gap-2">
                                                         <Eye className="w-4 h-4" />
-                                                        Ver Detalhes
                                                     </span>
                                                 </Link>
                                             )}
@@ -168,7 +167,6 @@ export default function Index({
                                                 >
                                                     <span className="inline-flex items-center justify-center gap-2">
                                                         <Edit className="w-4 h-4" />
-                                                        Editar
                                                     </span>
                                                 </Link>
                                             )}
@@ -180,7 +178,6 @@ export default function Index({
                                                 >
                                                     <span className="inline-flex items-center justify-center gap-2">
                                                         <Trash className="w-4 h-4" />
-                                                        Excluir
                                                     </span>
                                                 </button>
                                             )}

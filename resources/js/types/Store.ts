@@ -5,6 +5,7 @@ import { User } from "./User";
 export type Store = {
     id: number;
     user_id: number;
+    uuid: string;
     user: User;
     city: City;
     image: Image | null;

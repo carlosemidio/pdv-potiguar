@@ -150,7 +150,7 @@ class ProductVariantController extends Controller
                 // Handle variant images
                 if (isset($dataForm['files']) && is_array($dataForm['files']) && count($dataForm['files']) > 0) {
                     foreach ($dataForm['files'] as $file) {
-                        $uploadedFilePath = upload_file($file, '/products/variants/' . $productVariant->slug);
+                        $uploadedFilePath = upload_file($file, '/products/variants/' . $productVariant->slug, true);
 
                         if ($uploadedFilePath) {
                             $uploadedFile = new File([
@@ -159,6 +159,7 @@ class ProductVariantController extends Controller
                                 'url' => $uploadedFilePath,
                                 'size' => $file->getSize(),
                                 'extension' => $file->getClientOriginalExtension(),
+                                'public' => true,
                             ]);
                             
                             $productVariant->images()->save($uploadedFile);
@@ -267,7 +268,7 @@ class ProductVariantController extends Controller
                 // Handle variant images
                 if (isset($dataForm['files']) && is_array($dataForm['files']) && count($dataForm['files']) > 0) {
                     foreach ($dataForm['files'] as $file) {
-                        $uploadedFilePath = upload_file($file, '/products/variants/' . $productVariant->slug);
+                        $uploadedFilePath = upload_file($file, '/products/variants/' . $productVariant->slug, true);
 
                         if ($uploadedFilePath) {
                             $uploadedFile = new File([
@@ -276,6 +277,7 @@ class ProductVariantController extends Controller
                                 'url' => $uploadedFilePath,
                                 'size' => $file->getSize(),
                                 'extension' => $file->getClientOriginalExtension(),
+                                'public' => true,
                             ]);
                             
                             $productVariant->images()->save($uploadedFile);

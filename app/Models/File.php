@@ -17,20 +17,33 @@ class File extends Model
      *
      * @var array
      */
-    protected $fillable = ['user_id', 'name', 'size', 'url', 'extension', 'is_default'];
+    protected $fillable = ['user_id', 'name', 'size', 'url', 'extension', 'is_default', 'public'];
 
     // Define the attributes to append to the JSON representation.
     protected $appends = ['file_url', 'image'];
 
-    // Define an accessor method to generate the file URL.
     public function getFileUrlAttribute()
     {
-        // return Storage::disk('spaces')->temporaryUrl($this->url, now()->addMinutes(60));
+        $disk = config('filesystems.disks.spaces.key') ? 'spaces' : 'public';
+
+        if ($disk === 'spaces') {
+            // Detecta se o arquivo é público ou privado
+            $isPublic = property_exists($this, 'public') && $this->public; // ou outro campo que você use
+
+            if ($isPublic) {
+                return Storage::disk('spaces')->url($this->url); // URL pública direta
+            }
+
+            // Arquivo privado → URL temporária
+            return Storage::disk('spaces')->temporaryUrl($this->url, now()->addMinutes(60));
+        }
+
+        // Local (sempre público via storage:link)
         if (Storage::disk('public')->exists($this->url)) {
             return asset('storage/' . $this->url);
         }
 
-        return $this->url;
+        return null;
     }
 
     // Define an accessor method to know if file is an image.

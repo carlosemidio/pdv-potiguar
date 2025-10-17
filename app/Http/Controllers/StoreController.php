@@ -77,7 +77,7 @@ class StoreController extends Controller
 
                 if ($dataForm['files']) {
                     foreach ($dataForm['files'] as $file) {
-                        $uploadedFilePath = upload_file($file, '/stores/' . $store->slug);
+                        $uploadedFilePath = upload_file($file, '/stores/' . $store->slug, true);
 
                         if ($uploadedFilePath) {
                             $uploadedFile = new File([
@@ -86,6 +86,7 @@ class StoreController extends Controller
                                 'size' => $file->getSize(),
                                 'url' => $uploadedFilePath,
                                 'extension' => $file->extension(),
+                                'public' => true,
                             ]);
                             
                             $store->images()->save($uploadedFile);   
@@ -152,7 +153,7 @@ class StoreController extends Controller
 
             if ($dataForm['files']) {
                 foreach ($dataForm['files'] as $file) {
-                    $uploadedFilePath = upload_file($file, '/stores/' . $store->slug);
+                    $uploadedFilePath = upload_file($file, '/stores/' . $store->slug, true);
 
                     if ($uploadedFilePath) {
                         $uploadedFile = new File([
@@ -161,6 +162,7 @@ class StoreController extends Controller
                             'size' => $file->getSize(),
                             'url' => $uploadedFilePath,
                             'extension' => $file->extension(),
+                            'public' => true,
                         ]);
                         
                         $store->images()->save($uploadedFile);   

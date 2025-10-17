@@ -3,6 +3,7 @@
 use App\Services\UnitService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 if (!function_exists('unit_convert')) {
     /**
@@ -21,43 +22,49 @@ if (!function_exists('unit_convert')) {
 
 if (!function_exists('upload_file')) {
     /**
-     * Helper para upload de arquivos
+     * Upload de arquivos para storage local ou DigitalOcean Spaces
      *
      * @param UploadedFile $file
-     * @param string $path
-     * @param string|null $fileName
-     * @return string
+     * @param string $path Caminho relativo dentro do storage ou bucket
+     * @param bool $public Define se o arquivo será público (default false)
+     * @return string Retorna o caminho relativo do arquivo
      * @throws \Exception
      */
-    function upload_file(UploadedFile $file, string $path, ?string $fileName = null): string
+    function upload_file(UploadedFile $file, string $path, bool $public = false): string
     {
-        // Define nome único para o arquivo
-        $fileName = $fileName ?? time() . '_' . $file->getClientOriginalName();
+        $fileName = Str::random(12) . '_' . $file->getClientOriginalName();
+        $fileName = preg_replace('/\s+/', '_', $fileName); // remove espaços
 
-        // Verifica se o disk 'spaces' está configurado
-        $useSpaces = config('filesystems.disks.spaces.key') &&
-            config('filesystems.disks.spaces.secret') &&
-            config('filesystems.disks.spaces.bucket') &&
-            config('filesystems.disks.spaces.folder');
+        $useSpaces = config('filesystems.disks.spaces.key')
+                  && config('filesystems.disks.spaces.secret')
+                  && config('filesystems.disks.spaces.bucket')
+                  && config('filesystems.disks.spaces.endpoint');
 
         if ($useSpaces) {
-            $folder = rtrim(config('filesystems.disks.spaces.folder'), '/');
-            $filePath = Storage::disk('spaces')->putFileAs($folder . '/' . trim($path, '/'), $file, $fileName);
-            
-            if (!$filePath) {
-                throw new \Exception('Erro ao enviar o arquivo para o bucket Spaces.');
+            $disk = Storage::disk('spaces');
+            $folder = trim(config('filesystems.disks.spaces.folder', ''), '/');
+            $fullPath = trim($path, '/');
+            $targetPath = $folder ? "$folder/$fullPath" : $fullPath;
+
+            // Aqui usamos put() para manter comportamento privado ou público
+            $storedPath = $disk->put("$targetPath/$fileName", file_get_contents($file));
+
+            if (!$storedPath) {
+                throw new \Exception('Erro ao salvar arquivo no bucket Spaces.');
             }
 
-            return Storage::disk('spaces')->url($filePath); // URL completa
+            return "$targetPath/$fileName"; // retorna caminho relativo
         }
 
-        // Upload para storage local
-        $filePath = Storage::disk('public')->putFileAs(trim($path, '/'), $file, $fileName);
+        // Caso local
+        $disk = Storage::disk('public');
+        $storedPath = $disk->put("$path/$fileName", file_get_contents($file));
 
-        if (!$filePath) {
-            throw new \Exception('Erro ao enviar o arquivo para o storage local.');
+        if (!$storedPath) {
+            throw new \Exception('Erro ao salvar arquivo no storage local.');
         }
 
-        return Storage::disk('public')->url($filePath); // URL completa
+        return "$path/$fileName"; // retorna caminho relativo
     }
 }
+

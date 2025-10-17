@@ -21,6 +21,7 @@ return new class extends Migration
                 $table->string('extension');
                 $table->bigInteger('size');
                 $table->boolean('is_default')->default(false);
+                $table->boolean('public')->default(false);
                 $table->softDeletes();
                 $table->timestamps();
             });

@@ -36,16 +36,16 @@ class AddonGroupOptionsController extends Controller
                     ->with('fail', 'Este complemento já está associado a este grupo, se deseja alterar a quantidade ou preço, remova e adicione novamente com os valores desejados.');
             }
 
-            if ($data['additional_price'] == null) {
-                unset($data['additional_price']);
+            if (!array_key_exists('additional_price', $data) || $data['additional_price'] === null) {
+                $updateData = [];
+            } else {
+                $updateData = ['additional_price' => $data['additional_price']];
             }
 
             $addonGroupOption = AddonGroupOption::withTrashed()->updateOrCreate([
                 'addon_group_id' => $data['addon_group_id'],
                 'addon_id' => $data['addon_id'],
-            ], [
-                'additional_price' => $data['additional_price'],
-            ]);
+            ], $updateData);
 
             if (!$addonGroupOption) {
                 return redirect()->back()

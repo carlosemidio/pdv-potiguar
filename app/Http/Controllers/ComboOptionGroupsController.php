@@ -26,17 +26,29 @@ class ComboOptionGroupsController extends Controller
             // Verificar se o grupo de opções já está associado à variante
             $existingComboOptionGroup = ComboOptionGroup::where('sp_variant_id', $data['sp_variant_id'])
                 ->where('name', $data['name'])
+                ->withTrashed()
                 ->first();
 
-            if ($existingComboOptionGroup) {
+            if (($existingComboOptionGroup instanceof ComboOptionGroup) && $existingComboOptionGroup->deleted_at === null) {
                 return redirect()->back()
                     ->with('fail', 'Este grupo de opções já está associado a esta variante, se deseja alterar os valores, remova o grupo e adicione novamente com os valores desejados.');
             }
 
-            $comboOptionGroup = ComboOptionGroup::create($data);
+            $comboOptionGroup = ComboOptionGroup::withTrashed()->updateOrCreate([
+                'sp_variant_id' => $data['sp_variant_id'],
+                'name' => $data['name'],
+            ], [
+                'min_options' => $data['min_options'],
+                'max_options' => $data['max_options'],
+                'is_required' => $data['is_required'],
+            ]);
 
             if (!$comboOptionGroup) {
                 return redirect()->back()->with('fail', 'Erro ao adicionar grupo de opções à variante.');
+            }
+
+            if ($comboOptionGroup->trashed()) {
+                $comboOptionGroup->restore();
             }
 
             return redirect()->back()

@@ -27,16 +27,26 @@ class AddonIngredientsController extends Controller
                 ->where('ingredient_id', $data['ingredient_id'])
                 ->first();
 
-            if ($existingIngredient) {
+            if (($existingIngredient instanceof AddonIngredient) && $existingIngredient->deleted_at === null) {
                 return redirect()->back()
                     ->with('fail', 'Este ingrediente já está associado a este complemento, se deseja alterar a quantidade, remova o ingrediente e adicione novamente com a quantidade desejada.');
             }
 
-            $addonIngredient = AddonIngredient::create($data);
+            $addonIngredient = AddonIngredient::withTrashed()->updateOrCreate([
+                'addon_id' => $data['addon_id'],
+                'ingredient_id' => $data['ingredient_id'],
+            ], [
+                'unit_id' => $data['unit_id'],
+                'quantity' => $data['quantity'],
+            ]);
 
             if (!$addonIngredient) {
                 return redirect()->back()
                     ->with('fail', 'Erro ao adicionar ingrediente ao complemento.');
+            }
+
+            if ($addonIngredient->trashed()) {
+                $addonIngredient->restore();
             }
 
             return redirect()->back()

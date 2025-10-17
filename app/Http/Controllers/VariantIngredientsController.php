@@ -27,16 +27,26 @@ class VariantIngredientsController extends Controller
                 ->where('ingredient_id', $data['ingredient_id'])
                 ->first();
 
-            if ($existingIngredient) {
+            if (($existingIngredient instanceof VariantIngredient) && $existingIngredient->deleted_at === null) {
                 return redirect()->back()
                     ->with('fail', 'Este ingrediente já está associado a esta variante, se deseja alterar a quantidade, remova o ingrediente e adicione novamente com a quantidade desejada.');
             }
 
-            $variantIngredient = VariantIngredient::create($data);
+            $variantIngredient = VariantIngredient::withTrashed()->updateOrCreate([
+                'sp_variant_id' => $data['sp_variant_id'],
+                'ingredient_id' => $data['ingredient_id'],
+            ], [
+                'unit_id' => $data['unit_id'],
+                'quantity' => $data['quantity'],
+            ]);
 
             if (!$variantIngredient) {
                 return redirect()->back()
                     ->with('fail', 'Erro ao adicionar ingrediente à variante.');
+            }
+
+            if ($variantIngredient->trashed()) {
+                $variantIngredient->restore();
             }
 
             return redirect()->back()

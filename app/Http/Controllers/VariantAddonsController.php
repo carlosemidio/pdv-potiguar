@@ -27,16 +27,26 @@ class VariantAddonsController extends Controller
                 ->where('addon_id', $data['addon_id'])
                 ->first();
 
-            if ($existingAddon) {
+            if (($existingAddon instanceof VariantAddon) && $existingAddon->deleted_at === null) {
                 return redirect()->back()
                     ->with('fail', 'Este complemento já está associado a esta variante, se deseja alterar a quantidade ou preço, remova o complemento e adicione novamente com os valores desejados.');
             }
 
-            $variantAddon = VariantAddon::create($data);
+            $variantAddon = VariantAddon::withTrashed()->updateOrCreate([
+                'sp_variant_id' => $data['sp_variant_id'],
+                'addon_id' => $data['addon_id'],
+            ], [
+                'quantity' => $data['quantity'],
+                'price' => $data['price'],
+            ]);
 
             if (!$variantAddon) {
                 return redirect()->back()
                     ->with('fail', 'Erro ao adicionar complemento à variante.');
+            }
+
+            if ($variantAddon->trashed()) {
+                $variantAddon->restore();
             }
 
             return redirect()->back()

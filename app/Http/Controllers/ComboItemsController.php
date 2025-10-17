@@ -26,15 +26,27 @@ class ComboItemsController extends Controller
                 ->where('item_variant_id', $data['item_variant_id'])
                 ->first();
 
-            if ($existingComboItem) {
+            if (($existingComboItem instanceof ComboItem) && $existingComboItem->deleted_at === null) {
                 return redirect()->back()
                     ->with('fail', 'Este item já está associado a esta variante, se deseja alterar a quantidade, remova o item e adicione novamente com os valores desejados.');
             }
 
-            $comboItem = ComboItem::create($data);
+            $comboItem = ComboItem::withTrashed()->updateOrCreate(
+                [
+                    'sp_variant_id' => $data['sp_variant_id'],
+                    'item_variant_id' => $data['item_variant_id'],
+                ],
+                [
+                    'quantity' => $data['quantity']
+                ]
+            );
 
             if (!$comboItem) {
                 return redirect()->back()->with('fail', 'Erro ao adicionar item à variante.');
+            }
+
+            if ($comboItem->trashed()) {
+                $comboItem->restore();
             }
 
             return redirect()->back()

@@ -28,16 +28,27 @@ class VariantAddonGroupsController extends Controller
                 ->where('name', $data['name'])
                 ->first();
 
-            if ($existingGroup) {
+            if (($existingGroup instanceof VariantAddonGroup) && $existingGroup->deleted_at === null) {
                 return redirect()->back()
                     ->with('fail', 'Já existe um grupo de complementos com este nome para esta variante.');
             }
 
-            $variantAddonGroup = VariantAddonGroup::create($data);
+            $variantAddonGroup = VariantAddonGroup::withTrashed()->updateOrCreate([
+                'sp_variant_id' => $data['sp_variant_id'],
+                'name' => $data['name'],
+            ], [
+                'is_required' => $data['is_required'],
+                'min_options' => $data['min_options'],
+                'max_options' => $data['max_options'],
+            ]);
 
             if (!$variantAddonGroup) {
                 return redirect()->back()
                     ->with('fail', 'Erro ao adicionar grupo de complementos à variante.');
+            }
+
+            if ($variantAddonGroup->trashed()) {
+                $variantAddonGroup->restore();
             }
 
             return redirect()->back()

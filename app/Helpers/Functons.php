@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\UnitService;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 if (!function_exists('unit_convert')) {
@@ -22,21 +23,41 @@ if (!function_exists('upload_file')) {
     /**
      * Helper para upload de arquivos
      *
-     * @param \Illuminate\Http\UploadedFile $file
+     * @param UploadedFile $file
      * @param string $path
+     * @param string|null $fileName
      * @return string
+     * @throws \Exception
      */
-    function upload_file($file, string $path): string
+    function upload_file(UploadedFile $file, string $path, ?string $fileName = null): string
     {
-        $filePath = '';
+        // Define nome único para o arquivo
+        $fileName = $fileName ?? time() . '_' . $file->getClientOriginalName();
 
-        if (env('DO_ACCESS_KEY_ID') && env('DO_SECRET_ACCESS_KEY') && env('DO_DEFAULT_REGION') && env('DO_BUCKET') && env('DO_FOLDER')) {
-            $filePath = Storage::disk('spaces')->put(env('DO_FOLDER'), $file);
-        } else {
-            $filePath = Storage::disk('public')
-                ->put($path, $file);
+        // Verifica se o disk 'spaces' está configurado
+        $useSpaces = config('filesystems.disks.spaces.key') &&
+            config('filesystems.disks.spaces.secret') &&
+            config('filesystems.disks.spaces.bucket') &&
+            config('filesystems.disks.spaces.folder');
+
+        if ($useSpaces) {
+            $folder = rtrim(config('filesystems.disks.spaces.folder'), '/');
+            $filePath = Storage::disk('spaces')->putFileAs($folder . '/' . trim($path, '/'), $file, $fileName);
+            
+            if (!$filePath) {
+                throw new \Exception('Erro ao enviar o arquivo para o bucket Spaces.');
+            }
+
+            return Storage::disk('spaces')->url($filePath); // URL completa
         }
 
-        return $filePath;
+        // Upload para storage local
+        $filePath = Storage::disk('public')->putFileAs(trim($path, '/'), $file, $fileName);
+
+        if (!$filePath) {
+            throw new \Exception('Erro ao enviar o arquivo para o storage local.');
+        }
+
+        return Storage::disk('public')->url($filePath); // URL completa
     }
 }

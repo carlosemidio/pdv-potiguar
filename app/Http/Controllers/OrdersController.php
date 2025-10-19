@@ -305,7 +305,7 @@ class OrdersController extends Controller
 
             // Call to external API with GuzzleHttp
             $client = new \GuzzleHttp\Client();
-            $response = $client->post('https://api.pdvp.com.br/stores/' . $order->store->slug . '/orders/' . $order->number . '/confirm');
+            $response = $client->post('https://api.pdvp.com.br/api/v1/stores/' . $order->store->slug . '/orders/' . $order->number . '/confirm');
 
             if ($response->getStatusCode() !== 200) {
                 return redirect()->back()

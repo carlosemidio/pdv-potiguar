@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\PrinterResource;
@@ -320,6 +321,11 @@ class OrdersController extends Controller
                 foreach ($order->items as $item) {
                     if ($item->storeProductVariant && $item->storeProductVariant->manage_stock) {
                         $this->orderItemStockMovementService->registerSaleFromOrderItem($item);
+                    }
+
+                    if (($item->storeProductVariant === null) && !$item->storeProductVariant->is_produced) {
+                        $item->status = OrderItemStatus::READY->value;
+                        $item->save();
                     }
                 }
             });

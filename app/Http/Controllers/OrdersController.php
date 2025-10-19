@@ -303,6 +303,15 @@ class OrdersController extends Controller
                     ->with('fail', 'Apenas pedidos pendentes podem ser confirmados.');
             }
 
+            // Call to external API with GuzzleHttp
+            $client = new \GuzzleHttp\Client();
+            $response = $client->post('https://api.pdvp.com.br/stores/' . $order->store->slug . '/orders/' . $order->id . '/confirm');
+
+            if ($response->getStatusCode() !== 200) {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao confirmar pedido na API externa.');
+            }
+
             DB::transaction(function () use ($order) {
                 $order->update(['status' => OrderStatus::CONFIRMED->value]);
                 $order->load('items');

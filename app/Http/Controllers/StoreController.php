@@ -86,7 +86,7 @@ class StoreController extends Controller
                                 'size' => $file->getSize(),
                                 'url' => $uploadedFilePath,
                                 'extension' => $file->extension(),
-                                'public' => true,
+                                'public' => false,
                             ]);
                             
                             $store->images()->save($uploadedFile);   
@@ -162,7 +162,7 @@ class StoreController extends Controller
                             'size' => $file->getSize(),
                             'url' => $uploadedFilePath,
                             'extension' => $file->extension(),
-                            'public' => true,
+                            'public' => false,
                         ]);
                         
                         $store->images()->save($uploadedFile);   

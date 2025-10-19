@@ -37,6 +37,11 @@ class OrderItemsController extends Controller
         try {
             $order = Order::find($orderItem->order_id);
 
+            if ($order->status == OrderStatus::PENDING->value) {
+                return redirect()->back()
+                    ->with('fail', 'Não é possível alterar o status de itens de um pedido pendente.');
+            }
+
             if (($order->status == OrderStatus::COMPLETED->value) || ($order->status == OrderStatus::CANCELED->value)) {
                 return redirect()->back()
                     ->with('fail', 'Não é possível alterar o status de itens de um pedido finalizado ou cancelado.');
@@ -58,7 +63,7 @@ class OrderItemsController extends Controller
                 $orderItem->save();
 
                 // registrar movimentação de estoque, se aplicável
-                if ($orderItem->status == OrderItemStatus::IN_PROGRESS->value) {
+                if (($orderItem->status == OrderItemStatus::IN_PROGRESS->value) && $orderItem->storeProductVariant->manage_stock) {
                     $this->orderItemStockMovementService->registerSaleFromOrderItem($orderItem);
 
                     if ($order->status != OrderStatus::IN_PROGRESS->value) {

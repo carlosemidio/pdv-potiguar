@@ -159,7 +159,7 @@ class ProductVariantController extends Controller
                                 'url' => $uploadedFilePath,
                                 'size' => $file->getSize(),
                                 'extension' => $file->getClientOriginalExtension(),
-                                'public' => true,
+                                'public' => false,
                             ]);
                             
                             $productVariant->images()->save($uploadedFile);
@@ -277,7 +277,7 @@ class ProductVariantController extends Controller
                                 'url' => $uploadedFilePath,
                                 'size' => $file->getSize(),
                                 'extension' => $file->getClientOriginalExtension(),
-                                'public' => true,
+                                'public' => false,
                             ]);
                             
                             $productVariant->images()->save($uploadedFile);

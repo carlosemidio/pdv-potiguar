@@ -323,7 +323,7 @@ class OrdersController extends Controller
                         $this->orderItemStockMovementService->registerSaleFromOrderItem($item);
                     }
 
-                    if (($item->storeProductVariant === null) && !$item->storeProductVariant->is_produced) {
+                    if ($item->storeProductVariant && !$item->storeProductVariant->is_produced) {
                         $item->status = OrderItemStatus::READY->value;
                         $item->save();
                     }

@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductVariantResource;
 use App\Models\AttributeValue;
+use App\Models\Category;
 use App\Models\File;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\User;
 use App\Models\VariantAttribute;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 
@@ -23,32 +25,47 @@ class ProductVariantController extends Controller
     {
         $this->authorize('product-variants_view');
 
+        $request_data = Request::all('category', 'type', 'search', 'field', 'page');
+        $user = User::find(Auth::id());
+
+        $categories = Category::where('tenant_id', $user->tenant_id)
+            ->whereHas('products.variants.storeProductVariants', function ($q) use ($user) {
+                $q->where('store_id', $user->store_id);
+            })
+            ->orderBy('name', 'asc')
+            ->get();
+
         $productVariantsQuery = ProductVariant::with([
             'product',
             'attributes.attributeValues',
             'image'
         ]);
 
-        if (!request()->user()->hasPermission('product-variants_view', true)) {
+        if (!$user->hasPermission('product-variants_view', true)) {
             $productVariantsQuery->where('user_id', Auth::id());
         }
 
-        if (request()->user()->tenant_id != null) {
-            $productVariantsQuery->where('tenant_id', request()->user()->tenant_id);
+        if ($user->tenant_id != null) {
+            $productVariantsQuery->where('tenant_id', $user->tenant_id);
         }
 
-        if ($request->has('search')) {
-            $search = $request->input('search');
-            $productVariantsQuery->whereHas('product', function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
+        if (($request_data['category'] != null) && ($request_data['category'] != '')) {
+            $productVariantsQuery->whereHas('product', function ($q) use ($request_data) {
+                $q->where('category_id', $request_data['category']);
             });
+        }
+
+        if (($request_data['search'] != null) && ($request_data['search'] != '') && ($request_data['field'] != null)) {
+            $productVariantsQuery->where($request_data['field'], 'like', '%' . $request_data['search'] . '%');
         }
 
         $productVariants = $productVariantsQuery->orderBy('id', 'desc')
             ->paginate(12)->withQueryString();
 
         return Inertia::render('ProductVariant/Index', [
-            'productVariants' => ProductVariantResource::collection($productVariants)
+            'productVariants' => ProductVariantResource::collection($productVariants),
+            'filters' => $request_data,
+            'categories' => CategoryResource::collection($categories),
         ]);
     }
 

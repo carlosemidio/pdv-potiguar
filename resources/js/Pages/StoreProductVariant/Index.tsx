@@ -1,7 +1,6 @@
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
-import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -12,13 +11,16 @@ import { formatCustomDateTime } from '@/utils/date-format';
 import Pagination from '@/Components/Pagination/Pagination';
 import { StoreProductVariant } from '@/types/StoreProductVariant';
 import Image from '@/Components/Image';
+import { Category } from '@/types/Category';
+import ProductVariantsFilterBar from '@/Components/ProductVariantsFilterBar';
 
 export default function Index({
     auth,
     storeProductVariants,
-}: PageProps<{ storeProductVariants: PaginatedData<StoreProductVariant> }>) {
+    categories,
+    filters
+}: PageProps<{ storeProductVariants: PaginatedData<StoreProductVariant>, filters: { category?: string; field?: string; search?: string }, categories: { data: Category[] } }>) {
     const { delete: destroy, processing: processingDelete, reset, clearErrors } = useForm();
-
     const [showModal, setShowModal] = useState(false);
     const [variant, setVariant] = useState<StoreProductVariant | null>(null);
 
@@ -151,6 +153,16 @@ export default function Index({
                                 </div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400">
                                     {storeProductVariants.meta.total} variantes configuradas
+                                </div>
+                            </div>
+
+                            {/* Filter Section */}
+                            <div className="mt-4">
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                        Filtros de Busca
+                                    </h3>
+                                    <ProductVariantsFilterBar filters={filters} categories={categories.data} />
                                 </div>
                             </div>
                         </div>

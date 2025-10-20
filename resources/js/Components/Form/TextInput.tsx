@@ -40,7 +40,7 @@ export default function TextInput({
   `;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 w-full">
       {label && (
         <label 
           htmlFor={name} 
@@ -51,7 +51,7 @@ export default function TextInput({
         </label>
       )}
       
-      <div className="relative">
+      <div className="relative w-full">
         <input
           id={name}
           name={name}

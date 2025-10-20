@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserFormRequest;
-use App\Http\Resources\TenantResource;
 use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\Store;
-use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;

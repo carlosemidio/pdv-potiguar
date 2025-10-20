@@ -1,7 +1,6 @@
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
-import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { ProductVariant } from '@/types/ProductVariant';
@@ -12,11 +11,15 @@ import { can } from '@/utils/authorization';
 import { formatCustomDateTime } from '@/utils/date-format';
 import Pagination from '@/Components/Pagination/Pagination';
 import Image from '@/Components/Image';
+import { Category } from '@/types/Category';
+import ProductVariantsFilterBar from '@/Components/ProductVariantsFilterBar';
 
 export default function Index({
     auth,
     productVariants,
-}: PageProps<{ productVariants: PaginatedData<ProductVariant> }>) {
+    categories,
+    filters
+}: PageProps<{ productVariants: PaginatedData<ProductVariant>, filters: { category?: string; field?: string; search?: string }, categories: { data: Category[] } }>) {
     const {
         delete: destroy,
         processing,
@@ -142,6 +145,16 @@ export default function Index({
                                 </div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400">
                                     {productVariants.meta.total} variantes cadastradas
+                                </div>
+                            </div>
+
+                            {/* Filter Section */}
+                            <div className="mt-4">
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                        Filtros de Busca
+                                    </h3>
+                                    <ProductVariantsFilterBar filters={filters} categories={categories.data} />
                                 </div>
                             </div>
                         </div>

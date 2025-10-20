@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CategoryResource;
 use App\Http\Resources\StoreProductVariantResource;
 use App\Http\Resources\UnitResource;
+use App\Models\Category;
 use App\Models\StoreProductVariant;
 use App\Models\Unit;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -22,6 +24,14 @@ class StoreProductVariantController extends Controller
     {
         $this->authorize('store-product-variants_view');
         $user = User::find(Auth::id());
+        $request_data = Request::all('category', 'type', 'search', 'field', 'page');
+
+        $categories = Category::where('tenant_id', $user->tenant_id)
+            ->whereHas('products.variants.storeProductVariants', function ($q) use ($user) {
+                $q->where('store_id', $user->store_id);
+            })
+            ->orderBy('name', 'asc')
+            ->get();
 
         if ($user->store_id === null) {
             return redirect(route('dashboard'))
@@ -43,18 +53,24 @@ class StoreProductVariantController extends Controller
             $query->where('store_id', $user->store_id);
         }
 
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->whereHas('productVariant.product', function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
+        if (($request_data['category'] != null) && ($request_data['category'] != '')) {
+            $query->whereHas('productVariant.product', function ($q) use ($request_data) {
+                $q->where('category_id', $request_data['category']);
             });
         }
 
-        $data = $query->orderBy('id', 'desc')->paginate(20)->withQueryString();
+        if (($request_data['search'] != null) && ($request_data['search'] != '') && ($request_data['field'] != null)) {
+            $query->whereHas('productVariant', function ($q) use ($request_data) {
+                $q->where('name', 'like', '%' . $request_data['search'] . '%');
+            });
+        }
+
+        $data = $query->orderBy('id', 'desc')->paginate(12)->withQueryString();
 
         return Inertia::render('StoreProductVariant/Index', [
             'storeProductVariants' => StoreProductVariantResource::collection($data),
-            'filters' => $request->only(['search']),
+            'categories' => CategoryResource::collection($categories),
+            'filters' => $request_data,
         ]);
     }
 

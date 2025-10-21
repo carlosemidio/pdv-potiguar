@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\TableResource;
+use App\Models\Order;
 use App\Models\Table;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class TablesController extends Controller
@@ -47,6 +47,18 @@ class TablesController extends Controller
             ->with('store')
             ->paginate(12, ['id', 'user_id', 'name', 'slug', 'store_id', 'status', 'created_at', 'updated_at'])
             ->withQueryString();
+
+        foreach ($tables as $table) {
+            if ($table->status === 'occupied') {
+                $order = Order::where('table_id', $table->id)
+                    ->where('store_id', $table->store_id)
+                    ->first();
+
+                if ($order) {
+                    $table->order_id = $order->id;
+                }
+            }
+        }
 
         return Inertia::render('Tables/Index', [
             'tables' => TableResource::collection($tables),

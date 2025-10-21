@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PermissionFormRequest;
 use App\Http\Resources\PermissionResource;
 use App\Models\Permission;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PermissionController extends Controller
@@ -12,14 +13,24 @@ class PermissionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('list', Permission::class);
-        $permissions = Permission::orderBy('display_name')
+
+        $search = $request->search ?? '';
+
+        $permissionsQuery = Permission::query();
+        
+        if ($search != '') {
+            $permissionsQuery->where('display_name', 'like', "%$search%");
+        }
+
+        $permissions = $permissionsQuery->orderBy('display_name')
             ->paginate(12);
 
         return Inertia::render('Permission/Index', [
-            'permissions' => PermissionResource::collection($permissions)
+            'permissions' => PermissionResource::collection($permissions),
+            'search' => $search,
         ]);
     }
 

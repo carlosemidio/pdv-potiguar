@@ -12,7 +12,7 @@ import { formatCustomDateTime } from '@/utils/date-format';
 import Pagination from '@/Components/Pagination/Pagination';
 import Image from '@/Components/Image';
 import { Category } from '@/types/Category';
-import ProductVariantsFilterBar from '@/Components/ProductVariantsFilterBar';
+import ProductsFilterBar from '@/Components/ProductsFilterBar';
 
 export default function Index({
     auth,
@@ -154,7 +154,7 @@ export default function Index({
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                         Filtros de Busca
                                     </h3>
-                                    <ProductVariantsFilterBar filters={filters} categories={categories.data} />
+                                    <ProductsFilterBar filters={filters} categories={categories.data} />
                                 </div>
                             </div>
                         </div>

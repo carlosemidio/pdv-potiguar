@@ -21,7 +21,7 @@ class ProductVariantController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
         $this->authorize('product-variants_view');
 

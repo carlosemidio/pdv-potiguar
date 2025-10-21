@@ -8,11 +8,15 @@ import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { formatCustomDateTime } from '@/utils/date-format';
 import Pagination from '@/Components/Pagination/Pagination';
+import ProductsFilterBar from '@/Components/ProductsFilterBar';
+import { Category } from '@/types/Category';
 
 export default function Index({
     auth,
     products,
-}: PageProps<{ products: PaginatedData<Product> }>) {
+    categories,
+    filters
+}: PageProps<{ products: PaginatedData<Product>, filters: { category?: string; field?: string; search?: string }, categories: { data: Category[] } }>) {
     const {
         delete: destroy,
         processing,
@@ -69,7 +73,17 @@ export default function Index({
             <Head title="Produtos" />
 
             <section className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
+                <div className="container mx-auto px-2 py-4 max-w-7xl">
+                    {/* Filter Section */}
+                    <div className="mb-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                Filtros de Busca
+                            </h3>
+                            <ProductsFilterBar filters={filters} categories={categories.data} />
+                        </div>
+                    </div>
+
                     {/* Products Grid */}
                     {data.length > 0 ? (
                         <>

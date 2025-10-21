@@ -32,6 +32,12 @@ class RoleController extends Controller
             $rolesQuery->where('tenant_id', $user->tenant_id);
         }
 
+        $search = $request->search ?? '';
+        
+        if ($search != '') {
+            $rolesQuery->where('name', 'like', "%$search%");
+        }
+
         $roles = $rolesQuery->paginate(10);
 
         return Inertia::render('Role/Index', [

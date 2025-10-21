@@ -9,11 +9,13 @@ import { Head, Link, useForm } from "@inertiajs/react";
 import { Edit, Eye, Trash, Plus, Shield, Users, Key, Crown } from "lucide-react";
 import { useState } from "react";
 import { formatCustomDateTime } from "@/utils/date-format";
+import SimpleSearchBar from "@/Components/SimpleSearchBar";
 
 export default function Index({
     auth,
     roles,
-}: PageProps<{ roles: { data: Role[] } }>) {
+    search
+}: PageProps<{ roles: { data: Role[] }, search?: string }>) {
     const [confirmingRoleDeletion, setConfirmingRoleDeletion] = useState(false);
     const [roleIdToDelete, setRoleIdToDelete] = useState<number | null>(null);
 
@@ -75,6 +77,16 @@ export default function Index({
                                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                                     {roles?.data?.length || 0} funções cadastradas
                                 </p>
+                            </div>
+                        </div>
+
+                        {/* Filter Section */}
+                        <div className="mt-4">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                    Filtros de Busca
+                                </h3>
+                                <SimpleSearchBar field='name' search={search} />
                             </div>
                         </div>
                     </div>

@@ -1,7 +1,6 @@
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
-import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -11,11 +10,13 @@ import { can } from '@/utils/authorization';
 import { Customer } from '@/types/Customer';
 import Pagination from '@/Components/Pagination/Pagination';
 import CustomerFormModal from '@/Components/CustomerFormModal';
+import CustomersFilterBar from '@/Components/CustomersFilterBar';
 
 export default function Index({
     auth,
     customers,
-}: PageProps<{ customers: PaginatedData<Customer> }>) {
+    filters
+}: PageProps<{ customers: PaginatedData<Customer>, filters: {field?: string; search?: string;} }>) {
 
     const [confirmingCustomerDeletion, setConfirmingCustomerDeletion] = useState(false);
     const [costumerIdToDelete, setCustomerIdToDelete] = useState<number | null>(null);
@@ -155,6 +156,16 @@ export default function Index({
                                 </div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400">
                                     {customers.meta.total} clientes cadastrados
+                                </div>
+                            </div>
+
+                            {/* Filter Section */}
+                            <div className="mb-4">
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                        Filtros de Busca
+                                    </h3>
+                                    <CustomersFilterBar filters={filters} />
                                 </div>
                             </div>
                         </div>

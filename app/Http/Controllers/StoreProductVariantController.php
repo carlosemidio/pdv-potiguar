@@ -20,7 +20,7 @@ class StoreProductVariantController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
         $this->authorize('store-product-variants_view');
         $user = User::find(Auth::id());

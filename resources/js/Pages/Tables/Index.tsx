@@ -1,20 +1,20 @@
-import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
-import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, useForm, router } from '@inertiajs/react';
-import { Edit, Trash, Plus, MoreVertical, RotateCcw, Clock, CheckCircle } from 'lucide-react';
+import { Edit, Trash, Plus, MoreVertical, Clock, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import Pagination from '@/Components/Pagination/Pagination';
 import { Table } from '@/types/Table';
 import TableFormModal from '@/Components/TableFormModal';
+import SimpleSearchBar from '@/Components/SimpleSearchBar';
 
 export default function Index({
     auth,
     tables,
-}: PageProps<{ tables: PaginatedData<Table> }>) {
+    search
+}: PageProps<{ tables: PaginatedData<Table>, search?: string }>) {
     const [confirmingTableDeletion, setConfirmingTableDeletion] = useState(false);
     const [tableIdToDelete, setTableIdToDelete] = useState<number | null>(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -27,8 +27,6 @@ export default function Index({
         clearErrors,
     } = useForm();
 
-    const { patch: updateStatus, processing: updatingStatus } = useForm();
-
     const toggleTableStatus = (table: any) => {
         const newStatus = table.status === 'available' ? 'reserved' : 'available';
         
@@ -36,13 +34,6 @@ export default function Index({
             status: newStatus
         }, {
             preserveScroll: true,
-            onSuccess: () => {
-                // Toast de sucesso simples
-                const statusNames = {
-                    available: 'Disponível',
-                    reserved: 'Reservada'
-                };
-            },
             onError: (errors: any) => {
                 console.error('❌ Erro ao alterar status:', errors);
             }
@@ -142,6 +133,16 @@ export default function Index({
                                 </div>
                             </div>
                         </div>
+
+                        {/* Filter Section */}
+                        <div className="mt-4">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                    Filtros de Busca
+                                </h3>
+                                <SimpleSearchBar field='display_name' search={search} />
+                            </div>
+                        </div>
                     </div>
 
                     {/* Tables Floor Plan */}
@@ -156,110 +157,112 @@ export default function Index({
                                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-8 min-h-[500px] relative border-2 border-dashed border-blue-200 dark:border-blue-700">
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 place-items-center">
                                         {tables.data.map((table, index) => (
-                                            <div key={table.id} className="relative group">
-                                                {/* Table Representation */}
-                                                <div className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl border-4 ${disponibilityColors[table.status] || 'bg-gray-100 border-gray-300 text-gray-800'} 
-                                                    flex flex-col items-center justify-center cursor-pointer transform transition-all duration-300 
-                                                    hover:scale-110 hover:shadow-xl group-hover:z-10 relative animate-pulse-slow`}
-                                                    style={{ animationDelay: `${index * 0.1}s` }}
-                                                >
-                                                    {/* Table Icon */}
-                                                    <svg className="w-6 h-6 md:w-8 md:h-8 mb-1" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm3 5a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z" clipRule="evenodd" />
-                                                    </svg>
-                                                    
-                                                    {/* Table Number */}
-                                                    <span className="text-xs md:text-sm font-bold">
-                                                        {table.name}
-                                                    </span>
-                                                </div>
+                                            <a key={index} href={table.order_id ? route('orders.show', table.order_id) : '#'}>
+                                                <div key={table.id} className="relative group">
+                                                    {/* Table Representation */}
+                                                    <div className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl border-4 ${disponibilityColors[table.status] || 'bg-gray-100 border-gray-300 text-gray-800'} 
+                                                        flex flex-col items-center justify-center cursor-pointer transform transition-all duration-300 
+                                                        hover:scale-110 hover:shadow-xl group-hover:z-10 relative animate-pulse-slow`}
+                                                        style={{ animationDelay: `${index * 0.1}s` }}
+                                                    >
+                                                        {/* Table Icon */}
+                                                        <svg className="w-6 h-6 md:w-8 md:h-8 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm3 5a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z" clipRule="evenodd" />
+                                                        </svg>
+                                                        
+                                                        {/* Table Number */}
+                                                        <span className="text-xs md:text-sm font-bold">
+                                                            {table.name}
+                                                        </span>
+                                                    </div>
 
-                                                {/* Table Details Tooltip */}
-                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                                                    <div className="bg-gray-900 dark:bg-gray-700 text-white p-3 rounded-lg shadow-xl min-w-max">
-                                                        <div className="text-center">
-                                                            <h4 className="font-semibold text-sm mb-1">{table.name}</h4>
-                                                            <p className="text-xs text-gray-300">
-                                                                Status: {statusLabels[table.status] || table.status_name}
-                                                            </p>
-                                                            {table?.store?.name && (
-                                                                <p className="text-xs text-gray-300 mt-1">
-                                                                    Loja: {table.store.name}
+                                                    {/* Table Details Tooltip */}
+                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                                                        <div className="bg-gray-900 dark:bg-gray-700 text-white p-3 rounded-lg shadow-xl min-w-max">
+                                                            <div className="text-center">
+                                                                <h4 className="font-semibold text-sm mb-1">{table.name}</h4>
+                                                                <p className="text-xs text-gray-300">
+                                                                    Status: {statusLabels[table.status] || table.status_name}
                                                                 </p>
+                                                                {table?.store?.name && (
+                                                                    <p className="text-xs text-gray-300 mt-1">
+                                                                        Loja: {table.store.name}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                            {/* Tooltip Arrow */}
+                                                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Action Buttons - Always Visible */}
+                                                    {(can('tables_edit') || can('tables_delete')) && table.user_id != null && (
+                                                        <div className="absolute -top-2 -right-2 flex gap-1 z-50">
+                                                            {/* Status Toggle Button */}
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    toggleTableStatus(table);
+                                                                }}
+                                                                disabled={table.status === 'occupied'}
+                                                                className={`w-8 h-8 ${
+                                                                    table.status === 'available' 
+                                                                        ? 'bg-orange-600 hover:bg-orange-700' 
+                                                                        : table.status === 'occupied'
+                                                                        ? 'bg-gray-400 cursor-not-allowed'
+                                                                        : 'bg-green-600 hover:bg-green-700'
+                                                                } text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95`}
+                                                                title={
+                                                                    table.status === 'occupied'
+                                                                        ? 'Mesa ocupada - não pode alterar'
+                                                                        : table.status === 'available'
+                                                                        ? 'Reservar mesa'
+                                                                        : 'Liberar reserva'
+                                                                }
+                                                            >
+                                                                {table.status === 'available' ? (
+                                                                    <Clock className="w-4 h-4" />
+                                                                ) : table.status === 'occupied' ? (
+                                                                    <MoreVertical className="w-4 h-4" />
+                                                                ) : (
+                                                                    <CheckCircle className="w-4 h-4" />
+                                                                )}
+                                                            </button>
+                                                            
+                                                            {/* Edit Button */}
+                                                            {can('tables_edit') && table.user_id != null && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleOpenModalForEdit(table);
+                                                                    }}
+                                                                    className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
+                                                                    title="Editar mesa"
+                                                                >
+                                                                    <Edit className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+                                                            
+                                                            {/* Delete Button */}
+                                                            {can('tables_delete') && table.user_id != null && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        confirmTableDeletion(table.id);
+                                                                    }}
+                                                                    className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
+                                                                    title="Excluir mesa"
+                                                                >
+                                                                    <Trash className="w-4 h-4" />
+                                                                </button>
                                                             )}
                                                         </div>
-                                                        {/* Tooltip Arrow */}
-                                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
-                                                    </div>
+                                                    )}
                                                 </div>
-
-                                                {/* Action Buttons - Always Visible */}
-                                                {(can('tables_edit') || can('tables_delete')) && table.user_id != null && (
-                                                    <div className="absolute -top-2 -right-2 flex gap-1 z-50">
-                                                        {/* Status Toggle Button */}
-                                                        <button
-                                                            type="button"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                toggleTableStatus(table);
-                                                            }}
-                                                            disabled={table.status === 'occupied'}
-                                                            className={`w-8 h-8 ${
-                                                                table.status === 'available' 
-                                                                    ? 'bg-orange-600 hover:bg-orange-700' 
-                                                                    : table.status === 'occupied'
-                                                                    ? 'bg-gray-400 cursor-not-allowed'
-                                                                    : 'bg-green-600 hover:bg-green-700'
-                                                            } text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95`}
-                                                            title={
-                                                                table.status === 'occupied'
-                                                                    ? 'Mesa ocupada - não pode alterar'
-                                                                    : table.status === 'available'
-                                                                    ? 'Reservar mesa'
-                                                                    : 'Liberar reserva'
-                                                            }
-                                                        >
-                                                            {table.status === 'available' ? (
-                                                                <Clock className="w-4 h-4" />
-                                                            ) : table.status === 'occupied' ? (
-                                                                <MoreVertical className="w-4 h-4" />
-                                                            ) : (
-                                                                <CheckCircle className="w-4 h-4" />
-                                                            )}
-                                                        </button>
-                                                        
-                                                        {/* Edit Button */}
-                                                        {can('tables_edit') && table.user_id != null && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleOpenModalForEdit(table);
-                                                                }}
-                                                                className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
-                                                                title="Editar mesa"
-                                                            >
-                                                                <Edit className="w-4 h-4" />
-                                                            </button>
-                                                        )}
-                                                        
-                                                        {/* Delete Button */}
-                                                        {can('tables_delete') && table.user_id != null && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    confirmTableDeletion(table.id);
-                                                                }}
-                                                                className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
-                                                                title="Excluir mesa"
-                                                            >
-                                                                <Trash className="w-4 h-4" />
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
+                                            </a>
                                         ))}
                                     </div>
 

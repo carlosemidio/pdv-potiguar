@@ -12,11 +12,13 @@ import { can } from '@/utils/authorization';
 import { Brand } from '@/types/Brand';
 import Pagination from '@/Components/Pagination/Pagination';
 import BrandFormModal from '@/Components/BrandFormModal';
+import SimpleSearchBar from '@/Components/SimpleSearchBar';
 
 export default function Index({
     auth,
     brands,
-}: PageProps<{ brands: PaginatedData<Brand> }>) {
+    search,
+}: PageProps<{ brands: PaginatedData<Brand>, search?: string }>) {
 
     const [confirmingBrandDeletion, setConfirmingBrandDeletion] = useState(false);
     const [brandIdToDelete, setBrandIdToDelete] = useState<number | null>(null);
@@ -155,6 +157,16 @@ export default function Index({
                                 </div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400">
                                     {brands.meta.total} marcas cadastradas
+                                </div>
+                            </div>
+
+                            {/* Filter Section */}
+                            <div className="mt-4">
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                        Filtros de Busca
+                                    </h3>
+                                    <SimpleSearchBar field='name' search={search} />
                                 </div>
                             </div>
                         </div>

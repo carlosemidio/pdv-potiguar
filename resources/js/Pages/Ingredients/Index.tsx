@@ -12,12 +12,14 @@ import { Ingredient } from '@/types/Ingredient';
 import Pagination from '@/Components/Pagination/Pagination';
 import IngredientFormModal from '@/Components/IngredientFormModal';
 import { Unit } from '@/types/Unit';
+import SimpleSearchBar from '@/Components/SimpleSearchBar';
 
 export default function Index({
     auth,
     ingredients,
-    units
-}: PageProps<{ ingredients: PaginatedData<Ingredient>, units: { data: Unit[] } }>) {
+    units,
+    search
+}: PageProps<{ ingredients: PaginatedData<Ingredient>, units: { data: Unit[] }, search?: string }>) {
 
     const [confirmingIngredientDeletion, setConfirmingIngredientDeletion] = useState(false);
     const [ingredientIdToDelete, setIngredientIdToDelete] = useState<number | null>(null);
@@ -103,6 +105,16 @@ export default function Index({
                                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                                     {ingredients?.data?.length || 0} ingredientes encontrados
                                 </p>
+                            </div>
+                        </div>
+
+                        {/* Filter Section */}
+                        <div className="mt-4">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                    Filtros de Busca
+                                </h3>
+                                <SimpleSearchBar field='name' search={search} />
                             </div>
                         </div>
                     </div>

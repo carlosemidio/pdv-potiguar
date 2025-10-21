@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 
 class CustomersController extends Controller
@@ -18,11 +18,11 @@ class CustomersController extends Controller
         $this->customer = $customer;
     }
 
-    public function index(Request $request)
+    public function index()
     {
         $this->authorize('customers_view');
 
-        $search = $request->search ?? '';
+        $request_data = Request::all('category', 'type', 'search', 'field', 'page');
         $customersQuery = $this->customer->query();
         
         if (!request()->user()->hasPermission('customers_view', true)) {
@@ -33,8 +33,8 @@ class CustomersController extends Controller
             $customersQuery->where('tenant_id', request()->user()->tenant_id);
         }
 
-        if ($search != '') {
-            $customersQuery->where('name', 'like', "%$search%");
+        if (($request_data['search'] != null) && ($request_data['search'] != '') && ($request_data['field'] != null)) {
+            $customersQuery->where($request_data['field'], 'like', '%' . $request_data['search'] . '%');
         }
 
         $customers = $customersQuery->orderBy('name')
@@ -42,7 +42,7 @@ class CustomersController extends Controller
 
         return Inertia::render('Customers/Index', [
             'customers' => CustomerResource::collection($customers),
-            'search' => $search,
+            'filters' => $request_data,
         ]);
     }
 

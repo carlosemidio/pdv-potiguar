@@ -10,11 +10,13 @@ import { can } from '@/utils/authorization';
 import { Addon } from '@/types/Addon';
 import Pagination from '@/Components/Pagination/Pagination';
 import AddonFormModal from '@/Components/AddonFormModal';
+import SimpleSearchBar from '@/Components/SimpleSearchBar';
 
 export default function Index({
     auth,
     addons,
-}: PageProps<{ addons: PaginatedData<Addon> }>) {
+    search
+}: PageProps<{ addons: PaginatedData<Addon>, search?: string }>) {
 
     const [confirmingAddonDeletion, setConfirmingAddonDeletion] = useState(false);
     const [addonIdToDelete, setAddonIdToDelete] = useState<number | null>(null);
@@ -153,6 +155,16 @@ export default function Index({
                                 </div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400">
                                     {addons.meta.total} complementos cadastrados
+                                </div>
+                            </div>
+
+                            {/* Filter Section */}
+                            <div className="mt-4">
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                        Filtros de Busca
+                                    </h3>
+                                    <SimpleSearchBar field='name' search={search} />
                                 </div>
                             </div>
                         </div>

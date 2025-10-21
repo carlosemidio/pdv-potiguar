@@ -18,6 +18,7 @@ class TableResource extends JsonResource
             'store' => new StoreResource($this->whenLoaded('store')),
             'status' => $this->status,
             'status_name' => $this->status_name,
+            'order_id' => $this->order_id ?? null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

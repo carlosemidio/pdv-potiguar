@@ -1,22 +1,20 @@
-import Card from '@/Components/Card';
-import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
-import SecondaryButton from '@/Components/SecondaryButton';
-import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus, MoreVertical } from 'lucide-react';
+import { Head, useForm } from '@inertiajs/react';
+import { Edit, Trash, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Category } from '@/types/Category';
 import Pagination from '@/Components/Pagination/Pagination';
 import CategoryFormModal from '@/Components/CategoryFormModal';
+import SimpleSearchBar from '@/Components/SimpleSearchBar';
 
 export default function Index({
     auth,
     categories,
-}: PageProps<{ categories: PaginatedData<Category> }>) {
+    search,
+}: PageProps<{ categories: PaginatedData<Category>, search?: string }>) {
 
     const [confirmingCategoryDeletion, setConfirmingCategoryDeletion] = useState(false);
     const [categoryIdToDelete, setCategoryIdToDelete] = useState<number | null>(null);
@@ -90,6 +88,16 @@ export default function Index({
 
             <section className="min-h-screen bg-gray-50 dark:bg-gray-900">
                 <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
+                    {/* Filter Section */}
+                    <div className="mb-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                Filtros de Busca
+                            </h3>
+                            <SimpleSearchBar field='name' search={search} />
+                        </div>
+                    </div>
+
                     {/* Categories Grid */}
                     {categories.data.length > 0 ? (
                         <>

@@ -8,11 +8,13 @@ import { can } from '@/utils/authorization';
 import Pagination from '@/Components/Pagination/Pagination';
 import { Printer } from '@/types/Printer';
 import PrinterFormModal from '@/Components/PrinterFormModal';
+import SimpleSearchBar from '@/Components/SimpleSearchBar';
 
 export default function Index({
     auth,
     printers,
-}: PageProps<{ printers: PaginatedData<Printer> }>) {
+    search
+}: PageProps<{ printers: PaginatedData<Printer>, search?: string }>) {
     const [confirmingPrinterDeletion, setConfirmingPrinterDeletion] = useState(false);
     const [printerIdToDelete, setPrinterIdToDelete] = useState<number | null>(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -193,6 +195,16 @@ export default function Index({
                                 </div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400">
                                     {printers.data.length} impressoras cadastradas
+                                </div>
+                            </div>
+
+                            {/* Filter Section */}
+                            <div className="mt-4">
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                        Filtros de Busca
+                                    </h3>
+                                    <SimpleSearchBar field='name' search={search} />
                                 </div>
                             </div>
                         </div>

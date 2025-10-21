@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\PrinterResource;
-use App\Http\Resources\UnitResource;
 use App\Models\Printer;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 
 class PrintersController extends Controller

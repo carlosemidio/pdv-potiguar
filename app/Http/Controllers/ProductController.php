@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -14,10 +16,18 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
         $this->authorize('products_view');
+        $request_data = Request::all('category', 'type', 'search', 'field', 'page');
         $user = User::find(Auth::id());
+
+        $categories = Category::where('tenant_id', $user->tenant_id)
+            ->whereHas('products.variants.storeProductVariants', function ($q) use ($user) {
+                $q->where('store_id', $user->store_id);
+            })
+            ->orderBy('name', 'asc')
+            ->get();
 
         $productsQuery = Product::with(['category', 'brand']);
 
@@ -29,18 +39,21 @@ class ProductController extends Controller
             $productsQuery->where('tenant_id', request()->user()->tenant_id);
         }
 
-        if ($request->has('search')) {
-            $search = $request->input('search');
-            $productsQuery->where(function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            });
+        if (($request_data['category'] != null) && ($request_data['category'] != '')) {
+            $productsQuery->where('category_id', $request_data['category']);
+        }
+
+        if (($request_data['search'] != null) && ($request_data['search'] != '') && ($request_data['field'] != null)) {
+            $productsQuery->where($request_data['field'], 'like', '%' . $request_data['search'] . '%');
         }
 
         $products = $productsQuery->orderBy('name')
             ->paginate(12)->withQueryString();
 
         return Inertia::render('Product/Index', [
-            'products' => ProductResource::collection($products)
+            'products' => ProductResource::collection($products),
+            'filters' => $request_data,
+            'categories' => CategoryResource::collection($categories),
         ]);
     }
 

@@ -167,7 +167,7 @@ class OrdersController extends Controller
             'table',
             'customer',
             'payments',
-            'items.storeProductVariant.productVariant',
+            'items.storeProductVariant.productVariant.image',
             'items.orderItemOptions.addonGroupOption.addonGroup',
             'items.orderItemOptions.addonGroupOption.addon',
             'items.orderItemAddons.variantAddon.addon',

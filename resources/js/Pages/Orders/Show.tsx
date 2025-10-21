@@ -13,7 +13,7 @@ import Swal from 'sweetalert2';
 import { DollarSignIcon, PercentIcon } from 'lucide-react';
 import OrderPaymentsForm from '@/Components/OrderPaymentsForm';
 import { formatDateTime } from '@/utils/date-format';
-import { MdLocalPrintshop, MdLocalShipping, MdOutlineFormatListNumbered, MdWhatsapp } from 'react-icons/md';
+import { MdCancel, MdLocalPrintshop, MdLocalShipping, MdOutlineFormatListNumbered, MdWhatsapp } from 'react-icons/md';
 import OrderDiscountFormModal from '@/Components/OrderDiscountFormModal';
 import PrintOrderFormModal from '@/Components/PrintOrderFormModal';
 import PrintOrderItemsFormModal from '@/Components/PrintOrderItemsFormModal';
@@ -303,9 +303,9 @@ export default function Index({
                 </div>
             </section>
 
-            <section className="fixed bottom-16 left-0 md:bottom-0 md:left-80 md:right-0 md:flex md:justify-start md:items-center bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg z-40 p-4">
+            <section className="w-full fixed bottom-16 left-0 md:bottom-0 md:left-80 md:right-0 md:flex md:justify-start md:items-center bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg z-40 p-4">
                 {order?.data.status === 'pending' && (
-                    <div className="border-t border-gray-200 dark:border-gray-700">
+                    <div className="border-gray-200 dark:border-gray-700">
                         {order?.data.status === 'pending' && (
                             <div className="flex flex-wrap gap-2 md:gap-3">
                                 <DangerButton onClick={handleRejectOrder} className="flex-1 md:flex-none inline-flex items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm">
@@ -338,8 +338,8 @@ export default function Index({
                     </div>
                 )}
 
-                <div className="border-t border-gray-200 dark:border-gray-700">
-                    <div className="text-sm text-gray-500 dark:text-gray-400 flex justify-between items-center p-2">
+                <div className="border-gray-200 dark:border-gray-700">
+                    <div className="text-sm text-gray-500 dark:text-gray-400 flex justify-between items-center">
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             Subtotal: <span className="font-semibold text-gray-900 dark:text-white">{order?.data.amount}</span>
                         </p>
@@ -350,22 +350,17 @@ export default function Index({
                             Total: <span className="font-semibold text-gray-900 dark:text-white">{order?.data.total_amount}</span>
                         </p>
                     </div>
-                    <div className="flex flex-wrap gap-2 md:gap-3">
+                    <div className="flex flex-wrap gap-2 md:gap-3 border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
                         {(order?.data.status === 'confirmed' || order?.data.status === 'in_progress' || order?.data.status === 'shipped') && (
                             <>
-                                <DangerButton onClick={handleCancelOrder} className="flex-1 md:flex-none inline-flex items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M7 7h10a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z" />
-                                    </svg>
-                                    <span className="hidden sm:inline">Cancelar Pedido</span>
-                                    <span className="sm:hidden">Cancelar</span>
-                                </DangerButton>
+                                {/* <DangerButton onClick={handleCancelOrder} className="flex-1 md:flex-none inline-flex items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm">
+                                    <MdCancel className="h-4 w-4" />
+                                </DangerButton> */}
                                 <PrimaryButton onClick={handleFinishOrder} className="flex-1 md:flex-none inline-flex items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7 20h10a2 2 0 002-2v-5a2 2 0 00-2-2h-3l-2-2H7a2 2 0 00-2 2v7a2 2 0 002 2z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                     </svg>
-                                    <span className="hidden sm:inline">Finalizar Pedido</span>
-                                    <span className="sm:hidden">Finalizar</span>
+                                    <span>Finalizar</span>
                                 </PrimaryButton>
                             </>
                         )}

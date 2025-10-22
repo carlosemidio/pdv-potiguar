@@ -400,7 +400,7 @@ export default function Index({
                     {can('printers_create') && printers?.data?.length > 0 && (
                         <button
                             aria-label="Nova impressora"
-                            className="fixed bottom-20 right-6 z-40 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-xl hover:shadow-2xl h-14 w-14 transition-all duration-200 hover:scale-110"
+                            className="fixed bottom-16 right-6 z-40 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-xl hover:shadow-2xl h-14 w-14 transition-all duration-200 hover:scale-110"
                             onClick={handleOpenModalForCreate}
                         >
                             <Plus className='w-6 h-6' />

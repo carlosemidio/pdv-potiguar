@@ -14,8 +14,11 @@ class Payment extends Model
         'user_id',
         'tenant_id',
         'order_id',
+        'cash_register_id',
         'method',
         'amount',
+        'paid_amount',
+        'change_amount',
         'notes',
     ];
 

@@ -49,7 +49,7 @@ export default function AddonGroupOptionFormModal({
 
     return (
         <Modal show={isOpen} onClose={onClose}>
-            <div className="bg-white rounded-xl shadow-2xl overflow-hidden max-w-2xl w-full mx-4">
+            <div className="bg-white rounded-xl shadow-2xl overflow-hidden max-w-2xl w-full">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-6">
                     <div className="flex items-center justify-between">

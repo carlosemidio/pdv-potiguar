@@ -71,12 +71,10 @@ export default function OrderFormModal({ isOpen, onClose, tables, order }: Order
                                         onChange={(e) => setData('table_id', e.target.value === "" ? null : Number(e.target.value))}
                                     >
                                         <option value="">Selecione uma mesa</option>
-                                        {tables.map(table => (                                            
-                                            ((table.status === 'available') || (String(table.id) === String(data.table_id))) && (
-                                                <option key={table.id} value={String(table.id)}>
-                                                    {table.name}
-                                                </option>
-                                            )
+                                        {tables.map(table => (
+                                            <option key={table.id} value={String(table.id)}>
+                                                {table.name } ({table.status_name})
+                                            </option>
                                         ))}
                                     </select>
                                 </div>

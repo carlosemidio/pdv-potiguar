@@ -16,3 +16,10 @@ export function strBRLToIntBRL(value: string | undefined) {
     if (!value) return undefined;
     return Number(value.replace(/\D/g, ''))
 }
+
+export function formatCurrency(amount: number) {
+    return amount.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    });
+}

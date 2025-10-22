@@ -69,13 +69,6 @@ export default function Index({
                             </p>
                         </div>
                     </div>
-                    <Link
-                        href={route('stock-movement.create')}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Nova Movimentação
-                    </Link>
                 </div>
             }
         >
@@ -306,6 +299,16 @@ export default function Index({
                         <Pagination links={meta.links} />
                     </div>
                 </div>
+
+                {/* Floating Action Button */}
+                {can('stock-movements_create') && stockMovements.data.length > 0 && (
+                    <Link
+                        href={route('stock-movement.create')}
+                        className="fixed bottom-16 right-6 z-50 w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center justify-center group"
+                    >
+                        <Plus className="w-4 h-4" />
+                    </Link>
+                )}
                 </div>
             </div>
         </AuthenticatedLayout>

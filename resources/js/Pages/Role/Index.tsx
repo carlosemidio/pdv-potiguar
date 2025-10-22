@@ -170,13 +170,13 @@ export default function Index({
 
                                             {/* Ações */}
                                             <div className="flex gap-2 justify-end pt-4 mt-4 border-t border-gray-100 dark:border-gray-600">
-                                                {can('roles_view') && (
+                                                {/* {can('roles_view') && (
                                                     <Link href={route('role.show', { id: role.id })}>
                                                         <button className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400 transition-all duration-200" title="Ver detalhes">
                                                             <Eye className="w-4 h-4" />
                                                         </button>
                                                     </Link>
-                                                )}
+                                                )} */}
                                                 {can('roles_edit') && (
                                                     <Link href={route('role.edit', { id: role.id })}>
                                                         <button className="p-2 rounded-lg bg-green-100 dark:bg-green-900/50 hover:bg-green-200 dark:hover:bg-green-800 text-green-600 dark:text-green-400 transition-all duration-200" title="Editar função">
@@ -208,7 +208,7 @@ export default function Index({
                 <Link href={route("role.create")}>
                     <button
                         aria-label="Nova função"
-                        className="fixed bottom-6 right-6 z-50 group inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-2xl h-14 w-14 transition-all duration-300 hover:scale-110 active:scale-95"
+                        className="fixed bottom-16 right-6 z-50 group inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-2xl h-14 w-14 transition-all duration-300 hover:scale-110 active:scale-95"
                     >
                         <Plus className="w-6 h-6 transition-transform group-hover:rotate-90" />
                     </button>

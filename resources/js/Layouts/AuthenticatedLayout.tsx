@@ -6,12 +6,9 @@ import { User } from '@/types/User';
 import { can } from '@/utils/authorization';
 import { Button } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
-import { ChevronDown, Gauge, KeySquare, Mail, Menu, MonitorCog, Store, Table, UserCircle2, X, ShoppingCart, Package, Users, Settings, BarChart3, FileText, Utensils, Boxes, Tag, Palette } from 'lucide-react';
+import { ChevronDown, Gauge, KeySquare, Mail, Menu, Store, Table, UserCircle2, X, ShoppingCart, Package, Users, Settings, BarChart3, FileText, Utensils, Boxes, Tag, Palette } from 'lucide-react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
-import { AiFillProduct } from 'react-icons/ai';
-import { CgProductHunt } from 'react-icons/cg';
-import { MdBrandingWatermark, MdCategory, MdOutlineExtension, MdOutlineKitchen, MdPrint } from 'react-icons/md';
-import { TbArrowsRightLeft, TbMenuOrder } from 'react-icons/tb';
+import { MdOutlineExtension, MdPrint } from 'react-icons/md';
 
 export default function Authenticated({
     user,
@@ -87,9 +84,16 @@ export default function Authenticated({
                                 <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-3 mb-2">
                                     Operações
                                 </h3>
+
+                                <NavLink href={route('cash.index')} active={route().current('cash.*')}>
+                                    <div className='flex gap-3 items-center'>
+                                        <BarChart3 className="w-5 h-5" />
+                                        <p>Caixa</p>
+                                    </div>
+                                </NavLink>
                                 
                                 {can('orders_view') && (
-                                    <NavLink href={route('orders.index')} active={route().current('orders.index')}>
+                                    <NavLink href={route('orders.index')} active={route().current('orders.*')}>
                                         <div className='flex gap-3 items-center'>
                                             <ShoppingCart className="w-5 h-5" />
                                             <div className="flex-1 flex items-center justify-between">
@@ -104,20 +108,20 @@ export default function Authenticated({
                                     </NavLink>
                                 )}
 
-                                {can('stock-movements_view') && (
-                                    <NavLink href={route('stock-movement.index')} active={route().current('stock-movement.index')}>
-                                        <div className='flex gap-3 items-center'>
-                                            <Boxes className="w-5 h-5" />
-                                            <p>Controle de Estoque</p>
-                                        </div>
-                                    </NavLink>
-                                )}
-
                                 {can('tables_view') && (
                                     <NavLink href={route('tables.index')} active={route().current('tables.index')}>
                                         <div className='flex gap-3 items-center'>
                                             <Table className="w-5 h-5" />
                                             <p>Mesas</p>
+                                        </div>
+                                    </NavLink>
+                                )}
+
+                                {can('stock-movements_view') && (
+                                    <NavLink href={route('stock-movement.index')} active={route().current('stock-movement.*')}>
+                                        <div className='flex gap-3 items-center'>
+                                            <Boxes className="w-5 h-5" />
+                                            <p>Controle de Estoque</p>
                                         </div>
                                     </NavLink>
                                 )}
@@ -160,7 +164,7 @@ export default function Authenticated({
                                     {(can('products_view') || can('store-product-variants_view') || can('product-variants_view')) && (
                                         <NavLinkGroup title="Produtos" icon={<Package className="w-5 h-5" />} open={route().current('product.*') || route().current('store-product-variant.*') || route().current('product-variant.*')}>
                                             {can('products_view') && (
-                                                <NavLink href={route('product.index')} active={route().current('product.index')}>
+                                                <NavLink href={route('product.index')} active={route().current('product.*')}>
                                                     <div className='flex gap-3 items-center'>
                                                         <FileText className="w-4 h-4" />
                                                         <p>Modelos</p>
@@ -168,7 +172,7 @@ export default function Authenticated({
                                                 </NavLink>
                                             )}
                                             {can('product-variants_view') && (
-                                                <NavLink href={route('product-variant.index')} active={route().current('product-variant.index')}>
+                                                <NavLink href={route('product-variant.index')} active={route().current('product-variant.*')}>
                                                     <div className='flex gap-3 items-center'>
                                                         <Package className="w-4 h-4" />
                                                         <p>Variantes</p>
@@ -177,7 +181,7 @@ export default function Authenticated({
                                             )}
                                             
                                             {can('store-product-variants_view') && (
-                                                <NavLink href={route('store-product-variant.index')} active={route().current('store-product-variant.index')}>
+                                                <NavLink href={route('store-product-variant.index')} active={route().current('store-product-variant.*')}>
                                                     <div className='flex gap-3 items-center'>
                                                         <ShoppingCart className="w-4 h-4" />
                                                         <p>Produtos da Loja</p>
@@ -233,7 +237,7 @@ export default function Authenticated({
                                     </h3>
                                     
                                     {can('stores_view') && (
-                                        <NavLink href={route('store.index')} active={route().current('store.index')}>
+                                        <NavLink href={route('store.index')} active={route().current('store.*')}>
                                             <div className='flex gap-3 items-center'>
                                                 <Store className="w-5 h-5" />
                                                 <p>Lojas</p>
@@ -260,7 +264,7 @@ export default function Authenticated({
                                     </h3>
                                     
                                     {can('tenants_view') && (
-                                        <NavLink href={route('tenant.index')} active={route().current('tenant.index')}>
+                                        <NavLink href={route('tenant.index')} active={route().current('tenant.*')}>
                                             <div className='flex gap-3 items-center'>
                                                 <BarChart3 className="w-5 h-5" />
                                                 <p>Empresas</p>
@@ -269,7 +273,7 @@ export default function Authenticated({
                                     )}
 
                                     {can('users_view') && (
-                                        <NavLink href={route('user.index')} active={route().current('user.index')}>
+                                        <NavLink href={route('user.index')} active={route().current('user.*')}>
                                             <div className='flex gap-3 items-center'>
                                                 <UserCircle2 className="w-5 h-5" />
                                                 <p>Usuários</p>
@@ -278,7 +282,7 @@ export default function Authenticated({
                                     )}
 
                                     {can('roles_view') && (
-                                        <NavLink href={route('role.index')} active={route().current('role.index')}>
+                                        <NavLink href={route('role.index')} active={route().current('role.*')}>
                                             <div className='flex gap-3 items-center'>
                                                 <Settings className="w-5 h-5" />
                                                 <p>Funções</p>
@@ -441,10 +445,6 @@ export default function Authenticated({
                 {/* Bottom Navigation (mobile) */}
                 <nav className="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-700 lg:hidden shadow-lg">
                     <div className="grid grid-cols-4 px-2 py-1">
-                        <Link href={route('dashboard')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 ${route().current('dashboard') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
-                            <Gauge className="w-5 h-5 mb-1" />
-                            <span className="text-xs font-medium">Home</span>
-                        </Link>
                         <Link href={route('orders.index')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 relative ${route().current('orders.*') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
                             <ShoppingCart className="w-5 h-5 mb-1" />
                             <span className="text-xs font-medium">Pedidos</span>
@@ -454,9 +454,13 @@ export default function Authenticated({
                                 </div>
                             )}
                         </Link>
-                        <Link href={route('stock-movement.index')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 ${route().current('stock-movement.*') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                        <Link href={route('tables.index')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 ${route().current('tables.index') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                            <Gauge className="w-5 h-5 mb-1" />
+                            <span className="text-xs font-medium">Mesas</span>
+                        </Link>
+                        <Link href={route('customers.index')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 ${route().current('customers.*') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
                             <Boxes className="w-5 h-5 mb-1" />
-                            <span className="text-xs font-medium">Estoque</span>
+                            <span className="text-xs font-medium">Clientes</span>
                         </Link>
                         <Link href={route('product-variant.index')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 ${route().current('product-variant.*') || route().current('store-product-variant.*') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
                             <Package className="w-5 h-5 mb-1" />

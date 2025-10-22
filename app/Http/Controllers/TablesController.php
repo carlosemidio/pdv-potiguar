@@ -52,6 +52,7 @@ class TablesController extends Controller
             if ($table->status === 'occupied') {
                 $order = Order::where('table_id', $table->id)
                     ->where('store_id', $table->store_id)
+                    ->whereIn('status', ['pending', 'in_progress'])
                     ->first();
 
                 if ($order) {

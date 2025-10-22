@@ -236,7 +236,7 @@ export default function Index({
                     {categories.data.length > 0 && (
                         <button
                             aria-label="Nova categoria"
-                            className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center justify-center group"
+                            className="fixed bottom-16 right-6 z-50 w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center justify-center group"
                             onClick={handleOpenModalForCreate}
                         >
                             <Plus className="h-7 w-7 group-hover:scale-110 transition-transform" />

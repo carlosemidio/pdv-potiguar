@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CashRegister;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Http\Request;
@@ -25,10 +26,11 @@ class OrderPaymentsController extends Controller
             'order_id' => 'required|exists:orders,id',
             'method' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0.01',
+            'paid_amount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $data = $request->only(['order_id', 'method', 'amount', 'notes']);
+        $data = $request->only(['order_id', 'method', 'amount', 'paid_amount', 'notes']);
         $order = $this->order->findOrFail($data['order_id']);
         $data['user_id'] = Auth::id();
         $data['tenant_id'] = $order->tenant_id;
@@ -45,7 +47,44 @@ class OrderPaymentsController extends Controller
             }
 
             $payment = DB::transaction(function () use ($data, $order) {
-                $payment = $order->payments()->create($data);
+                if (($data['method'] === 'cash') && isset($data['paid_amount']) && ($data['amount'] < $data['paid_amount'])) {
+                    // For cash payments, ensure paid_amount and change_amount are set
+                    $data['change_amount'] = ($data['paid_amount'] - $data['amount']);
+
+                    $openedCashRegister = CashRegister::where('store_id', $order->store_id)
+                        ->where('status', 1)
+                        ->first();
+
+                    if (!$openedCashRegister) {
+                        throw new \Exception('Não há caixa aberto para registrar o pagamento em dinheiro.');
+                    }
+
+                    $openedCashRegister->movements()->create([
+                        'user_id' => Auth::id(),
+                        'type' => 'sale',
+                        'amount' => $data['paid_amount'],
+                        'description' => "Venda #{$data['order_id']} pagamento em dinheiro",
+                    ]);
+
+                    if ($data['change_amount'] > 0) {
+                        $openedCashRegister->movements()->create([
+                            'user_id' => Auth::id(),
+                            'type' => 'removal',
+                            'amount' => $data['change_amount'],
+                            'description' => "Troco para venda #{$data['order_id']}",
+                        ]);
+                    }
+
+                    $openedCashRegister->update([
+                        'system_balance' => $openedCashRegister->calculated_system_balance,
+                    ]);
+
+                    $data['cash_register_id'] = $openedCashRegister->id;
+
+                    $payment = $order->payments()->create($data);
+                } else {
+                    $payment = $order->payments()->create($data);
+                }
 
                 // Update order's paid amount
                 $order->paid_amount = Payment::where('order_id', $order->id)->sum('amount');
@@ -72,16 +111,44 @@ class OrderPaymentsController extends Controller
         }
     }
 
-    public function destroy(Request $request, Payment $payment)
+    public function destroy(Payment $payment)
     {
         $order = $payment->order;
         $this->authorize('delete', $order);
 
         try {
             DB::transaction(function () use ($payment, $order) {
+                if ($payment->method === 'cash') {
+                    $openedCashRegister = CashRegister::where('store_id', $order->store_id)
+                        ->where('status', 1)
+                        ->first();
+
+                    if ($openedCashRegister) {
+                        // Revert cash register movements
+                        $openedCashRegister->movements()->create([
+                            'user_id' => Auth::id(),
+                            'type' => 'refund',
+                            'amount' => $payment->paid_amount,
+                            'description' => "Devolução de pagamento em dinheiro da venda #{$order->id}",
+                        ]);
+
+                        if ($payment->change_amount > 0) {
+                            $openedCashRegister->movements()->create([
+                                'user_id' => Auth::id(),
+                                'type' => 'addition',
+                                'amount' => $payment->change_amount,
+                                'description' => "Reembolso de troco da venda #{$order->id}",
+                            ]);
+                        }
+
+                        $openedCashRegister->update([
+                            'system_balance' => $openedCashRegister->calculated_system_balance,
+                        ]);
+                    }
+                }
 
                 $payment->delete();
-
+                
                 // Update order's paid amount
                 $order->paid_amount -= $payment->amount;
                 $order->payment_status = $order->paid_amount >= $order->total_amount;

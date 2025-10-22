@@ -81,4 +81,8 @@ return [
         'name' => 'printers',
         'display_name' => 'Impressoras',
     ],
+    [
+        'name' => 'cash-registers',
+        'display_name' => 'Caixas',
+    ],
 ];

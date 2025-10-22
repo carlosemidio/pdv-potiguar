@@ -1,16 +1,13 @@
-import Card from '@/Components/Card';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
-import Dropdown from '@/Components/Dropdown';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus, Award, Star, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Edit, Trash, Plus, Award, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Brand } from '@/types/Brand';
-import Pagination from '@/Components/Pagination/Pagination';
 import BrandFormModal from '@/Components/BrandFormModal';
 import SimpleSearchBar from '@/Components/SimpleSearchBar';
 

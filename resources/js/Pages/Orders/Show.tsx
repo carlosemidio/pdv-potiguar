@@ -91,31 +91,6 @@ export default function Index({
         setIsPrintOrderItemsModalOpen(true)
     };
 
-    const handleDeleteItem = (item: OrderItem) => {
-        Swal.fire({
-            title: 'Tem certeza?',
-            text: `Deseja realmente remover "${item.store_product_variant?.product_variant?.name || 'este item'}" do pedido?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sim, remover!',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                destroy(route('order-items.destroy', item.id), {
-                    onSuccess: () => {
-                        Swal.fire(
-                            'Removido!',
-                            'O item foi removido do pedido.',
-                            'success'
-                        );
-                    }
-                });
-            }
-        });
-    };
-
     const handleCancelOrder = () => {
         Swal.fire({
             title: 'Cancelar pedido',
@@ -206,7 +181,7 @@ export default function Index({
             <Head title={`Pedido #${order?.data?.id || 'N/A'}`} />
 
             <section className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="container mx-auto px-4 md:px-4 py-2 max-w-6xl">
+                <div className="container px-4 md:px-4 py-2 max-w-6xl">
                     {/* Customer and Table Information */}
                     {(order?.data.customer || order?.data.table) && (
                         <div className="p-2 border-b border-gray-200 dark:border-gray-700">
@@ -252,7 +227,7 @@ export default function Index({
                         <button
                             aria-label="Adicionar item"
                             onClick={() => setIsModalOpen(true)}
-                            className="fixed bottom-56 lg:bottom-32 right-6 z-50 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 h-14 w-14 md:h-16 md:w-16"
+                            className="fixed bottom-44 lg:bottom-16 right-6 z-50 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 h-14 w-14 md:h-16 md:w-16"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -303,7 +278,7 @@ export default function Index({
                 </div>
             </section>
 
-            <section className="w-full fixed bottom-16 left-0 md:bottom-0 md:left-80 md:right-0 md:flex md:justify-start md:items-center bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg z-40 p-4">
+            <section className="w-full fixed bottom-16 left-0 md:bottom-0 md:left-80 md:right-0 md:flex md:justify-start md:items-center bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg z-2 p-4">
                 {order?.data.status === 'pending' && (
                     <div className="border-gray-200 dark:border-gray-700">
                         {order?.data.status === 'pending' && (

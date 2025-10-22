@@ -7,7 +7,6 @@ use App\Http\Controllers\Ajax\AddonsListController;
 use App\Http\Controllers\Ajax\BrandListController;
 use App\Http\Controllers\AttibuteController;
 use App\Http\Controllers\Ajax\CategoryListController;
-use App\Http\Controllers\Ajax\ConnectedPrintersController;
 use App\Http\Controllers\Ajax\CustomersListController;
 use App\Http\Controllers\Ajax\IngredientsListController;
 use App\Http\Controllers\Ajax\PrintersListController;
@@ -18,6 +17,7 @@ use App\Http\Controllers\Ajax\TableListController;
 use App\Http\Controllers\Ajax\TenantListController;
 use App\Http\Controllers\Ajax\UserListController;
 use App\Http\Controllers\BrandsController;
+use App\Http\Controllers\CashRegistersController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\CustomersController;
@@ -193,6 +193,14 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/pagamentos/{id}', [OrderPaymentsController::class, 'destroy'])
         ->name('payments.destroy');
+
+    Route::prefix('caixas')->group(function () {
+        Route::get('/', [CashRegistersController::class, 'index'])->name('cash.index');
+        Route::get('/{register}', [CashRegistersController::class, 'show'])->name('cash.show');
+        Route::post('/abrir', [CashRegistersController::class, 'open'])->name('cash.open');
+        Route::post('/{register}/movimentacao', [CashRegistersController::class, 'addMovement'])->name('cash.movement');
+        Route::post('/{register}/fechar', [CashRegistersController::class, 'close'])->name('cash.close');
+    });
 
     // rota usada no componente select de cidades
     Route::get('search-cities-select', [CityController::class, 'index'])

@@ -1,8 +1,12 @@
 import { OrderItem } from "@/types/OrderItem";
+import { useForm } from "@inertiajs/react";
+import { DeleteIcon, X } from "lucide-react";
 import { useState } from "react";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+import Swal from "sweetalert2";
 
 export default function OrderItemsList({ items }: { items: OrderItem[] }) {
+  const { delete: destroy } = useForm();
   const [openItems, setOpenItems] = useState<number[]>([]);
   const allIds = items.map((i) => i.id);
   const allExpanded = openItems.length === allIds.length;
@@ -26,6 +30,31 @@ export default function OrderItemsList({ items }: { items: OrderItem[] }) {
       total += (c.unit_price || 0) * c.quantity;
     });
     return total;
+  };
+
+  const handleDeleteItem = (item: OrderItem) => {
+      Swal.fire({
+          title: 'Tem certeza?',
+          text: `Deseja realmente remover "${item.store_product_variant?.product_variant?.name || 'este item'}" do pedido?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Sim, remover!',
+          cancelButtonText: 'Cancelar'
+      }).then((result) => {
+          if (result.isConfirmed) {
+              destroy(route('orders.items.destroy', item.id), {
+                  onSuccess: () => {
+                      Swal.fire(
+                          'Removido!',
+                          'O item foi removido do pedido.',
+                          'success'
+                      );
+                  }
+              });
+          }
+      });
   };
 
   return (
@@ -62,7 +91,16 @@ export default function OrderItemsList({ items }: { items: OrderItem[] }) {
         const extrasTotal = calcExtras(item);
 
         return (
-          <div key={item.id} className="border-b border-gray-100">
+          <div key={item.id} className="border-b border-gray-100 relative">
+            <div className="absolute top-2 right-2">
+              <button
+                onClick={() => handleDeleteItem(item)}
+                className="text-red-600 hover:text-red-800"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
             <button
               onClick={() => toggleItem(item.id)}
               disabled={!hasExtras}
@@ -106,9 +144,9 @@ export default function OrderItemsList({ items }: { items: OrderItem[] }) {
                 {hasExtras && (
                   <>
                     {isOpen ? (
-                      <FiChevronUp className="w-4 h-4 text-gray-400" />
+                      <FiChevronUp className="w-4 h-4 text-gray-400 mt-6" />
                     ) : (
-                      <FiChevronDown className="w-4 h-4 text-gray-400" />
+                      <FiChevronDown className="w-4 h-4 text-gray-400 mt-6" />
                     )}
                   </>
                 )}
@@ -151,10 +189,27 @@ export default function OrderItemsList({ items }: { items: OrderItem[] }) {
                     </div>
                   )}
 
+                  {(item.store_product_variant?.combo_items?.length ?? 0) > 0 && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Itens fixos do Combo:</p>
+                      {item.store_product_variant?.combo_items?.map((ci) => (
+                        <div
+                          key={ci.id}
+                          className="text-xs text-gray-700 flex justify-between"
+                        >
+                          <span>
+                            {ci.quantity}×{" "}
+                            {ci.item_variant?.product_variant?.name || "N/A"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {item.combo_option_items?.length > 0 && (
                     <div>
                       <p className="text-xs text-gray-500 mb-1">
-                        Itens do Combo:
+                        Itens selecionados:
                       </p>
                       {item.combo_option_items.map((coi) => (
                         <div
@@ -180,18 +235,26 @@ export default function OrderItemsList({ items }: { items: OrderItem[] }) {
                     </div>
                   )}
 
-                  {(item.store_product_variant?.combo_items?.length ?? 0) > 0 && (
+                  {item.order_item_addons && item.order_item_addons.length > 0 && (
                     <div>
-                      <p className="text-xs text-gray-500 mb-1">Inclui:</p>
-                      {item.store_product_variant?.combo_items?.map((ci) => (
+                      <p className="text-xs text-gray-500 mb-1">Adicionais:</p>
+                      {item.order_item_addons.map((oia) => (
                         <div
-                          key={ci.id}
-                          className="text-xs text-gray-700 flex justify-between"
+                          key={oia.id}
+                          className="flex justify-between text-xs text-gray-700"
                         >
                           <span>
-                            {ci.quantity}×{" "}
-                            {ci.item_variant?.product_variant?.name || "N/A"}
+                            {oia.quantity}× {oia.variant_addon?.addon?.name || "N/A"}
                           </span>
+                          {Number(oia.total_price) > 0 && (
+                            <span className="text-green-600">
+                              +
+                              {Number(oia.unit_price).toLocaleString("pt-BR", {
+                                style: "currency",
+                                currency: "BRL",
+                              })}
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>

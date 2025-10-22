@@ -288,7 +288,7 @@ export default function Index({
 
                     <button
                         aria-label="Novo ingrediente"
-                        className="fixed bottom-6 right-6 z-50 group inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white shadow-2xl h-14 w-14 transition-all duration-300 hover:scale-110 active:scale-95"
+                        className="fixed bottom-16 right-6 z-50 group inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white shadow-2xl h-14 w-14 transition-all duration-300 hover:scale-110 active:scale-95"
                         onClick={handleOpenModalForCreate}
                     >
                         <Plus className="w-6 h-6 transition-transform group-hover:rotate-90" />

@@ -52,7 +52,7 @@ export default function OrderDiscountFormModal({ isOpen, onClose, order }: Order
 
     return (
         <Modal show={isOpen} onClose={onClose}>
-            <div className="relative">
+            <div className="relative bg-white dark:bg-gray-900">
                 {/* Header com gradiente */}
                 <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 px-6 py-4 rounded-t-lg">
                     <div className="flex items-center justify-between">

@@ -27,7 +27,12 @@ export default function PaymentsListExpandable({ payments, formatDateTime }: Pay
       {payments.length > 0 && (
         <div className="flex justify-between items-center px-3 py-2 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">
-            Pagamentos
+            Pagamentos {payments.length > 0 && (
+              `(${payments.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })})`
+            )}
           </h3>
           <button
             onClick={toggleAll}

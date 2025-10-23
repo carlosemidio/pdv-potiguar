@@ -99,48 +99,13 @@ export default function Index({
 
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                 <div className="container mx-auto px-4 py-6 max-w-7xl">
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-blue-900 dark:text-blue-200 uppercase tracking-wide">Total de Clientes</p>
-                                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
-                                        {customers.meta.total}
-                                    </p>
-                                </div>
-                                <div className="p-3 bg-blue-500 rounded-lg">
-                                    <Users className="w-6 h-6 text-white" />
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-green-900 dark:text-green-200 uppercase tracking-wide">Pessoas Físicas</p>
-                                    <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
-                                        {customers.data.filter(c => c.type === 'pf').length}
-                                    </p>
-                                </div>
-                                <div className="p-3 bg-green-500 rounded-lg">
-                                    <UserCheck className="w-6 h-6 text-white" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-800">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-purple-900 dark:text-purple-200 uppercase tracking-wide">Pessoas Jurídicas</p>
-                                    <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 mt-1">
-                                        {customers.data.filter(c => c.type === 'pj').length}
-                                    </p>
-                                </div>
-                                <div className="p-3 bg-purple-500 rounded-lg">
-                                    <Users className="w-6 h-6 text-white" />
-                                </div>
-                            </div>
+                    {/* Filter Section */}
+                    <div className="mb-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                Filtros de Busca
+                            </h3>
+                            <CustomersFilterBar filters={filters} />
                         </div>
                     </div>
 
@@ -156,16 +121,6 @@ export default function Index({
                                 </div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400">
                                     {customers.meta.total} clientes cadastrados
-                                </div>
-                            </div>
-
-                            {/* Filter Section */}
-                            <div className="mb-4">
-                                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                        Filtros de Busca
-                                    </h3>
-                                    <CustomersFilterBar filters={filters} />
                                 </div>
                             </div>
                         </div>

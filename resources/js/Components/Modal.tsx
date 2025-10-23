@@ -42,7 +42,7 @@ export default function Modal({
             <Dialog
                 as="div"
                 id="modal"
-                className="fixed inset-0 z-50 flex transform items-center justify-center overflow-y-auto p-4 transition-all"
+                className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto"
                 onClose={close}
             >
                 <TransitionChild
@@ -65,9 +65,17 @@ export default function Modal({
                     leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 >
                     <DialogPanel
-                        className={`transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all w-full ${maxWidthClass} dark:bg-gray-800`}
+                        className={`
+                            transform overflow-hidden flex flex-col w-full ${maxWidthClass} 
+                            dark:bg-gray-800 shadow-xl
+                            max-h-[100vh]
+                            h-full sm:h-auto
+                        `}
                     >
-                        {children}
+                        {/* Conteúdo com scroll interno */}
+                        <div className="my-auto overflow-y-auto">
+                            {children}
+                        </div>
                     </DialogPanel>
                 </TransitionChild>
             </Dialog>

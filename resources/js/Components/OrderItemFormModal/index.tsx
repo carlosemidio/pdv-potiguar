@@ -1,4 +1,4 @@
-import { Plus, Package, Hash, Settings, FileText, ShoppingCart, DollarSign, X } from 'lucide-react';
+import { Plus, ShoppingCart, X, MessageCircleMore } from 'lucide-react';
 import Modal from "../Modal";
 import { useForm } from "@inertiajs/react";
 import { Order } from "@/types/Order";
@@ -15,6 +15,8 @@ import { VariantAddonGroup } from "@/types/VariantAddonGroup";
 import { ComboOptionGroup } from "@/types/ComboOptionGroup";
 import { SelectedComboOptionItem } from "@/types/SelectedComboOptionItem";
 import ComboOptionItemSelectionFormModal from "../ComboOptionItemSelectionFormModal";
+import QuantityInput from './QuantityInput';
+import { formatCurrency } from '@/utils/helpers';
 
 interface OrderItemFormModalProps {
     isOpen: boolean;
@@ -35,7 +37,6 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
     });
 
     const [storeProductVariant, setStoreProductVariant] = useState<StoreProductVariant | null>(null);
-
     const [addonGroupOptions, setAddonGroupOptions] = useState<VariantAddonGroup[]>([]);
     const [selectedAddonGroupOptions, setSelectedAddonGroupOptions] = useState<SelectedAddonGroupOption[]>([]);
     const [variantAddons, setVariantAddons] = useState<VariantAddon[]>([]);
@@ -74,72 +75,55 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
         setSubtotal(newSubtotal * (data.quantity || 1));
     }, [storeProductVariant, selectedAddonGroupOptions, selectedComboOptions, selectedVariantAddons, data.quantity]);
 
-    const handleQuantityChange = (quantity: number) => {
-        setData({...data, quantity: quantity });
-    }
-
+    const handleQuantityChange = (quantity: number) => setData({ ...data, quantity });
     const handleAddonGroupOptionsChange = (selectedOptions: SelectedAddonGroupOption[]) => {
         setSelectedAddonGroupOptions(selectedOptions);
         setData('options', selectedOptions.map(sa => ({ id: sa.option.id, quantity: sa.qty })));
-    }
-
+    };
     const handleComboOptionsChange = (selectedOptions: SelectedComboOptionItem[]) => {
         setSelectedComboOptions(selectedOptions);
         setData('combo_options', selectedOptions.map(sc => ({ id: sc.option.id, quantity: sc.qty })));
-    }
-
+    };
     const handleVariantAddonsChange = (selectedAddons: SelectedVariantAddon[]) => {
         setSelectedVariantAddons(selectedAddons);
         setData('addons', selectedAddons.map(va => ({ id: va.variantAddon.id, quantity: va.qty })));
-    }
-
-    const handleVariantChange = (storeProductVariant: StoreProductVariant | null) => {
-        setStoreProductVariant(storeProductVariant);
-        setAddonGroupOptions(storeProductVariant?.variant_addon_groups ? storeProductVariant.variant_addon_groups : []);
-        setComboOptionGroups(storeProductVariant?.combo_option_groups ? storeProductVariant.combo_option_groups : []);
-        setVariantAddons(storeProductVariant ? storeProductVariant.variant_addons ?? [] : []);
+    };
+    const handleVariantChange = (variant: StoreProductVariant | null) => {
+        setStoreProductVariant(variant);
+        setAddonGroupOptions(variant?.variant_addon_groups ?? []);
+        setComboOptionGroups(variant?.combo_option_groups ?? []);
+        setVariantAddons(variant?.variant_addons ?? []);
         setSelectedAddonGroupOptions([]);
         setSelectedComboOptions([]);
         setSelectedVariantAddons([]);
-
-        const newQuantity = Number(data.quantity ?? 1);
         setData({
             ...data,
-            store_product_variant_id: storeProductVariant ? storeProductVariant.id : 0,
-            quantity: newQuantity,
+            store_product_variant_id: variant?.id ?? 0,
+            quantity: data.quantity || 1,
             options: [],
-            addons: []
+            addons: [],
+            combo_options: [],
         });
     };
-
     const closeModal = () => {
         setData({
-            order_id: order ? order.id : 0,
+            order_id: order?.id ?? 0,
             store_product_variant_id: 0,
             quantity: 1,
             options: [],
             combo_options: [],
             addons: [],
-            notes: orderItem ? orderItem.notes : '',
+            notes: orderItem?.notes ?? '',
         });
         onClose();
-    }
-
-    const submit = () => {
-        setTimeout(() => {
-            post(route('orders.items.store', order.id), {
-                preserveScroll: true,
-                preserveState: true,
-                onSuccess: () => closeModal(),
-            });
-        }, 300);
     };
+    const submit = () => post(route('orders.items.store', order.id), { preserveScroll: true, preserveState: true, onSuccess: closeModal });
 
     return (
         <Modal show={isOpen} onClose={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 shadow-lg max-w-3xl w-full flex flex-col sm:h-[80vh] h-full rounded-t-2xl sm:rounded-2xl mt-4 sm:mt-0 rounded-b-0 sm:rounded-b-2xl">
                 {/* Header */}
-                <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 flex justify-between items-center px-4 py-2 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 rounded-t-2xl">
                     <div className="flex items-center gap-3">
                         <ShoppingCart className="w-6 h-6 text-green-500" />
                         <div>
@@ -154,82 +138,41 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                     </button>
                 </div>
 
-                {/* Body */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {/* Body rolável */}
+                <div className="flex-1 overflow-y-auto min-h-0">
                     {/* Produto + Quantidade */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="rounded-xl p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Produto</label>
-                            <SearchableStoreProductVariantsSelect
-                                selectedVariant={storeProductVariant}
-                                setVariant={handleVariantChange}
-                                isDisabled={processing}
-                            />
-                            {errors.store_product_variant_id && (
-                                <p className="text-xs text-red-600 mt-1">{errors.store_product_variant_id}</p>
-                            )}
-                        </div>
-
-                        <div className="rounded-xl p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Quantidade</label>
-                            <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden">
-                                <button
-                                    type="button"
-                                    onClick={() => handleQuantityChange(Math.max(1, data.quantity - 1))}
-                                    className="px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
-                                >-</button>
-                                <input
-                                    type="number"
-                                    className="w-full text-center bg-transparent py-2 focus:outline-none"
-                                    value={data.quantity}
-                                    onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
-                                    min={1}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => handleQuantityChange(data.quantity + 1)}
-                                    className="px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
-                                >+</button>
-                            </div>
-                            {errors.quantity && (
-                                <p className="text-xs text-red-600 mt-1">{errors.quantity}</p>
-                            )}
-                        </div>
+                    <div className="w-full p-4">
+                        <SearchableStoreProductVariantsSelect
+                            selectedVariant={storeProductVariant}
+                            setVariant={handleVariantChange}
+                            isDisabled={processing}
+                        />
+                        {errors.store_product_variant_id && (
+                            <p className="text-xs text-red-600 mt-1">{errors.store_product_variant_id}</p>
+                        )}
                     </div>
 
                     {/* Addons, Combos, Observações */}
                     <div className="space-y-4">
                         {addonGroupOptions.length > 0 && (
-                            <div className="rounded-xl p-4 border border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/10">
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
-                                    <Settings className="w-4 h-4" /> Opções do Produto
-                                </label>
-                                <VariantAddonGroupsForm
-                                    variantAddonGroups={addonGroupOptions}
-                                    selectedAddonGroupOptions={selectedAddonGroupOptions}
-                                    onChange={handleAddonGroupOptionsChange}
-                                    errors={errors}
-                                />
-                            </div>
+                            <VariantAddonGroupsForm
+                                variantAddonGroups={addonGroupOptions}
+                                selectedAddonGroupOptions={selectedAddonGroupOptions}
+                                onChange={handleAddonGroupOptionsChange}
+                                errors={errors}
+                            />
                         )}
-
                         {comboOptionGroups.length > 0 && (
-                            <div className="rounded-xl p-4 border border-pink-300 dark:border-pink-700 bg-pink-50 dark:bg-pink-900/10">
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
-                                    <Settings className="w-4 h-4" /> Opções de Combo
-                                </label>
-                                <ComboOptionItemSelectionFormModal
-                                    comboOptionGroups={comboOptionGroups}
-                                    selectedAddonGroupOptions={selectedComboOptions}
-                                    onChange={handleComboOptionsChange}
-                                    errors={errors}
-                                />
-                            </div>
+                            <ComboOptionItemSelectionFormModal
+                                comboOptionGroups={comboOptionGroups}
+                                selectedItems={selectedComboOptions}
+                                onChange={handleComboOptionsChange}
+                                errors={errors}
+                            />
                         )}
-
                         {variantAddons.length > 0 && (
-                            <div className="rounded-xl p-4 border border-teal-300 dark:border-teal-700 bg-teal-50 dark:bg-teal-900/10">
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+                            <div className="rounded-xl border-t border-gray-200 dark:border-gray-700">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-md p-4">
                                     <Plus className="w-4 h-4" /> Adicionais
                                 </label>
                                 <VariantAddonsForm
@@ -239,47 +182,23 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                                 />
                             </div>
                         )}
-
-                        <div className="rounded-xl p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
-                                <FileText className="w-4 h-4" /> Observações
-                            </label>
-                            <textarea
-                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md resize-none focus:ring-1 focus:ring-gray-400 dark:bg-gray-800 dark:text-gray-100"
-                                value={data.notes || ''}
-                                onChange={(e) => setData('notes', e.target.value)}
-                                rows={3}
-                                placeholder="Observações para este item"
-                            />
-                            <p className="text-xs text-gray-400 mt-1">{(data.notes?.length || 0)}/500</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
-                    {/* Subtotal */}
-                    <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        Subtotal: <span className="text-green-600 dark:text-green-400">R$ {(Number(subTotal) || 0).toFixed(2).replace('.', ',')}</span>
-                    </div>
-
-                    {/* Botões */}
-                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 sm:flex-none px-4 py-2 rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            onClick={submit}
-                            disabled={!isOptionsValid || processing}
-                            className="flex-1 sm:flex-none px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white disabled:bg-gray-400"
-                        >
-                            {processing ? 'Processando...' : orderItem ? 'Atualizar Item' : 'Adicionar ao Pedido'}
-                        </button>
+                        {storeProductVariant && (
+                            <div className="rounded-xl p-4">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 flex justify-between items-center">
+                                    <div className='flex items-center gap-2'>
+                                        <MessageCircleMore className="w-4 h-4" /> Observações
+                                    </div>
+                                    {(data.notes?.length || 0)}/255
+                                </label>
+                                <textarea
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md resize-none focus:ring-1 focus:ring-gray-400 dark:bg-gray-800 dark:text-gray-100"
+                                    value={data.notes || ''}
+                                    onChange={(e) => { (data.notes?.length ?? 0) <= 255 && setData('notes', e.target.value); }}
+                                    rows={3}
+                                    placeholder="Observações para este item?"
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -289,6 +208,43 @@ export default function OrderItemFormModal({ isOpen, onClose, order, orderItem }
                         Complete todas as opções obrigatórias antes de continuar.
                     </div>
                 )}
+
+                {/* Footer fixo */}
+                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 bg-gray-50 dark:bg-gray-900 sticky bottom-0 rounded-b-0 sm:rounded-b-2xl">
+                    <div className="flex items-center gap-3">
+                        {(storeProductVariant && !storeProductVariant.is_produced) ? (
+                            <QuantityInput
+                                value={data.quantity}
+                                onChange={handleQuantityChange}
+                                error={errors.quantity}
+                                min={1}
+                                max={storeProductVariant?.stock_quantity ?? undefined}
+                            />
+                        ) : (
+                            <QuantityInput
+                                value={data.quantity}
+                                onChange={handleQuantityChange}
+                                error={errors.quantity}
+                                min={1}
+                            />
+                        )}
+                    </div>
+                    <div className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
+                        <span className="text-green-600 dark:text-green-400">{formatCurrency(subTotal)}</span>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={submit}
+                        disabled={!isOptionsValid || processing}
+                        className={`px-5 py-2 rounded-lg font-medium text-white shadow-sm transition-all duration-200 ${
+                            processing
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 dark:focus:ring-green-700"
+                        } ${!isOptionsValid ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                        {processing ? "Processando..." : "Adicionar"}
+                    </button>
+                </div>
             </div>
         </Modal>
     );

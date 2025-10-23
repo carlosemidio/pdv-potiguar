@@ -1,164 +1,132 @@
+import { Plus, Minus, AlertCircle } from "lucide-react";
 import { ComboOptionGroup } from "@/types/ComboOptionGroup";
 import { SelectedComboOptionItem } from "@/types/SelectedComboOptionItem";
-import { Plus, Minus, AlertCircle, Crown } from "lucide-react";
 
 type Props = {
   comboOptionGroups: ComboOptionGroup[];
-  selectedAddonGroupOptions: SelectedComboOptionItem[];
+  selectedItems: SelectedComboOptionItem[];
   onChange: (selected: SelectedComboOptionItem[]) => void;
   errors?: Record<string, string>;
 };
 
 export default function ComboOptionItemSelectionCompact({
   comboOptionGroups,
-  selectedAddonGroupOptions,
+  selectedItems,
   onChange,
   errors = {},
 }: Props) {
-  function handleAddonChange(groupId: number, optionId: number, qty: number) {
-    const existingIndex = selectedAddonGroupOptions.findIndex(
-      (s) => s.option.id === optionId && s.option.option_group_id === groupId
+  function handleChange(group: ComboOptionGroup, itemId: number, qty: number, max: number | null) {
+    const existingIndex = selectedItems.findIndex(
+      (s) => s.option.id === itemId && s.option.option_group_id === group.id
     );
 
-    let updated = [...selectedAddonGroupOptions];
-    const group = comboOptionGroups.find((g) => g.id === groupId);
-    if (!group) return;
+    let updated = [...selectedItems];
 
-    if (existingIndex >= 0) {
+    if (max === 1) {
+      // radio behavior: mantém apenas o selecionado
+      const selectedItem = group.combo_option_items?.find((item) => item.id === itemId);
+      updated = qty > 0 && selectedItem
+        ? [{ option: selectedItem, qty: 1 }]
+        : [];
+    } else if (existingIndex >= 0) {
       if (qty <= 0) updated.splice(existingIndex, 1);
-      else {
-        const currentCount = updated
-          .filter((s) => s.option.option_group_id === groupId)
-          .reduce((sum, s) => sum + s.qty, 0);
-
-        if (
-          group.max_options !== null &&
-          currentCount - updated[existingIndex].qty + qty > group.max_options
-        )
-          return;
-
-        updated[existingIndex].qty = qty;
-      }
+      else updated[existingIndex].qty = qty;
     } else if (qty > 0) {
-      const currentCount = updated
-        .filter((s) => s.option.option_group_id === groupId)
-        .reduce((sum, s) => sum + s.qty, 0);
-
-      if (group.max_options !== null && currentCount + qty > group.max_options)
-        return;
-
-      const option = group.combo_option_items?.find((o) => o.id === optionId);
-      if (option) updated.push({ option, qty });
+      const selectedItem = group.combo_option_items?.find((item) => item.id === itemId);
+      if (selectedItem) {
+        updated.push({ option: selectedItem, qty });
+      }
     }
 
     onChange(updated);
   }
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col">
       {comboOptionGroups.map((group) => {
-        const currentSelections = selectedAddonGroupOptions.filter(
-          (s) => s.option.option_group_id === group.id
-        );
-        const currentCount = currentSelections.reduce(
-          (sum, s) => sum + s.qty,
-          0
-        );
-        const isValid =
-          currentCount >= (group.min_options || 0) &&
-          (group.max_options === null || currentCount <= group.max_options);
-        const remaining = (group.min_options || 0) - currentCount;
-        const error = errors[`comboOptionGroupQuantities.${group.id}`];
+        const groupItems = group.combo_option_items || [];
+        const max = group.max_options;
+
+        const currentCount = selectedItems
+          .filter((s) => s.option.option_group_id === group.id)
+          .reduce((sum, s) => sum + s.qty, 0);
+
+        const errorMessage = errors[`comboOptionGroupQuantities.${group.id}`];
 
         return (
-          <div key={group.id} className="space-y-3">
+          <div key={group.id} className="space-y-1 py-1">
             {/* Cabeçalho do grupo */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md p-4">
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                  {group.name}
-                </h3>
-                {group.is_required && (
-                  <Crown className="w-4 h-4 text-amber-500" />
-                )}
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  {group.name} {group.is_required ? <span className="text-red-500">*</span> : null}
+                </span>
               </div>
-
-              <div
-                className={`text-xs px-2 py-0.5 rounded-md font-medium ${
-                  isValid
-                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300"
-                    : "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-300"
-                }`}
-              >
-                {currentCount} / {group.max_options ?? "∞"}
-              </div>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {currentCount} / {max ?? "∞"}
+              </span>
             </div>
 
-            {/* Texto auxiliar */}
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Mínimo {group.min_options} • Máximo{" "}
-              {group.max_options ?? "ilimitado"}
-              {remaining > 0 && (
-                <span className="ml-2 text-amber-600 dark:text-amber-400">
-                  faltam {remaining}
-                </span>
-              )}
-            </p>
-
             {/* Lista compacta */}
-            <div className="divide-y divide-gray-100 dark:divide-gray-700 border rounded-lg border-gray-200 dark:border-gray-700 overflow-hidden">
-              {group.combo_option_items?.map((item) => {
-                const selected = selectedAddonGroupOptions.find(
+            <div className="flex flex-col divide-y divide-gray-200 dark:divide-gray-700 px-4">
+              {groupItems.map((item) => {
+                const selected = selectedItems.find(
                   (s) => s.option.id === item.id
                 );
                 const qty = selected?.qty || 0;
 
                 return (
-                  <div
+                  <label
                     key={item.id}
-                    className="flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="flex items-center justify-between py-4 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    <div className="flex justify-start items-center gap-2 flex-1">
+                      <span className="truncate">
                         {item.store_product_variant?.product_variant?.name}
-                      </p>
+                      </span>
                       {item.additional_price > 0 && (
-                        <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                        <span className="text-xs text-emerald-600 dark:text-emerald-400">
                           + R$ {item.additional_price}
-                        </p>
+                        </span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        onClick={() =>
-                          handleAddonChange(group.id!, item.id, qty - 1)
-                        }
-                        disabled={qty <= 0}
-                        className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 disabled:opacity-50"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span className="w-8 text-center text-sm font-semibold text-gray-800 dark:text-gray-100">
-                        {qty}
-                      </span>
-                      <button
-                        onClick={() =>
-                          handleAddonChange(group.id!, item.id, qty + 1)
-                        }
-                        className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/30"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+                    {max === 1 ? (
+                      <input
+                        type="radio"
+                        name={`group-${group.id}`}
+                        checked={qty > 0}
+                        onChange={() => handleChange(group, item.id, 1, max)}
+                        className="w-4 h-4 text-teal-500 border-gray-300 dark:border-gray-600"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {qty > 0 && (
+                          <button
+                            onClick={() => handleChange(group, item.id, qty - 1, max)}
+                            className="w-6 h-6 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:text-red-500"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                        )}
+                        <span className="w-5 text-center">{qty}</span>
+                        <button
+                          onClick={() => handleChange(group, item.id, qty + 1, max)}
+                          className="w-6 h-6 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:text-teal-600"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                  </label>
                 );
               })}
             </div>
 
-            {error && (
-              <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1 mt-2">
-                <AlertCircle className="w-4 h-4" /> {error}
+            {/* Mensagem de erro */}
+            {errorMessage && (
+              <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1 mt-1">
+                <AlertCircle className="w-3 h-3" /> {errorMessage}
               </p>
             )}
           </div>

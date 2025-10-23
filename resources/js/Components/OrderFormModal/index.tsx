@@ -49,7 +49,7 @@ export default function OrderFormModal({ isOpen, onClose, tables, order }: Order
 
     return <>
         <Modal show={isOpen} onClose={onClose}>
-            <div className="p-3">
+            <div className="p-3 bg-white dark:bg-gray-800 rounded-lg w-full max-w-md">
                 <div className="flex justify-between">
                     <p className="text-lg">{ isEdit ? `Editar Pedido - ${order!.number}` : 'Novo Pedido' }</p>
                     <Button onClick={onClose}>

@@ -19,141 +19,147 @@ export default function VariantAddonGroupsForm({
     const group = variantAddonGroups.find((g) => g.id === groupId);
     if (!group) return;
 
-    const existingIndex = selectedAddonGroupOptions.findIndex(
-      (sa) => sa.option.id === optionId && sa.option.addon_group_id === groupId
-    );
-
     let updated = [...selectedAddonGroupOptions];
 
-    const currentCount = updated
-      .filter((sa) => sa.option.addon_group_id === groupId)
-      .reduce((sum, sa) => sum + sa.qty, 0);
+    // Comportamento para radio (max_options = 1)
+    if (group.max_options === 1) {
+      // Remove apenas as seleções deste grupo
+      updated = updated.filter(sa => sa.option.addon_group_id !== groupId);
 
-    // Limites de máximo
-    if (
-      group.max_options !== null &&
-      qty > 0 &&
-      currentCount - (existingIndex >= 0 ? updated[existingIndex].qty : 0) + qty >
-        group.max_options
-    ) {
-      return; // ignora se ultrapassar o limite
-    }
-
-    if (existingIndex >= 0) {
-      if (qty <= 0) {
-        updated.splice(existingIndex, 1);
-      } else {
-        updated[existingIndex].qty = qty;
+      if (qty > 0) {
+        const option = group.addon_group_options.find((o) => o.id === optionId);
+        if (option) updated.push({ option, qty });
       }
-    } else if (qty > 0) {
-      const option = group.addon_group_options.find((o) => o.id === optionId);
-      if (option) updated.push({ option, qty });
+    } else {
+      const existingIndex = selectedAddonGroupOptions.findIndex(
+        (sa) => sa.option.id === optionId && sa.option.addon_group_id === groupId
+      );
+
+      const currentCount = updated
+        .filter((sa) => sa.option.addon_group_id === groupId)
+        .reduce((sum, sa) => sum + sa.qty, 0);
+
+      // Limites de máximo
+      if (
+        group.max_options !== null &&
+        qty > 0 &&
+        currentCount - (existingIndex >= 0 ? updated[existingIndex].qty : 0) + qty >
+          group.max_options
+      ) {
+        return; // ignora se ultrapassar o limite
+      }
+
+      if (existingIndex >= 0) {
+        if (qty <= 0) {
+          updated.splice(existingIndex, 1);
+        } else {
+          updated[existingIndex].qty = qty;
+        }
+      } else if (qty > 0) {
+        const option = group.addon_group_options.find((o) => o.id === optionId);
+        if (option) updated.push({ option, qty });
+      }
     }
 
     onChange(updated);
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="overflow-y-auto pr-2">
       {variantAddonGroups.map((group) => {
         const currentSelections = selectedAddonGroupOptions.filter(
           (sa) => sa.option.addon_group_id === group.id
         );
-        const currentCount = currentSelections.reduce(
-          (sum, sa) => sum + sa.qty,
-          0
-        );
-        const errorMessage =
-          errors[`addonGroupOptionQuantities.${group.id}`] || "";
+        const currentCount = currentSelections.reduce((sum, sa) => sum + sa.qty, 0);
+        const errorMessage = errors[`addonGroupOptionQuantities.${group.id}`] || "";
 
         const minReached = currentCount >= (group.min_options || 0);
-        const maxReached =
-          group.max_options !== null && currentCount >= group.max_options;
+        const maxReached = group.max_options !== null && currentCount >= group.max_options;
 
-        const groupValid =
-          minReached && (!group.max_options || currentCount <= group.max_options);
+        const groupValid = minReached && (!group.max_options || currentCount <= group.max_options);
 
         return (
           <div
             key={group.id}
-            className={`rounded-lg border bg-white dark:bg-gray-800 transition-colors ${
-              groupValid
-                ? "border-gray-200 dark:border-gray-700"
-                : "border-red-400 dark:border-red-600"
-            }`}
+            className="dark:bg-gray-800 rounded-md"
           >
-            {/* Cabeçalho */}
-            <div className="flex items-start justify-between p-3 sm:p-4 border-b border-gray-100 dark:border-gray-700">
-              <div>
-                <h3 className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  {group.name}
-                  {group.is_required && (
-                    <span className="ml-1 text-red-500">*</span>
-                  )}
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  Mín: {group.min_options ?? 0} • Máx:{" "}
-                  {group.max_options ?? "∞"}
-                </p>
-              </div>
-              <span
-                className={`text-sm ${
-                  groupValid
-                    ? "text-gray-600 dark:text-gray-300"
-                    : "text-red-500 dark:text-red-400"
-                }`}
-              >
+            {/* Cabeçalho do grupo */}
+            <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-md p-4">
+              <span className="font-medium text-gray-900 dark:text-gray-100">
+                {group.name} {group.is_required ? <span className="text-red-500">*</span> : null}
+              </span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
                 {currentCount}/{group.max_options ?? "∞"}
               </span>
             </div>
 
             {/* Lista de opções */}
-            <div className="p-3 sm:p-4 space-y-2">
-              {group.addon_group_options?.map((opt) => {
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700 px-4">
+              {group.addon_group_options.map((opt) => {
                 const selected = selectedAddonGroupOptions.find(
                   (sa) => sa.option.id === opt.id
                 );
                 const qty = selected?.qty || 0;
+
                 const disabled =
                   group.max_options !== null &&
                   !qty &&
                   currentCount >= group.max_options;
 
+                // Se max_options === 1 => radio
+                if (group.max_options === 1) {
+                  return (
+                    <li key={opt.id} className="flex justify-between items-center py-2">
+                      <label className="flex items-center gap-2 w-full cursor-pointer">
+                        <span className="text-gray-900 dark:text-gray-100">
+                          {opt.addon?.name}
+                        </span>
+                        {opt.additional_price > 0 && (
+                          <span className="ml-1 text-sm text-emerald-600 dark:text-emerald-400">
+                            + R$ {opt.additional_price}
+                          </span>
+                        )}
+                      </label>
+                      <input
+                        type="radio"
+                        name={`addon-group-${group.id}`}
+                        checked={qty > 0}
+                        onChange={() => handleAddonChange(group.id!, opt.id, 1)}
+                        className="accent-emerald-500"
+                      />
+                    </li>
+                  );
+                }
+
+                // Caso contrário: quantidade + / -
                 return (
-                  <div
-                    key={opt.id}
-                    className={`flex items-center justify-between rounded-md border px-3 py-2 transition-all ${
-                      qty > 0
-                        ? "border-emerald-300 bg-emerald-50 dark:bg-emerald-900/20"
-                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                    }`}
-                  >
-                    <div className="flex flex-col text-sm">
-                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                  <li key={opt.id} className="flex justify-between items-center py-2">
+                    <div>
+                      <span className="text-gray-900 dark:text-gray-100">
                         {opt.addon?.name}
                       </span>
                       {opt.additional_price > 0 && (
-                        <span className="text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                        <span className="ml-1 text-sm text-emerald-600 dark:text-emerald-400">
                           + R$ {opt.additional_price}
                         </span>
                       )}
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleAddonChange(group.id!, opt.id, qty - 1)
-                        }
-                        disabled={qty <= 0}
-                        className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:text-red-500 hover:border-red-400 transition disabled:opacity-40"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-
-                      <span className="w-6 text-center text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {qty}
-                      </span>
+                      {qty > 0 && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleAddonChange(group.id!, opt.id, qty - 1)
+                            }
+                            className="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:text-red-500 disabled:opacity-40"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="w-6 text-center">{qty}</span>
+                        </>
+                      )}
 
                       <button
                         type="button"
@@ -161,27 +167,25 @@ export default function VariantAddonGroupsForm({
                           handleAddonChange(group.id!, opt.id, qty + 1)
                         }
                         disabled={disabled}
-                        className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:text-emerald-600 hover:border-emerald-400 transition disabled:opacity-40"
+                        className="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:text-emerald-600 disabled:opacity-40"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
-                  </div>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
 
             {/* Erros */}
             {!groupValid && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800">
-                <p className="text-sm text-red-700 dark:text-red-300 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errorMessage ||
-                    `Selecione entre ${group.min_options} e ${
-                      group.max_options ?? "∞"
-                    } opção(ões).`}
-                </p>
-              </div>
+              <p className="mt-1 text-sm text-red-600 flex items-center gap-1 px-4">
+                <AlertCircle className="w-4 h-4" />
+                {errorMessage ||
+                  `Selecione entre ${group.min_options} e ${
+                    group.max_options ?? "∞"
+                  } opção(ões).`}
+              </p>
             )}
           </div>
         );

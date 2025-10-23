@@ -23,31 +23,34 @@ interface Props {
 }
 
 export default function OrderPaymentsForm({ order, isOpen, onClose }: Props) {
-  const [remainingAmount, setRemainingAmount] = useState(0);
-  const [changeAmount, setChangeAmount] = useState(0);
+  const [remainingAmount, setRemainingAmount] = useState<number>(0);
+  const [changeAmount, setChangeAmount] = useState<number>(0);
 
   const { data, setData, post, errors, processing, reset } = useForm({
     order_id: order?.id || null,
     method: "",
-    amount: 0, // valor do pagamento (quanto do pedido será quitado)
-    paid_amount: 0, // quanto o cliente entregou (usado apenas no caso cash)
+    amount: "",
+    paid_amount: "",
     notes: "",
   });
 
+  // Atualiza o restante do pedido
   useEffect(() => {
     if (order) {
       const remaining = order.total_amount - order.paid_amount;
       setRemainingAmount(remaining);
-      if (remaining > 0 && data.amount === 0) {
-        setData("amount", remaining);
-      }
     }
-  }, [order, data.amount]);
+  }, [order]);
 
-  // 🔹 calcula troco quando método é cash
+  // Calcula troco se for cash
   useEffect(() => {
     if (data.method === "cash") {
-      const change = Math.max((data.paid_amount || 0) - (data.amount || 0), 0);
+      const change =
+        Math.max(
+          (parseFloat(data.paid_amount as any) || 0) -
+            (parseFloat(data.amount as any) || 0),
+          0
+        );
       setChangeAmount(change);
     } else {
       setChangeAmount(0);
@@ -64,16 +67,16 @@ export default function OrderPaymentsForm({ order, isOpen, onClose }: Props) {
     });
   };
 
-  const isValidAmount = data.amount > 0;
+  const isValidAmount = parseFloat(data.amount as any) > 0;
 
   const handleQuickAmount = (percentage: number) => {
     const amount = remainingAmount * (percentage / 100);
-    setData("amount", Math.round(amount * 100) / 100);
+    setData("amount", (Math.round(amount * 100) / 100).toString());
   };
 
   return (
     <Modal show={isOpen} onClose={onClose}>
-      <div className="flex flex-col max-w-2xl w-full max-h-[95vh] bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+      <div className="flex flex-col max-w-2xl w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-6 py-4 flex justify-between items-center rounded-t-2xl">
           <div className="flex items-center gap-3">
@@ -105,7 +108,7 @@ export default function OrderPaymentsForm({ order, isOpen, onClose }: Props) {
                 Resumo do Pagamento
               </h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+            <div className="flex items-center justify-between gap-6">
               <div>
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                   Total do Pedido
@@ -217,10 +220,8 @@ export default function OrderPaymentsForm({ order, isOpen, onClose }: Props) {
                   type="number"
                   id="amount"
                   className="w-full px-4 py-3 rounded-xl border-2 text-lg font-semibold shadow-sm focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
-                  value={data.amount.toFixed(2)}
-                  onChange={(e) =>
-                    setData("amount", parseFloat(e.target.value) || 0)
-                  }
+                  value={data.amount}
+                  onChange={(e) => setData("amount", e.target.value)}
                   min={0}
                   step="0.01"
                   placeholder="0,00"
@@ -240,9 +241,7 @@ export default function OrderPaymentsForm({ order, isOpen, onClose }: Props) {
                       id="paid_amount"
                       className="w-full px-4 py-3 rounded-xl border-2 text-lg font-semibold shadow-sm focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
                       value={data.paid_amount}
-                      onChange={(e) =>
-                        setData("paid_amount", parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => setData("paid_amount", e.target.value)}
                       min={0}
                       step="0.01"
                       placeholder="Ex: 100,00"
@@ -252,7 +251,7 @@ export default function OrderPaymentsForm({ order, isOpen, onClose }: Props) {
                 </div>
 
                 {/* Exibe troco */}
-                {data.paid_amount > 0 && (
+                {parseFloat(data.paid_amount as any) > 0 && (
                   <div className="flex items-center justify-between p-3 rounded-lg border border-yellow-200 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300">
                     <div className="flex items-center gap-2">
                       <ArrowDownCircle className="w-5 h-5" />

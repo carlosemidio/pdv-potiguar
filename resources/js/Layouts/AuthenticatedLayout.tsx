@@ -37,7 +37,7 @@ export default function Authenticated({
             {/* Sidebar */}
             <div className={`lg:block lg:inset-y-0 lg:left-0 lg:w-80 lg:bg-white lg:dark:bg-gray-800`}>
                 <nav
-                    className={`transition-all duration-300 transform fixed inset-y-0 left-0 z-40 bg-white dark:bg-gray-800 shadow-xl lg:shadow-none w-64 lg:w-80
+                    className={`transition-all duration-300 transform fixed inset-y-0 left-0 z-[999] bg-white dark:bg-gray-800 shadow-xl lg:shadow-none w-64 lg:w-80
                     ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:fixed lg:inset-y-0 lg:w-80 border-r border-gray-200 dark:border-gray-700`}
                 >
                     <div className="flex flex-col h-full">
@@ -85,12 +85,14 @@ export default function Authenticated({
                                     Operações
                                 </h3>
 
-                                <NavLink href={route('cash.index')} active={route().current('cash.*')}>
-                                    <div className='flex gap-3 items-center'>
-                                        <BarChart3 className="w-5 h-5" />
-                                        <p>Caixa</p>
-                                    </div>
-                                </NavLink>
+                                {can('cash-registers_view') && (
+                                    <NavLink href={route('cash.index')} active={route().current('cash.*')}>
+                                        <div className='flex gap-3 items-center'>
+                                            <BarChart3 className="w-5 h-5" />
+                                            <p>Caixa</p>
+                                        </div>
+                                    </NavLink>
+                                )}
                                 
                                 {can('orders_view') && (
                                     <NavLink href={route('orders.index')} active={route().current('orders.*')}>
@@ -445,6 +447,11 @@ export default function Authenticated({
                 {/* Bottom Navigation (mobile) */}
                 <nav className="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-700 lg:hidden shadow-lg">
                     <div className="grid grid-cols-4 px-2 py-1">
+                        <Link href={route('cash.index')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 ${route().current('cash.*') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                            <Package className="w-5 h-5 mb-1" />
+                            <span className="text-xs font-medium">Caixa</span>
+                        </Link>
+
                         <Link href={route('orders.index')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 relative ${route().current('orders.*') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
                             <ShoppingCart className="w-5 h-5 mb-1" />
                             <span className="text-xs font-medium">Pedidos</span>
@@ -461,10 +468,6 @@ export default function Authenticated({
                         <Link href={route('customers.index')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 ${route().current('customers.*') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
                             <Boxes className="w-5 h-5 mb-1" />
                             <span className="text-xs font-medium">Clientes</span>
-                        </Link>
-                        <Link href={route('product-variant.index')} className={`flex flex-col items-center py-2 px-2 rounded-lg mx-1 transition-all duration-200 ${route().current('product-variant.*') || route().current('store-product-variant.*') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
-                            <Package className="w-5 h-5 mb-1" />
-                            <span className="text-xs font-medium">Produtos</span>
                         </Link>
                     </div>
                 </nav>

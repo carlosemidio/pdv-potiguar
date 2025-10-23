@@ -72,7 +72,7 @@ class OrdersController extends Controller
 
         $orders = $ordersQuery->with(['store', 'table', 'customer', 'items.storeProductVariant.productVariant'])
             ->orderBy('id', 'desc')
-            ->paginate(12)
+            ->paginate(5)
             ->withQueryString();
 
         $tables = [];
@@ -304,17 +304,8 @@ class OrdersController extends Controller
                     ->with('fail', 'Apenas pedidos pendentes podem ser confirmados.');
             }
 
-            // Call to external API with GuzzleHttp
-            $client = new \GuzzleHttp\Client();
-            $response = $client->post('https://api.pdvp.com.br/api/v1/stores/' . $order->store->slug . '/orders/' . $order->number . '/confirm');
-
-            if ($response->getStatusCode() !== 200) {
-                return redirect()->back()
-                    ->with('fail', 'Erro ao confirmar pedido na API externa.');
-            }
-
             DB::transaction(function () use ($order) {
-                $order->update(['status' => OrderStatus::CONFIRMED->value]);
+                $order->update(['status' => OrderStatus::IN_PROGRESS->value]);
                 $order->load('items');
                 
                 // update stock for each item in the order (if applicable)
@@ -323,9 +314,14 @@ class OrdersController extends Controller
                         $this->orderItemStockMovementService->registerSaleFromOrderItem($item);
                     }
 
-                    if ($item->storeProductVariant && !$item->storeProductVariant->is_produced) {
-                        $item->status = OrderItemStatus::READY->value;
-                        $item->save();
+                    if ($item->storeProductVariant) {
+                        if (!$item->storeProductVariant->is_produced) {
+                            $item->status = OrderItemStatus::READY->value;
+                            $item->save();
+                        } else {
+                            $item->status = OrderItemStatus::IN_PROGRESS->value;
+                            $item->save();
+                        }
                     }
                 }
             });

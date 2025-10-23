@@ -10,15 +10,16 @@ import OrderItemFormModal from '@/Components/OrderItemFormModal';
 import { useState } from 'react';
 import { OrderItem } from '@/types/OrderItem';
 import Swal from 'sweetalert2';
-import { DollarSignIcon, PercentIcon } from 'lucide-react';
+import { BookmarkCheck, DollarSignIcon, PercentIcon, PlusIcon } from 'lucide-react';
 import OrderPaymentsForm from '@/Components/OrderPaymentsForm';
 import { formatDateTime } from '@/utils/date-format';
-import { MdCancel, MdLocalPrintshop, MdLocalShipping, MdOutlineFormatListNumbered, MdWhatsapp } from 'react-icons/md';
+import { MdCancel, MdLocalPrintshop, MdLocalShipping, MdOutlineFormatListNumbered, MdProductionQuantityLimits, MdWhatsapp } from 'react-icons/md';
 import OrderDiscountFormModal from '@/Components/OrderDiscountFormModal';
 import PrintOrderFormModal from '@/Components/PrintOrderFormModal';
 import PrintOrderItemsFormModal from '@/Components/PrintOrderItemsFormModal';
 import OrderItemsList from '@/Components/OrderItemsList';
 import PaymentsList from '@/Components/PaymentsList';
+import OrderStatusColors from '@/utils/OrderStatusColors';
 
 export default function Index({
     auth,
@@ -35,22 +36,34 @@ export default function Index({
 
     // Função para impressão direta (quando há apenas uma impressora)
     const printOrderDirectly = (printerId: number) => {
-        post(route('order.print', { orderId: order?.data.id, printerId: printerId }), {
-            preserveScroll: true,
-            onSuccess: () => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Sucesso',
-                    text: 'Pedido enviado para impressão.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            },
-            onError: () => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro',
-                    text: 'Houve um erro ao enviar o pedido para impressão.',
+        // confirmação de impressão
+        Swal.fire({
+            title: 'Imprimir pedido',
+            text: `Deseja imprimir o pedido #${order?.data.id} na impressora selecionada?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, imprimir',
+            cancelButtonText: 'Cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                post(route('order.print', { orderId: order?.data.id, printerId: printerId }), {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sucesso',
+                            text: 'Pedido enviado para impressão.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    },
+                    onError: () => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro',
+                            text: 'Houve um erro ao enviar o pedido para impressão.',
+                        });
+                    }
                 });
             }
         });
@@ -175,6 +188,12 @@ export default function Index({
                     <h1 className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white tracking-tight truncate">
                         Pedido #{order?.data ? order.data.id : 'N/A'}
                     </h1>
+
+                    <div className="flex items-center space-x-2">
+                        <span className={`ml-4 rounded-lg p-2 text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider ${ OrderStatusColors[order?.data.status || 'pending'] }`}>
+                            {order?.data.status_name}
+                        </span>
+                    </div>
                 </div>
             }
         >
@@ -203,7 +222,7 @@ export default function Index({
                         </div>
                     )}
 
-                    <div className="border-gray-200 dark:border-gray-700 flex justify-start items-center space-x-2 md:space-x-4 overflow-x-auto">
+                    <div className="border-gray-200 dark:border-gray-700 flex justify-start items-center space-x-2 md:space-x-4 overflow-x-auto w-full py-4">
                         {order?.data.items.length ? (
                             <OrderItemsList items={order.data.items} />
                         ) : (
@@ -221,19 +240,6 @@ export default function Index({
                             </div>
                         )}
                     </div>
-
-                    {/* Floating Action Button for adding items */}
-                    {order?.data.status === 'in_progress' && (
-                        <button
-                            aria-label="Adicionar item"
-                            onClick={() => setIsModalOpen(true)}
-                            className="fixed bottom-44 lg:bottom-16 right-6 z-50 inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 h-14 w-14 md:h-16 md:w-16"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                            </svg>
-                        </button>
-                    )}
 
                     {/* Modals */}
                     <OrderItemFormModal
@@ -278,7 +284,7 @@ export default function Index({
                 </div>
             </section>
 
-            <section className="w-full fixed bottom-16 left-0 md:bottom-0 md:left-80 md:right-0 md:flex md:justify-start md:items-center bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg z-2 p-4">
+            <section className="fixed container bottom-16 left-0 md:bottom-0 md:ml-[340px] max-w-5xl md:right-0 md:flex md:justify-start md:items-center bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg z-2 p-4">
                 {order?.data.status === 'pending' && (
                     <div className="border-gray-200 dark:border-gray-700">
                         {order?.data.status === 'pending' && (
@@ -313,7 +319,7 @@ export default function Index({
                     </div>
                 )}
 
-                <div className="border-gray-200 dark:border-gray-700">
+                <div className="border-gray-200 dark:border-gray-700 w-full">
                     <div className="text-sm text-gray-500 dark:text-gray-400 flex justify-between items-center">
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             Subtotal: <span className="font-semibold text-gray-900 dark:text-white">{order?.data.amount}</span>
@@ -327,21 +333,21 @@ export default function Index({
                     </div>
                     <div className="flex flex-wrap gap-2 md:gap-3 border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
                         {(order?.data.status === 'confirmed' || order?.data.status === 'in_progress' || order?.data.status === 'shipped') && (
-                            <>
-                                {/* <DangerButton onClick={handleCancelOrder} className="flex-1 md:flex-none inline-flex items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm">
-                                    <MdCancel className="h-4 w-4" />
-                                </DangerButton> */}
-                                <PrimaryButton onClick={handleFinishOrder} className="flex-1 md:flex-none inline-flex items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    <span>Finalizar</span>
-                                </PrimaryButton>
-                            </>
-                        )}
-
-                        {(order?.data.status === 'in_progress') && (
                             <div className="flex flex-wrap gap-2 md:gap-3">
+                                <DangerButton onClick={handleCancelOrder} className="text-sm">
+                                    <MdCancel className="h-8 w-8" />
+                                </DangerButton>
+                                <PrimaryButton onClick={handleFinishOrder} className="text-sm">
+                                    <BookmarkCheck className="h-8 w-8" />
+                                </PrimaryButton>
+                                
+                                {order?.data.status === 'in_progress' && (
+                                    <PrimaryButton onClick={() => setIsModalOpen(true)} className="text-sm">
+                                        <PlusIcon className="h-8 w-8" />
+                                        <span className='text-lg'>Item</span>
+                                    </PrimaryButton>
+                                )}
+
                                 <SecondaryButton onClick={handlePrintOrder} className="inline-flex items-center gap-2 px-4 py-2.5">
                                     <MdLocalPrintshop />
                                 </SecondaryButton>
@@ -350,7 +356,7 @@ export default function Index({
                                     <MdOutlineFormatListNumbered />
                                 </SecondaryButton>
 
-                                {!order?.data?.items.some(i => i.status !== 'ready') && (
+                                {!order?.data?.table && (order?.data.status !== 'shipped') && (
                                     <SecondaryButton onClick={handleShipOrder} className="inline-flex items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm">
                                         <MdLocalShipping className="w-4 h-4" />
                                     </SecondaryButton>

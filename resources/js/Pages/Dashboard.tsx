@@ -5,6 +5,7 @@ import { TrendingUp, ShoppingCart, Package, Store } from 'lucide-react';
 import CashRegister from '@/types/CashRegister';
 import CashRegisterFormModal from '@/Components/CashRegisterFormModal';
 import { useState } from 'react';
+import { can } from '@/utils/authorization';
 
 export default function Dashboard({ auth, pendingOrders, inProgressOrders, openedCashRegister }: PageProps<{
     pendingOrders: number | null;
@@ -29,7 +30,7 @@ export default function Dashboard({ auth, pendingOrders, inProgressOrders, opene
             <Head title="Dashboard" />
 
             <section className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                {!openedCashRegister && (
+                {!openedCashRegister && can('cash-registers_view') && (
                     <CashRegisterFormModal isOpen={openCashRegisterModal} onClose={() => setOpenCashRegisterModal(false)} />
                 )}
 
@@ -43,8 +44,7 @@ export default function Dashboard({ auth, pendingOrders, inProgressOrders, opene
                             </h3>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {/* Opened Cash Register */}
-                            {openedCashRegister ? (
+                            {can('cash-registers_view') && openedCashRegister && (
                                 <a
                                     href={`/caixas/${openedCashRegister.id}`}
                                     className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 block hover:ring-2 hover:ring-green-400 focus:outline-none focus:ring-2 focus:ring-green-400"
@@ -69,7 +69,9 @@ export default function Dashboard({ auth, pendingOrders, inProgressOrders, opene
                                         Aberto em {new Date(openedCashRegister.opened_at).toLocaleString()}
                                     </p>
                                 </a>
-                            ) : (
+                            )}
+
+                            {can('cash-registers_view') && !openedCashRegister && (
                                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 block hover:ring-2 hover:ring-green-400 focus:outline-none focus:ring-2 focus:ring-green-400">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-lime-500 rounded-xl flex items-center justify-center">
@@ -118,26 +120,27 @@ export default function Dashboard({ auth, pendingOrders, inProgressOrders, opene
                                 </p>
                             </a>
 
-                            {/* Pending Orders */}
-                            <a
-                                href="/pedidos?status=pending"
-                                className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 block hover:ring-2 hover:ring-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                            >
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-violet-500 rounded-xl flex items-center justify-center">
-                                        <Package className="w-6 h-6 text-white" />
+                            {pendingOrders !== null && (
+                                <a
+                                    href="/pedidos?status=pending"
+                                    className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 block hover:ring-2 hover:ring-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-violet-500 rounded-xl flex items-center justify-center">
+                                            <Package className="w-6 h-6 text-white" />
+                                        </div>
+                                        <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 rounded-full">
+                                            Pendente
+                                        </span>
                                     </div>
-                                    <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 rounded-full">
-                                        Pendente
-                                    </span>
-                                </div>
-                                <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                                    Pedidos Pendentes
-                                </h4>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {typeof pendingOrders === 'number' ? pendingOrders : 0}
-                                </p>
-                            </a>
+                                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                        Pedidos Pendentes
+                                    </h4>
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                                        {typeof pendingOrders === 'number' ? pendingOrders : 0}
+                                    </p>
+                                </a>
+                            )}
                         </div>
                     </div>
                 </div>

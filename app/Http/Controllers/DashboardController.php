@@ -16,16 +16,32 @@ class DashboardController extends Controller
         }
 
         $user = User::with('store')->find($request->user()->id);
-        $inProgressOrders = Order::where('store_id', $user->store_id)
-            ->where('status', 'in_progress')
-            ->count();
-        $pendingOrders = Order::where('store_id', $user->store_id)
-            ->where('status', 'pending')
-            ->count();
 
-        $openedCashRegister = CashRegister::where('store_id', $user->store_id)
-            ->where('status', 1) // assuming '1' means opened
-            ->first();
+        $inProgressOrders = 0;
+        $pendingOrders = null;
+
+        if ($user->hasPermission('orders_view', true)) {
+            $pendingOrders = Order::where('store_id', $user->store_id)
+                ->where('status', 'pending')
+                ->count();
+
+            $inProgressOrders = Order::where('store_id', $user->store_id)
+                ->where('status', 'in_progress')
+                ->count();
+        } else {
+            $inProgressOrders = Order::where('store_id', $user->store_id)
+                ->where('status', 'in_progress')
+                ->where('user_id', $user->id)
+                ->count();
+        }
+
+        $openedCashRegister = null;
+
+        if ($user->hasPermission('cash-registers_view', true)) {
+            $openedCashRegister = CashRegister::where('store_id', $user->store_id)
+                ->where('status', 1) // assuming '1' means opened
+                ->first();
+        }
 
         return inertia('Dashboard', [
             'user' => $request->user(),

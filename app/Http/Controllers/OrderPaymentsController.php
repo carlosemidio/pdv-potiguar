@@ -63,7 +63,7 @@ class OrderPaymentsController extends Controller
                         'user_id' => Auth::id(),
                         'type' => 'sale',
                         'amount' => $data['paid_amount'],
-                        'description' => "Venda #{$data['order_id']} pagamento em dinheiro",
+                        'description' => "Pagamento em dinheiro no pedido #{$data['order_id']}, valor a ser pago: R$ {$data['amount']}, valor recebido: R$ {$data['paid_amount']}",
                     ]);
 
                     if ($data['change_amount'] > 0) {
@@ -71,7 +71,7 @@ class OrderPaymentsController extends Controller
                             'user_id' => Auth::id(),
                             'type' => 'removal',
                             'amount' => $data['change_amount'],
-                            'description' => "Troco para venda #{$data['order_id']}",
+                            'description' => "Troco para o pagamento em dinheiro no pedido #{$data['order_id']}, valor do troco: R$ {$data['change_amount']}",
                         ]);
                     }
 
@@ -129,7 +129,7 @@ class OrderPaymentsController extends Controller
                             'user_id' => Auth::id(),
                             'type' => 'refund',
                             'amount' => $payment->paid_amount,
-                            'description' => "Devolução de pagamento em dinheiro da venda #{$order->id}",
+                            'description' => "Devolução de pagamento em dinheiro do pedido #{$order->id}",
                         ]);
 
                         if ($payment->change_amount > 0) {
@@ -137,7 +137,7 @@ class OrderPaymentsController extends Controller
                                 'user_id' => Auth::id(),
                                 'type' => 'addition',
                                 'amount' => $payment->change_amount,
-                                'description' => "Reembolso de troco da venda #{$order->id}",
+                                'description' => "Reembolso de troco da devolução do pagamento em dinheiro do pedido #{$order->id}",
                             ]);
                         }
 

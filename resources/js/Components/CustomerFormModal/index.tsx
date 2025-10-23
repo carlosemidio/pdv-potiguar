@@ -55,8 +55,8 @@ export default function CustomerFormModal({ isOpen, onClose, customer }: Custome
     };
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth="xl">
-            <div className="bg-white dark:bg-gray-800 shadow-xl w-full">
+        <Modal show={isOpen} onClose={onClose}>
+            <div className="bg-white dark:bg-gray-800 shadow-xl w-full max-w-2xl rounded-2xl flex flex-col max-h-[90vh]">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 rounded-t-2xl">
                     <div className="flex items-center justify-between">

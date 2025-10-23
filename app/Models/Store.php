@@ -70,4 +70,9 @@ class Store extends Model
     {
         return $this->hasMany(StoreSetting::class);
     }
+
+    public function address()
+    {
+        return $this->morphOne(Address::class, 'addressable');
+    }
 }

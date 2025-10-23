@@ -64,7 +64,38 @@ class StoreController extends Controller
     public function store(StoreCreateFormRequest $request)
     {
         $this->authorize('create', Store::class);
-        $dataForm = $request->all();
+        $dataForm = $request->validate([
+            'city_id' => 'required|exists:cities,id',
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'domain' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'content' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'status' => 'required|in:0,1',
+            'is_default' => 'sometimes|boolean',
+            'layout' => 'nullable|string|max:255',
+            'files.*' => 'sometimes|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx|max:2048',
+            'address' => 'sometimes|array',
+            'address.street' => 'sometimes|string|max:255',
+            'address.number' => 'sometimes|string|max:50',
+            'address.complement' => 'sometimes|string|max:255',
+            'address.neighborhood' => 'sometimes|string|max:255',
+            'address.zipcode' => 'sometimes|string|max:20',
+            'address.city_id' => 'sometimes|exists:cities,id',
+            'address.state' => 'sometimes|string|max:100',
+            'address.country' => 'sometimes|string|max:100',
+        ], [
+            'city_id.required' => 'A cidade é obrigatória.',
+            'city_id.exists' => 'A cidade selecionada é inválida.',
+            'name.required' => 'O nome da loja é obrigatório.',
+            'email.email' => 'O e-mail informado é inválido.',
+            'status.in' => 'O status selecionado é inválido.',
+            'files.*.mimes' => 'Os arquivos devem ser do tipo: jpg, jpeg, png, gif, pdf, doc, docx.',
+            'files.*.max' => 'O tamanho máximo permitido para os arquivos é 2MB.',
+        ]);
 
         $user = User::find($dataForm['user_id']);
         $dataForm['user_id'] = $user->id;
@@ -92,6 +123,10 @@ class StoreController extends Controller
                             $store->images()->save($uploadedFile);   
                         }
                     }
+                }
+
+                if ($dataForm['address']) {
+                    $store->address()->create($dataForm['address']);
                 }
 
                 session()->forget('user');
@@ -132,7 +167,7 @@ class StoreController extends Controller
         $store = Store::where('id', $id)->firstOrFail();
         $this->authorize('update', $store);
 
-        $store->load('user', 'city', 'image', 'images');
+        $store->load('user', 'city', 'image', 'images', 'address');
 
         return Inertia::render('Store/Edit', [
             'store' => new StoreResource($store),
@@ -167,6 +202,14 @@ class StoreController extends Controller
                         
                         $store->images()->save($uploadedFile);   
                     }
+                }
+            }
+
+            if ($dataForm['address']) {
+                if ($store->address) {
+                    $store->address->update($dataForm['address']);
+                } else {
+                    $store->address()->create($dataForm['address']);
                 }
             }
         

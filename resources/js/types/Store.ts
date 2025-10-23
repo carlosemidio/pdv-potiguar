@@ -1,3 +1,4 @@
+import { Address } from "./Address";
 import { City } from "./City";
 import { Image } from "./image";
 import { User } from "./User";
@@ -21,6 +22,7 @@ export type Store = {
     content: string;
     status: number;
     layout: string;
+    address: Address | null;
     created_at: string;
     updated_at: string;
 };

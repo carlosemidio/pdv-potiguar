@@ -35,6 +35,8 @@ import {
     Settings,
     Target
 } from 'lucide-react';
+import AddressForm from '@/Components/AddressForm';
+import { add } from 'lodash';
 registerPlugin(FilePondPluginImagePreview);
 
 export default function Edit({
@@ -59,6 +61,7 @@ export default function Edit({
             status: store ? store.data.status : 1, // Default to active
             layout: store ? store.data.layout : 'default',
             files: Array<File>(),
+            address: store ? store.data.address : null,
         });
 
     const [city, setCity] = useState(store ? store?.data?.city : null);
@@ -120,6 +123,7 @@ export default function Edit({
                     status: 1,
                     layout: 'default',
                     files: [],
+                    address: null,
                 }),
             });
         } else {
@@ -317,6 +321,27 @@ export default function Edit({
                                 </div>
                             </div>
                         </div>
+                    </div>
+                                
+                    {/* Endereço */}
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+                        <div className="bg-gradient-to-r from-teal-600 to-cyan-600 p-6 rounded-t-2xl">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                                    <MapPin className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-white">Endereço</h3>
+                                    <p className="text-teal-100 text-sm">Detalhes do endereço da loja</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <AddressForm
+                            errors={errors}
+                            address={data.address}
+                            onAddressChange={(address) => setData('address', address)}
+                        />
                     </div>
 
                     {/* Descrição e Conteúdo */}

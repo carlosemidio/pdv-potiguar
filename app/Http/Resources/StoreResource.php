@@ -46,6 +46,9 @@ class StoreResource extends JsonResource
             'longitude' => $this->longitude,
             'status' => $this->status,
             'is_default' => $this->is_default,
+            'address' => $this->whenLoaded('address', function () {
+                return new AddressResource($this->address);
+            }),
             'layout' => $this->layout,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

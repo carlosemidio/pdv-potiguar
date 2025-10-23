@@ -1,11 +1,11 @@
 export type Address = {
-    id: number;
+    id?: number;
     zipcode: string;
-    uf: string;
+    state: string;
     city: string;
     neighborhood: string;
     street: string;
     number: string;
     complement: string;
-    is_primary: boolean;
+    full_address: string;
 }

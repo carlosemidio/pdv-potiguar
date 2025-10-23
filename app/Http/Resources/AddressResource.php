@@ -11,18 +11,16 @@ class AddressResource extends JsonResource
     {
         return [
             'id' => $this->id,
-
             'zipcode' => $this->zipcode,
-            'uf' => $this->uf,
+            'state' => $this->state,
             'city' => $this->city,
             'neighborhood' => $this->neighborhood,
             'street' => $this->street,
             'number' => $this->number,
             'complement' => $this->complement,
-
+            'full_address' => $this->full_address,
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-            'is_primary' => $this->is_primary,
+            'updated_at' => $this->updated_at
         ];
     }
 }

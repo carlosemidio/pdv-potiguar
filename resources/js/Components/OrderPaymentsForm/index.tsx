@@ -26,7 +26,7 @@ export default function OrderPaymentsForm({ order, isOpen, onClose }: Props) {
   const [remainingAmount, setRemainingAmount] = useState<number>(0);
   const [changeAmount, setChangeAmount] = useState<number>(0);
 
-  const { data, setData, post, errors, processing, reset } = useForm({
+  const { data, setData, post, processing, reset } = useForm({
     order_id: order?.id || null,
     method: "",
     amount: "",

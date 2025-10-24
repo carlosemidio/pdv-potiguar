@@ -64,7 +64,7 @@ export default function AddressForm({ errors, address, onAddressChange }: Addres
     setStates(_states);
 
     if (isEdit && address?.state) {
-      const stateOption = _states.find((s) => s.value === address.state) || null;
+      const stateOption = _states.find((s: { value: string; label: string }) => s.value === address.state) || null;
       setState(stateOption);
       if (stateOption) getCities(stateOption.value);
     }
@@ -75,11 +75,11 @@ export default function AddressForm({ errors, address, onAddressChange }: Addres
       `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`
     );
     const data = await res.json();
-    const _cities = data.map((c: any) => ({ value: c.nome, label: c.nome }));
+    const _cities = data.map((c: { nome: string }) => ({ value: c.nome, label: c.nome }));
     setCities(_cities);
 
     if (isEdit && address?.city) {
-      const cityOption = _cities.find((c) => c.value === address.city) || null;
+      const cityOption = _cities.find((c: { value: string; label: string }) => c.value === address.city) || null;
       setCity(cityOption);
     }
   }

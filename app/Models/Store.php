@@ -75,4 +75,9 @@ class Store extends Model
     {
         return $this->morphOne(Address::class, 'addressable');
     }
+
+    public function networks()
+    {
+        return $this->hasMany(SocialNetwork::class);
+    }
 }

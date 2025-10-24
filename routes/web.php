@@ -202,6 +202,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/{register}/fechar', [CashRegistersController::class, 'close'])->name('cash.close');
     });
 
+    Route::resource('/redes-sociais', App\Http\Controllers\SocialNetworksController::class)
+        ->only(['store', 'destroy'])
+        ->names('social-networks');
+
     // rota usada no componente select de cidades
     Route::get('search-cities-select', [CityController::class, 'index'])
         ->name('cities-select.search');

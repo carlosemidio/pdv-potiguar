@@ -2,6 +2,7 @@ import { Address } from "./Address";
 import { City } from "./City";
 import { Image } from "./image";
 import { User } from "./User";
+import SocialNetwork from "./SocialNetwork";
 
 export type Store = {
     id: number;
@@ -11,6 +12,8 @@ export type Store = {
     city: City;
     image: Image | null;
     images: Image[] | null;
+    address: Address | null;
+    networks: SocialNetwork[] | null;
     name: string;
     slug: string;
     email: string;
@@ -22,7 +25,6 @@ export type Store = {
     content: string;
     status: number;
     layout: string;
-    address: Address | null;
     created_at: string;
     updated_at: string;
 };

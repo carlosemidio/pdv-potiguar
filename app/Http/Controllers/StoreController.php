@@ -152,7 +152,7 @@ class StoreController extends Controller
         $store = Store::where('id', $id)->firstOrFail();
         $this->authorize('view', $store);
 
-        $store->load('user', 'city', 'image', 'images');
+        $store->load('user', 'city', 'image', 'images', 'address', 'networks');
 
         return Inertia::render('Store/Show', [
             'store' => new StoreResource($store),

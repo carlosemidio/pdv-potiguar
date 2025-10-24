@@ -2,14 +2,63 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Store } from '@/types/Store';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Store as StoreIcon, User, MapPin, Phone, Mail, Globe, Calendar, Image, FileText, Settings } from 'lucide-react';
 import { formatCustomDateTime } from '@/utils/date-format';
+import { networksIcons } from '@/utils/networksIcons';
+import { useState } from 'react';
+import Swal from 'sweetalert2';
+import PrimaryButton from '@/Components/PrimaryButton';
+import SocialNetworkFormModal from '@/Components/SocialNetworkFormModal';
+
+const options = networksIcons.map((network) => ({
+  value: network.slug,
+  label: (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <network.icon />
+      {network.name}
+    </div>
+  ),
+}));
 
 export default function Show({
     auth,
     store,
 }: PageProps<{ store: { data: Store } }>) {
+    const { data, setData, post, errors, processing } = useForm({ _method: 'delete', id: '' });
+    const [isSocialNetworkModalOpen, setIsSocialNetworkModalOpen] = useState(false);
+
+    const handleDeleteSocialNetwork = (networkId: number) => {
+        Swal.fire({
+            title: 'Confirmação',
+            text: 'Tem certeza que deseja remover esta rede social?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, remover',
+            cancelButtonText: 'Cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                post(route('social-networks.destroy', networkId), {
+                    onSuccess: () => {
+                        Swal.fire(
+                            'Removido!',
+                            'A rede social foi removida com sucesso.',
+                            'success'
+                        );
+                    },
+                    onError: () => {
+                        Swal.fire(
+                            'Erro!',
+                            'Ocorreu um erro ao remover a rede social.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    }
 
     return (
         <AuthenticatedLayout
@@ -212,6 +261,64 @@ export default function Show({
                                 </div>
                             </div>
                         )}
+
+                        {/* Redes Sociais */}
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+                            <div className="bg-gradient-to-r from-pink-600 to-rose-600 p-4 rounded-t-2xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                                        <Globe className="w-5 h-5 text-white" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-white">Redes Sociais</h3>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                {store?.data?.networks && store?.data?.networks.length > 0 && (
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {store?.data?.networks.map((network, index) => (
+                                            <a
+                                                key={index}
+                                                href={network.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                                            >
+                                                <div className="w-6 h-6 flex items-center justify-center">
+                                                    {networksIcons.find(n => n.slug === network.name)?.icon({ className: 'w-5 h-5 text-gray-700 dark:text-gray-300' })}
+                                                </div>
+                                                <span className="font-medium text-gray-900 dark:text-white">
+                                                    {networksIcons.find(n => n.slug === network.name)?.name || network.name}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    className="ml-auto px-2 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200 transition"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleDeleteSocialNetwork(network.id);
+                                                    }}
+                                                    title="Remover Rede Social"
+                                                >
+                                                    Remover
+                                                </button>
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+                                {(!store?.data?.networks || store?.data?.networks.length === 0) && (
+                                    <p className="text-gray-600 dark:text-gray-400">Nenhuma rede social cadastrada.</p>
+                                )}
+                            </div>
+
+                            <SocialNetworkFormModal isOpen={isSocialNetworkModalOpen} onClose={() => setIsSocialNetworkModalOpen(false)} />
+
+                            <div className="p-6">
+                                <div className="flex items-center gap-4">
+                                    <PrimaryButton onClick={() => setIsSocialNetworkModalOpen(true)}>
+                                        Adicionar
+                                    </PrimaryButton>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Configurações Técnicas */}
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">

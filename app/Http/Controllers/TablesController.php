@@ -67,13 +67,6 @@ class TablesController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        $this->authorize('create', Table::class);
-
-        return Inertia::render('Tables/Form');
-    }
-
     public function store(Request $request)
     {
         $this->authorize('create', Table::class);
@@ -107,17 +100,6 @@ class TablesController extends Controller
             return redirect()->back()
             ->with('fail', 'Erro ao criar mesa: ' . $e->getMessage());
         }
-    }
-
-    public function edit($id)
-    {
-        $table = $this->table->findOrFail($id);
-
-        $this->authorize('update', $table);
-
-        return Inertia::render('Tables/Form', [
-            'table' => new TableResource($table),
-        ]);
     }
 
     public function update(Request $request, $id)
@@ -160,43 +142,6 @@ class TablesController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao remover mesa: ' . $e->getMessage());
-        }
-    }
-
-    public function updateStatus(Request $request, $id)
-    {
-        $data = $request->validate([
-            'status' => 'required|string|in:available,reserved'
-        ], [
-            'status.required' => 'O status é obrigatório.',
-            'status.in' => 'O status deve ser "available" ou "reserved".'
-        ]);
-
-        $table = $this->table->findOrFail($id);
-        $this->authorize('update', $table);
-
-        // Verifica se a mesa não está ocupada
-        if ($table->status === 'occupied') {
-            return redirect()->back()
-                ->with('fail', 'Não é possível alterar o status de uma mesa ocupada. A mesa será liberada automaticamente quando o pedido for finalizado.');
-        }
-
-        try {
-            if (!$table->update(['status' => $data['status']])) {
-                return redirect()->back()
-                    ->with('fail', 'Erro ao atualizar status da mesa.');
-            }
-
-            $statusNames = [
-                'available' => 'Disponível',
-                'reserved' => 'Reservada'
-            ];
-
-            return redirect()->back()
-                ->with('success', "Status da mesa {$table->name} alterado para {$statusNames[$data['status']]} com sucesso!");
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('fail', 'Erro ao atualizar status da mesa: ' . $e->getMessage());
         }
     }
 }

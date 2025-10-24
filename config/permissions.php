@@ -85,4 +85,8 @@ return [
         'name' => 'cash-registers',
         'display_name' => 'Caixas',
     ],
+    [
+        'name' => 'menus',
+        'display_name' => 'Menus',
+    ],
 ];

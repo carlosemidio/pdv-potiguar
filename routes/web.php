@@ -202,6 +202,17 @@ Route::middleware('auth')->group(function () {
         Route::post('/{register}/fechar', [CashRegistersController::class, 'close'])->name('cash.close');
     });
 
+    Route::resource('/menus', App\Http\Controllers\MenusController::class)
+        ->names('menus');
+
+    Route::resource('/menu-horarios', App\Http\Controllers\MenuSchedulesController::class)
+        ->only(['store', 'destroy'])
+        ->names('menu.schedules');
+
+    Route::resource('/menu-dias', App\Http\Controllers\MenuDaysController::class)
+        ->only(['store', 'destroy'])
+        ->names('menu.days');
+
     Route::resource('/redes-sociais', App\Http\Controllers\SocialNetworksController::class)
         ->only(['store', 'destroy'])
         ->names('social-networks');

@@ -19,7 +19,14 @@ class SocialNetworksController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('create', Table::class);
+        $user = User::with('store')->find(Auth::user()->id);
+
+        if (!$user || !$user->store) {
+            return redirect()->back()
+                ->with('fail', 'Usuário ou loja não encontrado.');
+        }
+
+        $this->authorize('update', $user->store);
         
         $data = $request->validate([
             'name' => 'required|string|max:255',
@@ -27,8 +34,6 @@ class SocialNetworksController extends Controller
         ]);
 
         try {
-            $user = User::find(Auth::user()->id);
-
             $data['user_id'] = $user->id;
             $data['store_id'] = $user->store_id;
             $data['tenant_id'] = $user->tenant_id;

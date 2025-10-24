@@ -157,11 +157,20 @@ export default function Authenticated({
                             )}
 
                             {/* Catálogo de Produtos */}
-                            {(can('products_view') || can('store-product-variants_view') || can('product-variants_view') || can('categories_view') || can('brands_view') || can('ingredients_view') || can('addons_view')) && (
+                            {(can('products_view') || can('store-product-variants_view') || can('product-variants_view') || can('categories_view') || can('brands_view') || can('ingredients_view') || can('addons_view') || can('menus_view')) && (
                                 <div className="mb-4">
                                     <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-3 mb-2">
                                         Catálogo
                                     </h3>
+
+                                    {can('menus_view') && (
+                                        <NavLink href={route('menus.index')} active={route().current('menus.*')}>
+                                            <div className='flex gap-3 items-center'>
+                                                <Menu className="w-5 h-5" />
+                                                <p>Menus</p>
+                                            </div>
+                                        </NavLink>
+                                    )}
 
                                     {(can('products_view') || can('store-product-variants_view') || can('product-variants_view')) && (
                                         <NavLinkGroup title="Produtos" icon={<Package className="w-5 h-5" />} open={route().current('product.*') || route().current('store-product-variant.*') || route().current('product-variant.*')}>

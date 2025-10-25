@@ -126,9 +126,9 @@ class MenusController extends Controller
             $data = $request->validate([
                 'name' => 'required|string|max:255',
                 'is_permanent' => 'required|boolean',
-                'store_product_variant_ids' => 'required|array',
+                'store_product_variant_ids' => 'array',
                 'store_product_variant_ids.*' => 'exists:store_product_variants,id',
-                'addon_ids' => 'required|array',
+                'addon_ids' => 'array',
                 'addon_ids.*' => 'exists:addons,id',
             ],[
                 'name.required' => 'O campo nome é obrigatório.',
@@ -136,10 +136,8 @@ class MenusController extends Controller
                 'name.max' => 'O campo nome não pode exceder 255 caracteres.',
                 'is_permanent.required' => 'O campo permanente é obrigatório.',
                 'is_permanent.boolean' => 'O campo permanente deve ser verdadeiro ou falso.',
-                'store_product_variant_ids.required' => 'O campo itens do menu é obrigatório.',
                 'store_product_variant_ids.array' => 'O campo itens do menu deve ser um array.',
                 'store_product_variant_ids.*.exists' => 'Um dos itens do menu selecionados é inválido.',
-                'addon_ids.required' => 'O campo adicionais do menu é obrigatório.',
                 'addon_ids.array' => 'O campo adicionais do menu deve ser um array.',
                 'addon_ids.*.exists' => 'Um dos adicionais do menu selecionados é inválido.',
             ]);

@@ -4,7 +4,7 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus, Award } from 'lucide-react';
+import { Edit, Trash, Plus, Award, Eye } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import MenuFormModal from '@/Components/MenuFormModal';
@@ -108,7 +108,7 @@ export default function Index({
                             {menus?.data?.length > 0 ? (
                                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
                                     {menus.data.map((menu) => (
-                                        <Link key={menu.id} href={route('menus.show', menu.id)} className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-all duration-200 relative">
+                                        <div key={menu.id} className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-all duration-200 relative">
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                                     <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
@@ -125,6 +125,16 @@ export default function Index({
                                             </div>
 
                                             <div className="flex items-center gap-2 absolute top-1 right-1">
+                                                {can('menus_view') && (
+                                                    <Link
+                                                        href={route('menus.show', menu.id)}
+                                                        className="p-1.5 rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/50 dark:hover:bg-green-800 text-green-600 dark:text-green-400 transition-colors"
+                                                        title="Ver menu"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                    </Link>
+                                                )}
+
                                                 {can('menus_edit') && (
                                                     <button
                                                         onClick={() => openModal(menu)}
@@ -144,7 +154,7 @@ export default function Index({
                                                     </button>
                                                 )}
                                             </div>
-                                        </Link>
+                                        </div>
                                     ))}
                                 </div>
                             ) : (
@@ -194,7 +204,7 @@ export default function Index({
 
             {menuToDelete && (
                 <Modal show={confirmingMenuDeletion} onClose={closeModal}>
-                    <form onSubmit={(e) => { e.preventDefault(); deleteMenu(); }} className="p-6">
+                    <form onSubmit={(e) => { e.preventDefault(); deleteMenu(); }} className="p-6 bg-white dark:bg-gray-800 rounded-lg">
                         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                             Tem certeza que deseja deletar o menu <span className="font-bold">{menuToDelete.name}</span>?
                         </h2>

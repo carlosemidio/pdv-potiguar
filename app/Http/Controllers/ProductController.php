@@ -70,10 +70,10 @@ class ProductController extends Controller
     /**
      * Product a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store()
     {
         $this->authorize('create', Product::class);
-        $request->validate([
+        Request::validate([
             'name' => 'required|string|max:255|unique:products,name,NULL,id,tenant_id,' . Auth::user()->tenant_id,
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'nullable|exists:brands,id',
@@ -85,7 +85,7 @@ class ProductController extends Controller
             'brand_id.exists' => 'A marca selecionada não é válida.',
         ]);
 
-        $dataForm = $request->all();
+        $dataForm = Request::all();
         $dataForm['user_id'] = Auth::id();
         $dataForm['tenant_id'] = Auth::user()->tenant_id;
 
@@ -142,12 +142,12 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update($id)
     {
         $product = Product::where('id', $id)->firstOrFail();
         $this->authorize('update', $product);
 
-        $request->validate([
+        Request::validate([
             'name' => 'required|string|max:255|unique:products,name,' . $product->id . ',id,tenant_id,' . Auth::user()->tenant_id,
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'nullable|exists:brands,id',
@@ -160,7 +160,7 @@ class ProductController extends Controller
             'brand_id.exists' => 'A marca selecionada não é válida.',
         ]);
 
-        $dataForm = $request->all();
+        $dataForm = Request::all();
 
         try {
             if ($product->update($dataForm)) {

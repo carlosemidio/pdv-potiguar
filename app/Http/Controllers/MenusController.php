@@ -170,11 +170,11 @@ class MenusController extends Controller
                     ->with('fail', 'Erro ao remover marca.');
             }
 
-            return redirect()->route('brands.index')
-                ->with('success', 'Marca removida com sucesso!');
+            return redirect()->route('menus.index')
+                ->with('success', 'Menu removido com sucesso!');
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('fail', 'Erro ao remover marca: ' . $e->getMessage());
+                ->with('fail', 'Erro ao remover menu: ' . $e->getMessage());
         }
     }
 }

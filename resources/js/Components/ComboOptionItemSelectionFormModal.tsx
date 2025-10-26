@@ -23,11 +23,11 @@ export default function ComboOptionItemSelectionCompact({
     let updated = [...selectedItems];
 
     if (max === 1) {
-      // radio behavior: mantém apenas o selecionado
       const selectedItem = group.combo_option_items?.find((item) => item.id === itemId);
-      updated = qty > 0 && selectedItem
-        ? [{ option: selectedItem, qty: 1 }]
-        : [];
+      updated = updated.filter((s) => s.option.option_group_id !== group.id);
+      if (qty > 0 && selectedItem) {
+        updated.push({ option: selectedItem, qty: 1 });
+      }
     } else if (existingIndex >= 0) {
       if (qty <= 0) updated.splice(existingIndex, 1);
       else updated[existingIndex].qty = qty;

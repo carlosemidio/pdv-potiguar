@@ -47,7 +47,9 @@ if (!function_exists('upload_file')) {
             $targetPath = $folder ? "$folder/$fullPath" : $fullPath;
 
             // Aqui usamos put() para manter comportamento privado ou público
-            $storedPath = $disk->put("$targetPath/$fileName", file_get_contents($file));
+            $storedPath = $disk->put("$targetPath/$fileName", file_get_contents($file),
+                $public ? 'public' : 'private'
+            );
 
             if (!$storedPath) {
                 throw new \Exception('Erro ao salvar arquivo no bucket Spaces.');

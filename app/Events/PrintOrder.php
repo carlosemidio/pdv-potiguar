@@ -69,13 +69,7 @@ class PrintOrder implements ShouldBroadcastNow
 
         return [
             'order' => $this->order,
-            'printer' => [
-                'id' => $this->printer->id,
-                'name' => $this->printer->name,
-                'vendor_id' => $this->printer->vendor_id,
-                'product_id' => $this->printer->product_id,
-                'type' => $this->printer->type,
-            ],
+            'printer' => $this->printer,
             'timestamp' => now()->toISOString()
         ];
     }

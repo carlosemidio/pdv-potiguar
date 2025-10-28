@@ -1,7 +1,8 @@
 import { OrderItem } from "@/types/OrderItem";
 import { useForm } from "@inertiajs/react";
-import { DeleteIcon, X } from "lucide-react";
+import { DeleteIcon, Trash, X, XIcon } from "lucide-react";
 import { useState } from "react";
+import { FaTrash, FaXbox, FaXRay } from "react-icons/fa";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import Swal from "sweetalert2";
 
@@ -91,13 +92,14 @@ export default function OrderItemsList({ items }: { items: OrderItem[] }) {
         const extrasTotal = calcExtras(item);
 
         return (
-          <div key={item.id} className="border-b border-gray-100 relative">
-            <div className="absolute top-2 right-2">
+          <div key={item.id} className="border-b border-gray-100 relative pr-4">
+            <div className="absolute top-0 right-2 z-50 flex items-center h-full">
               <button
                 onClick={() => handleDeleteItem(item)}
                 className="text-red-600 hover:text-red-800"
+                title="Remover item do pedido"
               >
-                <X size={16} />
+                <XIcon className="w-4 h-4" />
               </button>
             </div>
 

@@ -154,7 +154,7 @@ export default function Login({
                         </div>
 
                         {/* Register Link */}
-                        <div className="text-center">
+                        {/* <div className="text-center">
                             <p className="text-sm text-gray-600">
                                 Não tem uma conta?{' '}
                                 <Link
@@ -164,7 +164,7 @@ export default function Login({
                                     Registre-se aqui
                                 </Link>
                             </p>
-                        </div>
+                        </div> */}
                     </form>
                 </div>
 

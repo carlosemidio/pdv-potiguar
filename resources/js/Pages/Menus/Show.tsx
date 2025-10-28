@@ -6,10 +6,13 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Addon } from '@/types/Addon';
 import Menu from '@/types/Menu';
+import MenuDay from '@/types/MenuDay';
+import MenuSchedule from '@/types/MenuSchedule';
 import { StoreProductVariant } from '@/types/StoreProductVariant';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, TrashIcon } from 'lucide-react';
 import { useState } from 'react';
+import Swal from 'sweetalert2';
 
 export default function Show({
     auth,
@@ -21,13 +24,12 @@ export default function Show({
     storeProductVariants: { data: StoreProductVariant[] };
     addons: { data: Addon[] };
 }>) {
-    const { data, setData, patch, errors, processing } =
-        useForm({
-            name: menu.data.name,
-            is_permanent: menu.data.is_permanent,
-            store_product_variant_ids: menu.data.store_product_variants?.map((p) => p.id) || [],
-            addon_ids: menu.data.addons?.map((a) => a.id) || [],
-        });
+    const { data, setData, patch, delete: destroy, errors, processing } = useForm({
+        name: menu.data.name,
+        is_permanent: menu.data.is_permanent,
+        store_product_variant_ids: menu.data.store_product_variants?.map((p) => p.id) || [],
+        addon_ids: menu.data.addons?.map((a) => a.id) || [],
+    });
 
     const [activeTab, setActiveTab] = useState<'items' | 'availability'>('items');
     const [openScheduleModal, setOpenScheduleModal] = useState(false);
@@ -35,6 +37,8 @@ export default function Show({
 
     const allProductIds = storeProductVariants.data.map((p) => p.id);
     const allAddonIds = addons.data.map((a) => a.id);
+    const allProductsSelected = data.store_product_variant_ids.length === allProductIds.length;
+    const allAddonsSelected = data.addon_ids.length === allAddonIds.length;
 
     const toggleProduct = (id: number) => {
         setData((prev) => {
@@ -96,14 +100,68 @@ export default function Show({
         });
     };
 
-    const allProductsSelected = data.store_product_variant_ids.length === allProductIds.length;
-    const allAddonsSelected = data.addon_ids.length === allAddonIds.length;
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         patch(route('menus.update', menu.data.id), {
             preserveScroll: true,
+        });
+    }
+
+    const handleDeleteSchedule = (schedule: MenuSchedule) => {
+        const time = new Date(schedule.start_at).toLocaleDateString() + ' ' + new Date(schedule.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' até ' + new Date(schedule.end_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        Swal.fire({
+            title: 'Tem certeza que deseja deletar este horário: ' + time + '?',
+            text: 'Esta ação não pode ser desfeita.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sim, deletar',
+            cancelButtonText: 'Cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                destroy(route('menu.schedules.destroy', { id: schedule.id }), {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        Swal.fire(
+                            'Deletado!',
+                            'O horário foi deletado com sucesso.',
+                            'success'
+                        );
+                    },
+                });
+            }
+        });
+    }
+
+    const handleDeleteDay = (menuDay: MenuDay) => {
+        const dayNames = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+        const dayName = dayNames[menuDay.weekday];
+
+        Swal.fire({
+            title: 'Tem certeza que deseja deletar: ' + dayName + '?',
+            text: 'Esta ação não pode ser desfeita.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sim, deletar',
+            cancelButtonText: 'Cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                destroy(route('menu.days.destroy', { id: menuDay.id }), {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        Swal.fire(
+                            'Deletado!',
+                            'O dia foi deletado com sucesso.',
+                            'success'
+                        );
+                    },
+                });
+            }
         });
     }
 
@@ -119,7 +177,7 @@ export default function Show({
         >
             <Head title={`Menu: ${menu.data.name}`} />
 
-            <div className="py-6 px-4 max-w-5xl mx-auto">
+            <div className="p-4 max-w-7xl">
                 {/* Voltar */}
                 <div className="mb-6">
                     <Link href={route('menus.index')}>
@@ -131,7 +189,7 @@ export default function Show({
                 </div>
 
                 {/* Card principal */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4">
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                         {menu.data.name}
                     </h3>
@@ -184,7 +242,7 @@ export default function Show({
                                     )}
                                 </div>
 
-                                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-80 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-80 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                                     {storeProductVariants.data.map((variant) => (
                                         <label
                                             key={variant.id}
@@ -262,16 +320,24 @@ export default function Show({
                                     </p>
 
                                     {/* Exemplo: placeholders para menu_days */}
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 xl:grid-cols-6 gap-2">
                                         {menu.data.days && menu.data.days.length > 0 ? (
                                             menu.data.days.map((day) => (
                                                 <div
                                                     key={day.id}
                                                     className="border border-gray-300 dark:border-gray-700 rounded-lg p-4"
                                                 >
-                                                    <h5 className="font-semibold text-gray-800 dark:text-gray-200">
-                                                        {['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'][day.weekday]}
-                                                    </h5>
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <h5 className="font-semibold text-gray-800 dark:text-gray-200">
+                                                            {['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'][day.weekday]}
+                                                        </h5>
+                                                        <button
+                                                            onClick={() => handleDeleteDay(day)}
+                                                            className="text-red-600 hover:text-red-500"
+                                                        >
+                                                            <TrashIcon className="w-5 h-5" />
+                                                        </button>
+                                                    </div>
                                                     <p className="text-sm text-gray-600 dark:text-gray-400">
                                                         {day.opens_at}
                                                         {' '}até{' '}
@@ -310,24 +376,44 @@ export default function Show({
                                     </p>
 
                                     {/* Placeholder para MenuSchedule */}
-                                    <div className="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+                                    <div className="bg-white/50 dark:bg-gray-800/50">
                                         {menu.data.schedules && menu.data.schedules.length > 0 ? (
-                                            <ul className="space-y-2">
-                                                {menu.data.schedules.map((schedule) => (
-                                                    <li key={schedule.id} className="flex justify-between">
-                                                        <span>
-                                                            {new Date(schedule.start_at).toLocaleDateString()}:
-                                                        </span>
-                                                        <span>
-                                                            {new Date(schedule.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                            {' '}até{' '}
-                                                            {new Date(schedule.end_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-2">
+                                                {menu.data.schedules.map((schedule) => {
+                                                    const startDate = new Date(schedule.start_at);
+                                                    const endDate = new Date(schedule.end_at);
+                                                    const formattedDate = startDate.toLocaleDateString('pt-BR', {
+                                                        day: '2-digit',
+                                                        month: '2-digit',
+                                                        year: 'numeric',
+                                                    });
+                                                    const startTime = startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                    const endTime = endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                                                    return (
+                                                    <li
+                                                        key={schedule.id}
+                                                        className="flex flex-col bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 shadow-sm hover:shadow-md transition-all relative"
+                                                    >
+                                                        <button
+                                                            onClick={() => handleDeleteSchedule(schedule)}
+                                                            className="mt-2 text-red-600 hover:text-red-500 absolute top-0 right-2"
+                                                        >
+                                                            <TrashIcon className="w-5 h-5" />
+                                                        </button>
+
+                                                        <span className="font-medium text-gray-800 dark:text-gray-100">{formattedDate}</span>
+                                                        <span className="text-gray-600 dark:text-gray-400 text-sm mt-1 sm:mt-0">
+                                                            {startTime} <span className="text-gray-400">até</span> {endTime}
                                                         </span>
                                                     </li>
-                                                ))}
+                                                    );
+                                                })}
                                             </ul>
                                         ) : (
-                                            'Nenhum horário configurado ainda.'
+                                            <p className="text-gray-500 dark:text-gray-400 italic">
+                                            Nenhum horário configurado ainda.
+                                            </p>
                                         )}
                                     </div>
 

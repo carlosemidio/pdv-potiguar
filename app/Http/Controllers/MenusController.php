@@ -7,7 +7,6 @@ use App\Http\Resources\MenuResource;
 use App\Http\Resources\StoreProductVariantResource;
 use App\Models\Addon;
 use App\Models\Menu;
-use App\Models\Store;
 use App\Models\StoreProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +26,7 @@ class MenusController extends Controller
         $this->authorize('menus_view');
 
         $search = $request->search ?? '';
+        $withTrashed = $request->trashed ?? false;
         $menusQuery = $this->menu->query();
 
         if (!request()->user()->hasPermission('menus_view', true)) {
@@ -41,13 +41,18 @@ class MenusController extends Controller
             $menusQuery->where('name', 'like', "%$search%");
         }
 
+        if ($withTrashed) {
+            $menusQuery->withTrashed();
+        }
+
         $menus = $menusQuery->orderBy('name')
-            ->paginate(12, ['id', 'user_id', 'name', 'is_permanent', 'created_at'])
+            ->paginate(12, ['id', 'user_id', 'name', 'is_permanent', 'created_at', 'updated_at', 'deleted_at'])
             ->withQueryString();
 
         return Inertia::render('Menus/Index', [
             'menus' => MenuResource::collection($menus),
             'search' => $search,
+            'trashed' => $withTrashed,
         ]);
     }
 
@@ -78,7 +83,7 @@ class MenusController extends Controller
                     ->with('fail', 'Erro ao criar menu.');
             }
 
-            return redirect()->route('menus.index')
+            return redirect()->back()
                 ->with('success', 'Menu criado com sucesso!');
         } catch (\Exception $e) {
             return redirect()->back()
@@ -170,11 +175,31 @@ class MenusController extends Controller
                     ->with('fail', 'Erro ao remover marca.');
             }
 
-            return redirect()->route('menus.index')
+            return redirect()->back()
                 ->with('success', 'Menu removido com sucesso!');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao remover menu: ' . $e->getMessage());
+        }
+    }
+
+    public function restore($id)
+    {
+        $menu = $this->menu->withTrashed()->findOrFail($id);
+
+        $this->authorize('delete', $menu);
+
+        try {
+            if (!$menu->restore()) {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao restaurar menu.');
+            }
+
+            return redirect()->back()
+                ->with('success', 'Menu restaurado com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao restaurar menu: ' . $e->getMessage());
         }
     }
 }

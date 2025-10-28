@@ -3,8 +3,8 @@ import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus, Award, Eye } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Edit, Trash, Plus, Award, Eye, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import MenuFormModal from '@/Components/MenuFormModal';
@@ -16,7 +16,8 @@ export default function Index({
     auth,
     menus,
     search,
-}: PageProps<{ menus: PaginatedData<Menu>, search?: string }>) {
+    trashed,
+}: PageProps<{ menus: PaginatedData<Menu>, search?: string, trashed?: boolean }>) {
 
     const [confirmingMenuDeletion, setConfirmingMenuDeletion] = useState(false);
     const [menuIdToDelete, setMenuIdToDelete] = useState<number | null>(null);
@@ -87,71 +88,99 @@ export default function Index({
             <Head title="Menus" />
 
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="container mx-auto px-4 py-6 max-w-7xl">
+                <div className="container px-4 py-6 max-w-7xl">
+                    <div className="border-b border-gray-200 dark:border-gray-700 mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            Lista de Menus
+                        </h3>
+                        <div className="mt-4">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+                                <SimpleSearchBar field='name' search={search} withTrashed={true} trashed={trashed} />
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Menus Grid */}
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                Lista de Menus
-                            </h3>
-                            <div className="mt-4">
-                                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                        Filtros de Busca
-                                    </h3>
-                                    <SimpleSearchBar field='name' search={search} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="p-6">
+                        <div className="p-4">
                             {menus?.data?.length > 0 ? (
                                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
                                     {menus.data.map((menu) => (
-                                        <div key={menu.id} className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-all duration-200 relative">
+                                        <div
+                                            key={menu.id}
+                                            className={`relative rounded-xl border p-4 transition-all duration-200
+                                                bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750
+                                                ${menu.deleted_at
+                                                ? 'opacity-70 border-red-300 dark:border-red-700'
+                                                : 'border-gray-200 dark:border-gray-700 hover:shadow-lg'}
+                                            `}
+                                            >
+                                            {/* Badge de excluído */}
+                                            {menu.deleted_at && (
+                                                <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow">
+                                                Excluído
+                                                </span>
+                                            )}
+
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                    <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                                                        <span className="text-white font-semibold text-sm">
-                                                            {menu.name.charAt(0).toUpperCase()}
-                                                        </span>
-                                                    </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <h4 className="font-semibold text-gray-900 dark:text-white truncate">
-                                                            {menu.name}
-                                                        </h4>
-                                                    </div>
+                                                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                                                    <span className="text-white font-semibold text-sm">
+                                                    {menu.name.charAt(0).toUpperCase()}
+                                                    </span>
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                                                    {menu.name}
+                                                    </h4>
+                                                </div>
                                                 </div>
                                             </div>
 
+                                            {/* Botões de ação */}
                                             <div className="flex items-center gap-2 absolute top-1 right-1">
-                                                {can('menus_view') && (
-                                                    <Link
-                                                        href={route('menus.show', menu.id)}
-                                                        className="p-1.5 rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/50 dark:hover:bg-green-800 text-green-600 dark:text-green-400 transition-colors"
-                                                        title="Ver menu"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                    </Link>
+                                                {!menu.deleted_at && can('menus_view') && (
+                                                <Link
+                                                    href={route('menus.show', menu.id)}
+                                                    className="p-1.5 rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/50 dark:hover:bg-green-800 text-green-600 dark:text-green-400 transition-colors"
+                                                    title="Ver menu"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                </Link>
                                                 )}
 
-                                                {can('menus_edit') && (
-                                                    <button
-                                                        onClick={() => openModal(menu)}
-                                                        className="p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400 transition-colors"
-                                                        title="Editar menu"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                    </button>
+                                                {/* Botão de restaurar (apenas se estiver excluído) */}
+                                                {menu.deleted_at && can('menus_delete') && (
+                                                <button
+                                                    onClick={() =>
+                                                        router.put(route('menus.restore', menu.id), {}, { preserveScroll: true })
+                                                    }
+                                                    className="p-1.5 rounded-lg bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:hover:bg-yellow-800 text-yellow-600 dark:text-yellow-400 transition-colors"
+                                                    title="Restaurar menu"
+                                                >
+                                                    <RotateCcw className="w-4 h-4" />
+                                                </button>
                                                 )}
-                                                {can('menus_delete') && (
-                                                    <button
-                                                        onClick={() => confirmMenuDeletion(menu.id)}
-                                                        className="p-1.5 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-800 text-red-600 dark:text-red-400 transition-colors"
-                                                        title="Excluir menu"
-                                                    >
-                                                        <Trash className="w-4 h-4" />
-                                                    </button>
+
+                                                {/* Só mostra editar/excluir se não estiver excluído */}
+                                                {!menu.deleted_at && can('menus_edit') && (
+                                                <button
+                                                    onClick={() => openModal(menu)}
+                                                    className="p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400 transition-colors"
+                                                    title="Editar menu"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
+                                                )}
+
+                                                {!menu.deleted_at && can('menus_delete') && (
+                                                <button
+                                                    onClick={() => confirmMenuDeletion(menu.id)}
+                                                    className="p-1.5 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-800 text-red-600 dark:text-red-400 transition-colors"
+                                                    title="Excluir menu"
+                                                >
+                                                    <Trash className="w-4 h-4" />
+                                                </button>
                                                 )}
                                             </div>
                                         </div>

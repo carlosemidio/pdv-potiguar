@@ -205,6 +205,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('/menus', App\Http\Controllers\MenusController::class)
         ->names('menus');
 
+    Route::put('/menus/{id}/restaurar', [App\Http\Controllers\MenusController::class, 'restore'])
+        ->name('menus.restore');
+
     Route::resource('/menu-horarios', App\Http\Controllers\MenuSchedulesController::class)
         ->only(['store', 'destroy'])
         ->names('menu.schedules');

@@ -21,6 +21,8 @@ class PrinterResource extends JsonResource
             'product_id' => $this->product_id,
             'product_name' => $this->product_name,
             'device_path' => $this->device_path,
+            'host' => $this->host,
+            'port' => $this->port,
             'status' => $this->status,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PrinterRequest;
 use App\Http\Resources\PrinterResource;
 use App\Models\Printer;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class PrintersController extends Controller
@@ -57,21 +59,11 @@ class PrintersController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(PrinterRequest $request)
     {
         $this->authorize('create', Printer::class);
-        $data = $request->validate([
-            'name' => 'required|string|max:255|unique:printers,name,NULL,id,store_id,' . Auth::user()->store_id,
-            'type' => 'nullable|string|max:255',
-            'product_name' => 'nullable|string|max:255',
-            'vendor_id' => 'required|string|max:255|unique:printers,vendor_id,NULL,id,store_id,' . Auth::user()->store_id,
-            'product_id' => 'required|string|max:255|unique:printers,product_id,NULL,id,store_id,' . Auth::user()->store_id,
-            'device_path' => 'nullable|string|max:255',
-        ], [
-            'name.unique' => 'Já existe uma impressora com esse nome, nessa loja.',
-            'vendor_id.unique' => 'Já existe uma impressora com esse Vendor ID, nessa loja.',
-            'product_id.unique' => 'Já existe uma impressora com esse Product ID, nessa loja.',
-        ]);
+
+        $data = $request->validated();
 
         try {
             $data['user_id'] = Auth::user()->id;
@@ -93,24 +85,13 @@ class PrintersController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(PrinterRequest $request, $id)
     {
         $printer = $this->printer->findOrFail($id);
 
         $this->authorize('update', $printer);
 
-        $data = $request->validate([
-            'name' => 'required|string|max:255|unique:printers,name,' . $printer->id . ',id,store_id,' . Auth::user()->store_id,
-            'type' => 'nullable|string|max:255',
-            'product_name' => 'nullable|string|max:255',
-            'vendor_id' => 'required|string|max:255|unique:printers,vendor_id,' . $printer->id . ',id,store_id,' . Auth::user()->store_id,
-            'product_id' => 'required|string|max:255|unique:printers,product_id,' . $printer->id . ',id,store_id,' . Auth::user()->store_id,
-            'device_path' => 'nullable|string|max:255',
-        ], [
-            'name.unique' => 'Já existe uma impressora com esse nome, nessa loja.',
-            'vendor_id.unique' => 'Já existe uma impressora com esse Vendor ID, nessa loja.',
-            'product_id.unique' => 'Já existe uma impressora com esse Product ID, nessa loja.',
-        ]);
+        $data = $request->validated();
 
         try {
             if (!$printer->update($data)) {

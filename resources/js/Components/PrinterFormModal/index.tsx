@@ -1,4 +1,3 @@
-import { Button } from "@headlessui/react";
 import { X, Printer as PrinterIcon, Tag, Monitor, Hash, HardDrive } from "lucide-react";
 import Modal from "../Modal";
 import SecondaryButton from "../SecondaryButton";
@@ -10,15 +9,6 @@ import { Printer } from "@/types/Printer"; // Certifique-se de ter esse tipo
 import InputError from "../InputError";
 import { MdPrint } from "react-icons/md";
 
-// Tipos para impressora
-export interface PrinterDevice {
-  vendorId: number;
-  productId: number;
-  productName?: string;
-  type?: string;
-  devicePath?: string;
-}
-
 interface PrinterFormModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -28,21 +18,25 @@ interface PrinterFormModalProps {
 export default function PrinterFormModal({ isOpen, onClose, printer }: PrinterFormModalProps) {
     const { data, setData, patch, post, processing, errors, reset } = useForm({
         name: printer?.name ?? '',
-        type: printer?.type ?? '',
+        type: printer?.type ?? 'usb',
         product_name: printer?.product_name ?? '',
         vendor_id: printer?.vendor_id ?? '',
         product_id: printer?.product_id ?? '',
         device_path: printer?.device_path ?? '',
+        host: printer?.host ?? '',
+        port: printer?.port ?? 9100,
     });
 
     useEffect(() => {
         setData({
             name: printer?.name ?? '',
-            type: printer?.type ?? '',
+            type: printer?.type ?? 'usb',
             product_name: printer?.product_name ?? '',
             vendor_id: printer?.vendor_id ?? '',
             product_id: printer?.product_id ?? '',
             device_path: printer?.device_path ?? '',
+            host: printer?.host ?? '',
+            port: printer?.port ?? 9100,
         });
     }, [printer]);
 
@@ -67,6 +61,9 @@ export default function PrinterFormModal({ isOpen, onClose, printer }: PrinterFo
                 onSuccess: () => {
                     reset();
                     onClose();
+                },
+                onError: (errors) => {
+                    console.log(errors);
                 }
             });
         }
@@ -74,7 +71,7 @@ export default function PrinterFormModal({ isOpen, onClose, printer }: PrinterFo
 
     return (
         <Modal show={isOpen} onClose={onClose} maxWidth="2xl">
-            <div className="bg-white dark:bg-gray-800 shadow-xl w-full">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-6 py-4 rounded-t-2xl">
                     <div className="flex items-center justify-between">
@@ -107,7 +104,7 @@ export default function PrinterFormModal({ isOpen, onClose, printer }: PrinterFo
                         <div className="space-y-2">
                             <label htmlFor="name" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <Tag className="w-4 h-4" />
-                                Nome da Impressora
+                                Nome da estação de Impressão
                             </label>
                             <input
                                 type="text"
@@ -135,22 +132,21 @@ export default function PrinterFormModal({ isOpen, onClose, printer }: PrinterFo
                                 required
                                 disabled={processing}
                             >
-                                <option value="">Selecione o tipo...</option>
                                 <option value="usb">🔌 USB</option>
-                                <option value="ethernet">🌐 Ethernet</option>
-                                <option value="wifi">📶 WiFi</option>
-                                <option value="bluetooth">📡 Bluetooth</option>
-                                <option value="serial">🔗 Serial</option>
+                                <option value="network">🌐 Rede (Cabo ou WiFi)</option>
+                                {/* <option value="wifi">📶 WiFi</option> */}
+                                {/* <option value="bluetooth">📡 Bluetooth</option>
+                                <option value="serial">🔗 Serial</option> */}
                             </select>
                             <InputError className="mt-1" message={errors.type} />
                         </div>
                     </div>
 
-                    {/* Nome do Produto */}
+                    {/* Nome da Impressora */}
                     <div className="space-y-2">
                         <label htmlFor="product_name" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                             <PrinterIcon className="w-4 h-4" />
-                            Nome do Produto
+                            Nome da Impressora
                         </label>
                         <input
                             type="text"
@@ -165,72 +161,105 @@ export default function PrinterFormModal({ isOpen, onClose, printer }: PrinterFo
                         <InputError className="mt-1" message={errors.product_name} />
                     </div>
 
-                    {/* IDs Técnicos */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label htmlFor="vendor_id" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                <Hash className="w-4 h-4" />
-                                Vendor ID
-                            </label>
-                            <input
-                                type="number"
-                                id="vendor_id"
-                                className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
-                                value={data.vendor_id}
-                                onChange={(e) => setData('vendor_id', e.target.value)}
-                                required
-                                placeholder="Ex: 1234"
-                                disabled={processing}
-                            />
-                            <InputError className="mt-1" message={errors.vendor_id} />
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                ID do fabricante da impressora
-                            </p>
-                        </div>
+                    {/* Configurações USB */}
+                    {data.type === 'usb' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label htmlFor="vendor_id" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <Hash className="w-4 h-4" />
+                                    Vendor ID
+                                </label>
+                                <input
+                                    type="text"
+                                    id="vendor_id"
+                                    className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
+                                    value={data.vendor_id}
+                                    onChange={(e) => setData('vendor_id', e.target.value)}
+                                    required
+                                    placeholder="Ex: 04b8"
+                                    disabled={processing}
+                                />
+                                <InputError className="mt-1" message={errors.vendor_id} />
+                            </div>
 
-                        <div className="space-y-2">
-                            <label htmlFor="product_id" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                <Hash className="w-4 h-4" />
-                                Product ID
-                            </label>
-                            <input
-                                type="number"
-                                id="product_id"
-                                className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
-                                value={data.product_id}
-                                onChange={(e) => setData('product_id', e.target.value)}
-                                required
-                                placeholder="Ex: 5678"
-                                disabled={processing}
-                            />
-                            <InputError className="mt-1" message={errors.product_id} />
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                ID específico do produto
-                            </p>
-                        </div>
-                    </div>
+                            <div className="space-y-2">
+                                <label htmlFor="product_id" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <HardDrive className="w-4 h-4" />
+                                    Product ID
+                                </label>
+                                <input
+                                    type="text"
+                                    id="product_id"
+                                    className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
+                                    value={data.product_id}
+                                    onChange={(e) => setData('product_id', e.target.value)}
+                                    required
+                                    placeholder="Ex: 0e15"
+                                    disabled={processing}
+                                />
+                                <InputError className="mt-1" message={errors.product_id} />
+                            </div>
 
-                    {/* Caminho do Dispositivo */}
-                    <div className="space-y-2">
-                        <label htmlFor="device_path" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <HardDrive className="w-4 h-4" />
-                            Caminho do Dispositivo
-                        </label>
-                        <input
-                            type="text"
-                            id="device_path"
-                            className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
-                            value={data.device_path}
-                            onChange={(e) => setData('device_path', e.target.value)}
-                            required
-                            placeholder="Ex: /dev/usb/lp0, 192.168.1.100:9100..."
-                            disabled={processing}
-                        />
-                        <InputError className="mt-1" message={errors.device_path} />
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Caminho físico ou endereço de rede da impressora
-                        </p>
-                    </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <label htmlFor="device_path" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <Monitor className="w-4 h-4" />
+                                    Caminho do Dispositivo
+                                </label>
+                                <input
+                                    type="text"
+                                    id="device_path"
+                                    className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
+                                    value={data.device_path}
+                                    onChange={(e) => setData('device_path', e.target.value)}
+                                    required
+                                    placeholder="Ex: /dev/usb/lp0"
+                                    disabled={processing}
+                                />
+                                <InputError className="mt-1" message={errors.device_path} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Configurações Network */}
+                    {data.type === 'network' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label htmlFor="host" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <Monitor className="w-4 h-4" />
+                                    Endereço IP / Hostname
+                                </label>
+                                <input
+                                    type="text"
+                                    id="host"
+                                    className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
+                                    value={data.host || ''}
+                                    onChange={(e) => setData('host', e.target.value)}
+                                    required
+                                    placeholder="Ex: 192.168.1.100"
+                                    disabled={processing}
+                                />
+                                <InputError className="mt-1" message={errors.host} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="port" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <Monitor className="w-4 h-4" />
+                                    Porta
+                                </label>
+                                <input
+                                    type="number"
+                                    id="port"
+                                    className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
+                                    value={data.port || ''}
+                                    onChange={(e) => setData('port', e.target.value ? parseInt(e.target.value) : 9100)}
+                                    required
+                                    placeholder="Ex: 9100"
+                                    disabled={processing}
+                                />
+                                <InputError className="mt-1" message={errors.port} />
+                            </div>
+                        </div>
+                    )}
 
                     {/* Actions */}
                     <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">

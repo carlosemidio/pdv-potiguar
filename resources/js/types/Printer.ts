@@ -7,11 +7,13 @@ export type Printer = {
     store_id: number;
     store: Store | null;
     name: string;
-    type: 'network' | 'usb' | 'bluetooth';
+    type: string;
     vendor_id: string;
     product_id: string;
     product_name: string | null;
     device_path: string | null;
+    host: string | null;
+    port: number | null;
     status: string;
     created_at: string;
     updated_at: string;

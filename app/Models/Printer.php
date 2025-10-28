@@ -20,6 +20,8 @@ class Printer extends Model
         'product_id',
         'product_name',
         'device_path',
+        'host',
+        'port',
         'status',
     ];
 

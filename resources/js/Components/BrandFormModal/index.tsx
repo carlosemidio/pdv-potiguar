@@ -1,4 +1,3 @@
-import { Button } from "@headlessui/react";
 import { X, Palette } from "lucide-react";
 import Modal from "../Modal";
 import SecondaryButton from "../SecondaryButton";
@@ -56,7 +55,7 @@ export default function BrandFormModal({ isOpen, onClose, brand }: BrandFormModa
 
     return (
         <Modal show={isOpen} onClose={onClose} maxWidth="lg">
-            <div className="bg-white dark:bg-gray-800 shadow-xl w-full">
+            <div className="bg-white dark:bg-gray-800 shadow-xl w-full rounded-2xl">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-4 rounded-t-2xl">
                     <div className="flex items-center justify-between">

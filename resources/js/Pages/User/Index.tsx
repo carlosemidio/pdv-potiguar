@@ -78,7 +78,7 @@ export default function Page({ auth }: PageProps) {
             <Head title="Usuários" />
 
             <section className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
+                <div className="container px-4 py-6 md:py-8 max-w-7xl">
                     {/* Filter Section */}
                     <div className="mb-8">
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
@@ -245,7 +245,7 @@ export default function Page({ auth }: PageProps) {
             {/* Status Change Confirmation Modal */}
             {userToChangeStatus && (
                 <Modal show={confirmingUserDeletion} onClose={closeModal}>
-                    <form onSubmit={(e) => { e.preventDefault(); changeStatus(); }} className="p-6">
+                    <form onSubmit={(e) => { e.preventDefault(); changeStatus(); }} className="p-6 bg-white dark:bg-gray-800 rounded-xl">
                         <div className="flex items-center gap-4 mb-6">
                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${userToChangeStatus.status ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'}`}>
                                 {userToChangeStatus.status ? (

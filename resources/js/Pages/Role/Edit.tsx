@@ -15,10 +15,12 @@ import { ArrowLeft, Shield, Key, Users, Save, Plus, Crown, Globe, User, ChevronD
 export default function Edit({
     auth,
     role,
-    permissions
+    permissions,
+    trashed,
 }: PageProps<{
     role: { data: Role };
     permissions: { data: Permission[] };
+    trashed?: boolean
 }>) {
     const isEdit = !!role;
 
@@ -35,7 +37,6 @@ export default function Edit({
         recentlySuccessful,
     } = useForm({
         name: role ? role.data.name : "",
-        slug: role ? role.data.slug : "",
         permissions: role
             ? role.data.permissions.map((permission) => ({
                   id: permission.id,
@@ -198,29 +199,6 @@ export default function Edit({
                                     <InputError className="mt-2 text-sm" message={errors.name} />
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                         Nome único
-                                    </p>
-                                </div>
-
-                                {/* Campo Nome de Exibição */}
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                                        <InputLabel htmlFor="slug" value="Slug" className="text-base font-semibold" />
-                                    </div>
-                                    
-                                    <TextInput
-                                        id="slug"
-                                        className="mt-1 block w-full pl-4 pr-4 py-3 text-base rounded-xl border-gray-200 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-purple-500 dark:focus:ring-purple-400"
-                                        value={data.slug}
-                                        onChange={(e) => setData("slug", e.target.value)}
-                                        required
-                                        autoComplete="slug"
-                                        placeholder="ex: admin, manager, user"
-                                    />
-
-                                    <InputError className="mt-2 text-sm" message={errors.slug} />
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        Use nomes em minúsculas e separados por barra (ex: store-manager, sales_rep)
                                     </p>
                                 </div>
                             </div>

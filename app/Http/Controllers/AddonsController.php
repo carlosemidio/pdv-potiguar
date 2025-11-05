@@ -30,6 +30,7 @@ class AddonsController extends Controller
         }
 
         $search = $request->search ?? '';
+        $trashed = $request->trashed ?? false;
         $addonsQuery = $this->addon->query();
 
         if (!request()->user()->hasPermission('addons_view', true)) {
@@ -48,6 +49,10 @@ class AddonsController extends Controller
             $addonsQuery->where('name', 'like', "%$search%");
         }
 
+        if ($trashed) {
+            $addonsQuery->withTrashed();
+        }
+
         $addons = $addonsQuery->orderBy('name')
             ->with(['addonIngredients.ingredient', 'addonIngredients.unit'])
             ->paginate(12)
@@ -56,6 +61,7 @@ class AddonsController extends Controller
         return Inertia::render('Addons/Index', [
             'addons' => AddonResource::collection($addons),
             'search' => $search,
+            'trashed' => $trashed,
         ]);
     }
 
@@ -144,11 +150,29 @@ class AddonsController extends Controller
                     ->with('fail', 'Erro ao remover complemento.');
             }
 
-            return redirect()->route('addons.index')
+            return redirect()->back()
                 ->with('success', 'Complemento removido com sucesso!');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao remover complemento: ' . $e->getMessage());
+        }
+    }
+
+    public function restore(Addon $addon)
+    {
+        $this->authorize('delete', $addon);
+
+        try {
+            if (!$addon->restore()) {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao restaurar complemento.');
+            }
+
+            return redirect()->back()
+                ->with('success', 'Complemento restaurado com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao restaurar complemento: ' . $e->getMessage());
         }
     }
 }

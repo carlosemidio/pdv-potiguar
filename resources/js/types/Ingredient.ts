@@ -12,4 +12,5 @@ export type Ingredient = {
     stock_quantity: number;
     created_at: string;
     updated_at: string;
+    deleted_at: string | null;
 }

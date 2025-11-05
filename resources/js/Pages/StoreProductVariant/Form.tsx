@@ -68,7 +68,7 @@ export default function Edit({ auth, storeProductVariant }: PageProps<{ storePro
             <Head title={isEdit ? 'Editar produto' : 'Criar produto'} />
             
             <section className='px-2 text-gray-800 dark:text-gray-200 overflow-visible'>
-                <div className="mx-auto overflow-visible">
+                <div className="overflow-visible">
                     {/* Sticky header for mobile usability */}
                     <div className="sticky top-0 z-20 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-2 py-2 mb-2">
                         <Link href={route('store-product-variant.index')}>

@@ -22,6 +22,7 @@ class BrandsController extends Controller
         $this->authorize('brands_view');
 
         $search = $request->search ?? '';
+        $trashed = $request->trashed ?? false;
         $brandsQuery = $this->brand->query();
 
         if (!request()->user()->hasPermission('brands_view', true)) {
@@ -36,13 +37,18 @@ class BrandsController extends Controller
             $brandsQuery->where('name', 'like', "%$search%");
         }
 
+        if ($trashed) {
+            $brandsQuery->withTrashed();
+        }
+
         $brands = $brandsQuery->orderBy('name')
-            ->paginate(12, ['id', 'user_id', 'name', 'status', 'created_at'])
+            ->paginate(12, ['id', 'user_id', 'name', 'status', 'created_at', 'updated_at', 'deleted_at'])
             ->withQueryString();
 
         return Inertia::render('Brands/Index', [
             'brands' => BrandResource::collection($brands),
             'search' => $search,
+            'trashed' => $trashed,
         ]);
     }
 
@@ -113,11 +119,29 @@ class BrandsController extends Controller
                     ->with('fail', 'Erro ao remover marca.');
             }
 
-            return redirect()->route('brands.index')
+            return redirect()->back()
                 ->with('success', 'Marca removida com sucesso!');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao remover marca: ' . $e->getMessage());
+        }
+    }
+
+    public function restore(Brand $brand)
+    {
+        $this->authorize('delete', $brand);
+
+        try {
+            if (!$brand->restore()) {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao restaurar marca.');
+            }
+
+            return redirect()->back()
+                ->with('success', 'Marca restaurada com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao restaurar marca: ' . $e->getMessage());
         }
     }
 }

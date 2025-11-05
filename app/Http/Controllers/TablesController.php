@@ -24,6 +24,7 @@ class TablesController extends Controller
         $this->authorize('tables_view');
 
         $search = $request->search ?? '';
+        $trashed = $request->trashed ?? false;
         $tablesQuery = $this->table->query();
         $user = User::find(Auth::id());
 
@@ -43,9 +44,13 @@ class TablesController extends Controller
             $tablesQuery->where('name', 'like', "%$search%");
         }
 
+        if ($trashed) {
+            $tablesQuery->withTrashed();
+        }
+
         $tables = $tablesQuery->orderBy('name')
             ->with('store')
-            ->paginate(12, ['id', 'user_id', 'name', 'slug', 'store_id', 'status', 'created_at', 'updated_at'])
+            ->paginate(12)
             ->withQueryString();
 
         foreach ($tables as $table) {
@@ -64,6 +69,7 @@ class TablesController extends Controller
         return Inertia::render('Tables/Index', [
             'tables' => TableResource::collection($tables),
             'search' => $search,
+            'trashed' => $trashed,
         ]);
     }
 
@@ -137,11 +143,29 @@ class TablesController extends Controller
                     ->with('fail', 'Erro ao remover mesa.');
             }
 
-            return redirect()->route('tables.index')
+            return redirect()->back()
                 ->with('success', 'Mesa removida com sucesso!');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao remover mesa: ' . $e->getMessage());
+        }
+    }
+
+    public function restore(Table $table)
+    {
+        $this->authorize('delete', $table);
+
+        try {
+            if (!$table->restore()) {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao restaurar mesa.');
+            }
+
+            return redirect()->back()
+                ->with('success', 'Mesa restaurada com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao restaurar mesa: ' . $e->getMessage());
         }
     }
 }

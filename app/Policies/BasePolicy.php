@@ -87,7 +87,7 @@ abstract class BasePolicy
             return Response::allow();
         }
 
-        return Response::deny('Você não tem permissão para visualizar este recurso.');
+        return Response::deny('Você não tem permissão para atualizar este recurso.');
     }
 
     /**
@@ -111,6 +111,6 @@ abstract class BasePolicy
             return Response::allow();
         }
 
-        return Response::deny('Você não tem permissão para visualizar este recurso.');
+        return Response::deny('Você não tem permissão para deletar este recurso.');
     }
 }

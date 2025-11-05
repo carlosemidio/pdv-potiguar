@@ -22,7 +22,7 @@ class CustomersController extends Controller
     {
         $this->authorize('customers_view');
 
-        $request_data = Request::all('category', 'type', 'search', 'field', 'page');
+        $request_data = Request::all('category', 'type', 'search', 'field', 'page', 'trashed');
         $customersQuery = $this->customer->query();
         
         if (!request()->user()->hasPermission('customers_view', true)) {
@@ -37,8 +37,13 @@ class CustomersController extends Controller
             $customersQuery->where($request_data['field'], 'like', '%' . $request_data['search'] . '%');
         }
 
+        if (!empty($request_data['trashed']) && $request_data['trashed'] === 'true') {
+            $customersQuery->withTrashed();
+        }
+
         $customers = $customersQuery->orderBy('name')
-            ->paginate(12, ['id', 'name', 'email', 'phone', 'type', 'doc']);
+            ->paginate(12, ['id', 'name', 'email', 'phone', 'type', 'doc', 'created_at', 'updated_at', 'deleted_at'])
+            ->withQueryString();
 
         return Inertia::render('Customers/Index', [
             'customers' => CustomerResource::collection($customers),
@@ -142,11 +147,29 @@ class CustomersController extends Controller
                     ->with('fail', 'Erro ao remover cliente.');
             }
 
-            return redirect()->route('customers.index')
+            return redirect()->back()
                 ->with('success', 'Cliente removido com sucesso!');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao remover cliente: ' . $e->getMessage());
+        }
+    }
+
+    public function restore(Customer $customer)
+    {
+        $this->authorize('delete', $customer);
+
+        try {
+            if (!$customer->restore()) {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao restaurar cliente.');
+            }
+
+            return redirect()->back()
+                ->with('success', 'Cliente restaurado com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao restaurar cliente: ' . $e->getMessage());
         }
     }
 }

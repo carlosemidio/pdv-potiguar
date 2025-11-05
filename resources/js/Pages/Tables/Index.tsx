@@ -2,7 +2,7 @@ import Modal from '@/Components/Modal';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Head, useForm, router } from '@inertiajs/react';
-import { Edit, Trash, Plus, MoreVertical, Clock, CheckCircle } from 'lucide-react';
+import { Edit, Trash, Plus, MoreVertical, Clock, CheckCircle, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import Pagination from '@/Components/Pagination/Pagination';
@@ -13,8 +13,9 @@ import SimpleSearchBar from '@/Components/SimpleSearchBar';
 export default function Index({
     auth,
     tables,
-    search
-}: PageProps<{ tables: PaginatedData<Table>, search?: string }>) {
+    search,
+    trashed
+}: PageProps<{ tables: PaginatedData<Table>, search?: string, trashed?: boolean }>) {
     const [confirmingTableDeletion, setConfirmingTableDeletion] = useState(false);
     const [tableIdToDelete, setTableIdToDelete] = useState<number | null>(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -111,7 +112,7 @@ export default function Index({
             <Head title="Mesas" />
 
             <section className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
+                <div className="container px-4 py-6 md:py-8 max-w-7xl">
                     {/* Status Legend */}
                     <div className="mb-8">
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
@@ -140,7 +141,7 @@ export default function Index({
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                     Filtros de Busca
                                 </h3>
-                                <SimpleSearchBar field='display_name' search={search} />
+                                <SimpleSearchBar field='display_name' search={search} withTrashed={true} trashed={trashed} placeholder='Buscar mesas por nome...' />
                             </div>
                         </div>
                     </div>
@@ -159,10 +160,16 @@ export default function Index({
                                         {tables.data.map((table, index) => (
                                             <a key={index} href={table.order_id ? route('orders.show', table.order_id) : '#'}>
                                                 <div key={table.id} className="relative group">
+                                                    {/* Tag Deletada */}
+                                                    {table.deleted_at && (
+                                                        <div className="absolute bottom-2 left-2 z-50 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow">
+                                                            Deletada
+                                                        </div>
+                                                    )}
                                                     {/* Table Representation */}
                                                     <div className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl border-4 ${disponibilityColors[table.status] || 'bg-gray-100 border-gray-300 text-gray-800'} 
                                                         flex flex-col items-center justify-center cursor-pointer transform transition-all duration-300 
-                                                        hover:scale-110 hover:shadow-xl group-hover:z-10 relative animate-pulse-slow`}
+                                                        hover:scale-110 hover:shadow-xl group-hover:z-10 relative animate-pulse-slow ${table.deleted_at ? 'bg-gray-100 dark:bg-gray-900 opacity-60' : ''}`}
                                                         style={{ animationDelay: `${index * 0.1}s` }}
                                                     >
                                                         {/* Table Icon */}
@@ -231,7 +238,7 @@ export default function Index({
                                                             </button>
                                                             
                                                             {/* Edit Button */}
-                                                            {can('tables_edit') && table.user_id != null && (
+                                                            {(!table.deleted_at && can('tables_edit')) && (
                                                                 <button
                                                                     type="button"
                                                                     onClick={(e) => {
@@ -246,7 +253,7 @@ export default function Index({
                                                             )}
                                                             
                                                             {/* Delete Button */}
-                                                            {can('tables_delete') && table.user_id != null && (
+                                                            {(!table.deleted_at && can('tables_delete')) && (
                                                                 <button
                                                                     type="button"
                                                                     onClick={(e) => {
@@ -257,6 +264,19 @@ export default function Index({
                                                                     title="Excluir mesa"
                                                                 >
                                                                     <Trash className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+
+                                                            {(table.deleted_at && can('tables_delete')) && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => router.put(route('tables.restore', table.id), {}, {
+                                                                        preserveScroll: true
+                                                                    })}
+                                                                    className="w-8 h-8 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
+                                                                    title="Restaurar mesa"
+                                                                >
+                                                                    <RotateCcw className="w-4 h-4" />
                                                                 </button>
                                                             )}
                                                         </div>
@@ -332,7 +352,7 @@ export default function Index({
             {/* Delete Confirmation Modal */}
             {tableToDelete && (
                 <Modal show={confirmingTableDeletion} onClose={closeModal}>
-                    <form onSubmit={(e) => { e.preventDefault(); deleteTable(); }} className="p-6">
+                    <form onSubmit={(e) => { e.preventDefault(); deleteTable(); }} className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md">
                         <div className="flex items-center gap-4 mb-6">
                             <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
                                 <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">

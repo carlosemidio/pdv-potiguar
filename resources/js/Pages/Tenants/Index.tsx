@@ -183,13 +183,6 @@ export default function Index({
                                                         </button>
                                                     </Dropdown.Trigger>
                                                     <Dropdown.Content align="right" width="48">
-                                                        {can('tenants_view') && (
-                                                            <Dropdown.Link href={route('tenant.show', { id: item.id })}>
-                                                                <span className="inline-flex items-center gap-2">
-                                                                    <Eye className="w-4 h-4" /> Ver detalhes
-                                                                </span>
-                                                            </Dropdown.Link>
-                                                        )}
                                                         {can('tenants_edit') && (
                                                             <Dropdown.Link href={route('tenant.edit', { id: item.id })}>
                                                                 <span className="inline-flex items-center gap-2">

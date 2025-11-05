@@ -1,11 +1,10 @@
-import Card from '@/Components/Card';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus, Search, Package } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { Edit, Trash, Plus, Package, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Ingredient } from '@/types/Ingredient';
@@ -18,8 +17,9 @@ export default function Index({
     auth,
     ingredients,
     units,
-    search
-}: PageProps<{ ingredients: PaginatedData<Ingredient>, units: { data: Unit[] }, search?: string }>) {
+    search,
+    trashed
+}: PageProps<{ ingredients: PaginatedData<Ingredient>, units: { data: Unit[] }, search?: string, trashed?: boolean }>) {
 
     const [confirmingIngredientDeletion, setConfirmingIngredientDeletion] = useState(false);
     const [ingredientIdToDelete, setIngredientIdToDelete] = useState<number | null>(null);
@@ -114,7 +114,7 @@ export default function Index({
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                     Filtros de Busca
                                 </h3>
-                                <SimpleSearchBar field='name' search={search} />
+                                <SimpleSearchBar field='name' search={search} withTrashed={true} trashed={trashed || false} />
                             </div>
                         </div>
                     </div>
@@ -143,16 +143,27 @@ export default function Index({
                             </div>
                         ) : (
                             <>
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
                                     {ingredients?.data?.map((ingredient) => (
                                         <div
                                             key={ingredient.id}
-                                            className="group relative bg-gradient-to-br from-white via-gray-50 to-green-50 dark:from-gray-800 dark:via-gray-750 dark:to-gray-700 rounded-2xl shadow-lg hover:shadow-2xl border border-gray-200 dark:border-gray-600 transition-all duration-300 hover:-translate-y-2 hover:rotate-1 overflow-hidden"
+                                            className={`group relative rounded-2xl shadow-lg hover:shadow-2xl border border-gray-200 dark:border-gray-600 transition-all duration-300 hover:-translate-y-2 hover:rotate-1 overflow-hidden
+                                                ${ingredient.deleted_at
+                                                    ? 'bg-gray-100 dark:bg-gray-900 opacity-60'
+                                                    : 'bg-gradient-to-br from-white via-gray-50 to-green-50 dark:from-gray-800 dark:via-gray-750 dark:to-gray-700'}
+                                            `}
                                         >
                                             {/* Decoração de fundo */}
                                             <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full transform translate-x-6 -translate-y-6"></div>
                                             <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-blue-400/10 to-green-400/10 rounded-full transform -translate-x-4 translate-y-4"></div>
-                                            
+
+                                            {/* Tag Deletado */}
+                                            {ingredient.deleted_at && (
+                                                <div className="absolute top-3 left-3 z-50 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow">
+                                                    Deletado
+                                                </div>
+                                            )}
+
                                             <div className="p-6 relative">
                                                 {/* Header do Ingrediente */}
                                                 <div className="flex items-start justify-between mb-4">
@@ -231,39 +242,49 @@ export default function Index({
                                             </div>
 
                                             {/* Botões de Ação - Sempre Visíveis */}
-                                            {((can('ingredients_edit') && ingredient.user_id != null) || (can('ingredients_delete') && ingredient.user_id != null)) && (
-                                                <div className="absolute top-3 right-3 flex gap-1 z-50">
-                                                    {/* Botão Editar */}
-                                                    {(can('ingredients_edit') && ingredient.user_id != null) && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleOpenModalForEdit(ingredient);
-                                                            }}
-                                                            className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
-                                                            title="Editar ingrediente"
-                                                        >
-                                                            <Edit className="w-4 h-4" />
-                                                        </button>
-                                                    )}
-                                                    
-                                                    {/* Botão Excluir */}
-                                                    {(can('ingredients_delete') && ingredient.user_id != null) && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                confirmIngredientDeletion(ingredient.id);
-                                                            }}
-                                                            className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
-                                                            title="Excluir ingrediente"
-                                                        >
-                                                            <Trash className="w-4 h-4" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            )}
+                                            <div className="absolute top-3 right-3 flex gap-1 z-50">
+                                                {/* Botão Editar */}
+                                                {(can('ingredients_edit') && !ingredient.deleted_at) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleOpenModalForEdit(ingredient);
+                                                        }}
+                                                        className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
+                                                        title="Editar ingrediente"
+                                                    >
+                                                        <Edit className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                                
+                                                {/* Botão Excluir */}
+                                                {(can('ingredients_delete') && !ingredient.deleted_at) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            confirmIngredientDeletion(ingredient.id);
+                                                        }}
+                                                        className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
+                                                        title="Excluir ingrediente"
+                                                    >
+                                                        <Trash className="w-4 h-4" />
+                                                    </button>
+                                                )}
+
+                                                {/* Botão Restaurar */}
+                                                {(can('ingredients_delete') && ingredient.deleted_at) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => router.put(route('ingredients.restore', ingredient.id), {}, { preserveScroll: true })}
+                                                        className="w-8 h-8 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
+                                                        title="Restaurar ingrediente"
+                                                    >
+                                                        <RotateCcw className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -299,7 +320,7 @@ export default function Index({
             {/* Modal de Confirmação de Exclusão */}
             {ingredientToDelete && (
                 <Modal show={confirmingIngredientDeletion} onClose={closeModal}>
-                    <form onSubmit={(e) => { e.preventDefault(); deleteIngredient(); }} className="p-8">
+                    <form onSubmit={(e) => { e.preventDefault(); deleteIngredient(); }} className="p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md">
                         <div className="text-center mb-6">
                             <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full mb-4">
                                 <Trash className="w-8 h-8 text-red-600 dark:text-red-400" />

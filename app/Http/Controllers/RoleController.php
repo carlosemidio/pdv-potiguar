@@ -20,8 +20,8 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         $this->authorize('list', Role::class);
+        $withTrashed = $request->trashed ?? false;
         $rolesQuery = Role::query();
-
         $user = User::find(Auth::id());
 
         if (!$user->hasPermission('roles_view', true)) {
@@ -38,10 +38,16 @@ class RoleController extends Controller
             $rolesQuery->where('name', 'like', "%$search%");
         }
 
+        if ($withTrashed) {
+            $rolesQuery->withTrashed();
+        }
+
         $roles = $rolesQuery->paginate(10);
 
         return Inertia::render('Role/Index', [
             'roles' => RoleResource::collection($roles),
+            'search' => $search,
+            'trashed' => $withTrashed,
         ]);
     }
 
@@ -162,5 +168,17 @@ class RoleController extends Controller
             return redirect()->back()
                 ->with('error', 'Erro ao excluir função.');
         }
+    }
+
+    /**
+     * Restore the specified resource from storage.
+     */
+    public function restore(Role $role)
+    {
+        $this->authorize('delete', $role);
+        $role->restore();
+ 
+        return redirect()->back()
+            ->with('success', 'Função restaurada com sucesso.');
     }
 }

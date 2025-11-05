@@ -24,7 +24,7 @@ class StoreProductVariantController extends Controller
     {
         $this->authorize('store-product-variants_view');
         $user = User::find(Auth::id());
-        $request_data = Request::all('category', 'type', 'search', 'field', 'page');
+        $request_data = Request::all('category', 'type', 'search', 'field', 'page', 'trashed');
 
         $categories = Category::where('tenant_id', $user->tenant_id)
             ->whereHas('products.variants.storeProductVariants', function ($q) use ($user) {
@@ -65,6 +65,10 @@ class StoreProductVariantController extends Controller
             });
         }
 
+        if (($request_data['trashed'] ?? false) == 'true') {
+            $query->withTrashed();
+        }
+
         $data = $query->orderBy('id', 'desc')->paginate(12)->withQueryString();
 
         return Inertia::render('StoreProductVariant/Index', [
@@ -91,12 +95,12 @@ class StoreProductVariantController extends Controller
     /**
      * Product a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store()
     {
         $this->authorize('create', StoreProductVariant::class);
 
         $user = User::find(Auth::id());
-        $request->validate([
+        Request::validate([
             'product_variant_id' => [
                 'required',
                 'exists:product_variants,id',
@@ -125,7 +129,7 @@ class StoreProductVariantController extends Controller
                 ->with('fail', 'Usuário não está associado a nenhuma loja.');
         }
 
-        $dataForm = $request->all();
+        $dataForm = Request::all();
         $dataForm['user_id'] = $user->id;
         $dataForm['tenant_id'] = $user->tenant_id;
         $dataForm['store_id'] = $user->store_id;
@@ -228,9 +232,9 @@ class StoreProductVariantController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update($id)
     {
-        $request->validate([
+        Request::validate([
             'product_variant_id' => [
                 'required',
                 'exists:product_variants,id',
@@ -250,7 +254,7 @@ class StoreProductVariantController extends Controller
 
         $storeProductVariant = StoreProductVariant::where('id', $id)->firstOrFail();
         $this->authorize('update', $storeProductVariant);
-        $dataForm = $request->all();
+        $dataForm = Request::all();
 
         try {
             if ($storeProductVariant->update($dataForm)) {
@@ -307,7 +311,7 @@ class StoreProductVariantController extends Controller
 
         try {
             if ($storeProductVariant->delete()) {
-                return redirect()->route('store-product-variant.index')
+                return redirect()->back()
                     ->with('success', 'Variante de produto excluída com sucesso.');
             } else {
                 return redirect()->back()
@@ -316,6 +320,21 @@ class StoreProductVariantController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao excluir variante de produto: ' . $e->getMessage());
+        }
+    }
+
+    public function restore(StoreProductVariant $storeProductVariant)
+    {
+        $this->authorize('delete', $storeProductVariant);
+
+        try {
+            $storeProductVariant->restore();
+
+            return redirect()->back()
+                ->with('success', 'Variante de produto restaurada com sucesso.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao restaurar variante de produto: ' . $e->getMessage());
         }
     }
 }

@@ -17,6 +17,7 @@ export default function ProductsFilterBar({
     category?: string;
     field?: string;
     search?: string;
+    trashed?: boolean;
   };
   categories: Category[];
 }) {
@@ -26,6 +27,7 @@ export default function ProductsFilterBar({
     category: filters.category || '',
     field: filters.field || 'name',
     search: filters.search || '',
+    trashed: filters.trashed || false,
   });
 
   function reset() {
@@ -33,6 +35,7 @@ export default function ProductsFilterBar({
       category: '',
       search: '',
       field: 'name',
+      trashed: false,
     });
     window.location.href = route(route().current() as string);
   }
@@ -144,6 +147,24 @@ export default function ProductsFilterBar({
                   })),
                 ]}
               />
+            </FieldGroup>
+
+            <FieldGroup label="Incluir itens excluídos" name="trashed">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="trashed"
+                  id="trashed"
+                  checked={values.trashed}
+                  onChange={(e) =>
+                    setValues((prev) => ({
+                      ...prev,
+                      trashed: e.target.checked,
+                    }))
+                  }
+                  className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+              </div>
             </FieldGroup>
 
             <div className="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">

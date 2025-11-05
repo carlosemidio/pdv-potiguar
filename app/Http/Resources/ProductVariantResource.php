@@ -9,17 +9,16 @@ class ProductVariantResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        
         return [
-            'id'             => $this->id,
-            'product_id'     => $this->product_id,
-            'product'        => new ProductResource($this->whenLoaded('product')),
-            'name'           => $this->name,
-            'slug'           => $this->slug,
-            'sku'            => $this->sku,
+            'id' => $this->id,
+            'product_id' => $this->product_id,
+            'product' => new ProductResource($this->whenLoaded('product')),
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'sku' => $this->sku,
             'attributes' => $this->attributes->map(function ($attribute) {
                 return [
-                    'id'    => $attribute->id,
+                    'id' => $attribute->id,
                     'name' => $attribute->name,
                     'value' => $attribute->pivot->value,
                 ];
@@ -30,8 +29,9 @@ class ProductVariantResource extends JsonResource
             'images' => $this->whenLoaded('images', function () {
                 return $this->images && $this->images->isNotEmpty() ? FileResource::collection($this->images) : [];
             }),
-            'created_at'     => $this->created_at,
-            'updated_at'     => $this->updated_at,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            'deleted_at' => $this->deleted_at?->toDateTimeString(),
         ];
     }
 }

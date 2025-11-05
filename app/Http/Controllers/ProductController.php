@@ -6,8 +6,11 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\StoreProductVariant;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 
@@ -19,7 +22,7 @@ class ProductController extends Controller
     public function index()
     {
         $this->authorize('products_view');
-        $request_data = Request::all('category', 'type', 'search', 'field', 'page');
+        $request_data = Request::all('category', 'type', 'search', 'field', 'page', 'trashed');
         $user = User::find(Auth::id());
 
         $categories = Category::where('tenant_id', $user->tenant_id)
@@ -45,6 +48,10 @@ class ProductController extends Controller
 
         if (($request_data['search'] != null) && ($request_data['search'] != '') && ($request_data['field'] != null)) {
             $productsQuery->where($request_data['field'], 'like', '%' . $request_data['search'] . '%');
+        }
+
+        if ($request_data['trashed'] ?? false) {
+            $productsQuery->withTrashed();
         }
 
         $products = $productsQuery->orderBy('name')
@@ -184,12 +191,63 @@ class ProductController extends Controller
         $product = Product::where('id', $id)->firstOrFail();
         $this->authorize('delete', $product);
 
-        if ($product->delete()) {
+        try {
+            $deleted = DB::transaction(function () use ($product) {
+                // Deletar as variantes do produto e suas associações na loja
+                StoreProductVariant::whereHas('productVariant', function ($q) use ($product) {
+                    $q->where('product_id', $product->id);
+                })->delete();
+
+                // Deletar as variantes do produto
+                ProductVariant::where('product_id', $product->id)->delete();
+
+                // Deletar o produto
+                return $product->delete();
+            });
+
+            if ($deleted) {
+                return redirect()->back()
+                    ->with('success', 'Produto excluído com sucesso.');
+            } else {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao excluir produto.');
+            }
+        } catch (\Throwable $th) {
             return redirect()->back()
-                ->with('success', 'Produto excluído com sucesso.');
-        } else {
+                ->with('fail', 'Erro ao excluir produto: ' . $th->getMessage());
+        }
+    }
+
+    public function restore(Product $product)
+    {
+        $this->authorize('delete', $product);
+
+        try {
+            $restored = DB::transaction(function () use ($product) {
+                // Restaurar o produto
+                $product->restore();
+
+                // Restaurar as variantes do produto
+                ProductVariant::onlyTrashed()->where('product_id', $product->id)->restore();
+
+                // Restaurar as variantes do produto e suas associações na loja
+                StoreProductVariant::onlyTrashed()->whereHas('productVariant', function ($q) use ($product) {
+                    $q->where('product_id', $product->id);
+                })->restore();
+
+                return true;
+            });
+
+            if ($restored) {
+                return redirect()->back()
+                    ->with('success', 'Produto restaurado com sucesso.');
+            } else {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao restaurar produto.');
+            }
+        } catch (\Exception $e) {
             return redirect()->back()
-                ->with('fail', 'Erro ao excluir produto.');
+                ->with('fail', 'Erro ao restaurar produto: ' . $e->getMessage());
         }
     }
 }

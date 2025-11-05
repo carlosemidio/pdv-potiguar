@@ -64,9 +64,11 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/empresas', TenantsController::class)->names('tenant');
     Route::resource('/funcoes', RoleController::class)->names('role');
+    Route::put('/funcoes/{role}/restore', [RoleController::class, 'restore'])
+        ->withTrashed()
+        ->name('role.restore');
     Route::resource('/permissoes', PermissionController::class)->names('permission');
-    Route::resource('/usuarios', UserController::class)->only(['index', 'create', 'store', 'update'])->names('user');
-    
+    Route::resource('/usuarios', UserController::class)->only(['index', 'create', 'store', 'update'])->names('user');    
     Route::get('/usuarios/{uuid}/edit', [UserController::class, 'edit'])->name('user.edit');
     Route::get('/usuarios/{uuid}/show', [UserController::class, 'show'])->name('user.show');
     Route::patch('usuarios/{uuid}/status', [
@@ -91,14 +93,30 @@ Route::middleware('auth')->group(function () {
     Route::resource('/categorias', CategoriesController::class)
         ->names('categories');
 
+    Route::put('/categorias/{category}/restore', [CategoriesController::class, 'restore'])
+        ->withTrashed()
+        ->name('categories.restore');
+
     Route::resource('/marcas', BrandsController::class)
         ->names('brands');
+
+    Route::put('/marcas/{brand}/restore', [BrandsController::class, 'restore'])
+        ->withTrashed()
+        ->name('brands.restore');
 
     Route::resource('/ingredientes', IngredientsController::class)
         ->names('ingredients');
 
+    Route::put('/ingredientes/{ingredient}/restore', [IngredientsController::class, 'restore'])
+        ->withTrashed()
+        ->name('ingredients.restore');
+
     Route::resource('/complementos', AddonsController::class)
         ->names('addons');
+
+    Route::put('/complementos/{addon}/restore', [AddonsController::class, 'restore'])
+        ->withTrashed()
+        ->name('addons.restore');
 
     Route::resource('/complemento-ingredientes', AddonIngredientsController::class)
         ->only(['store', 'destroy'])
@@ -107,11 +125,23 @@ Route::middleware('auth')->group(function () {
     Route::resource('/produtos', ProductController::class)
         ->names('product');
 
+    Route::put('/produtos/{product}/restore', [ProductController::class, 'restore'])
+        ->withTrashed()
+        ->name('product.restore');
+
     Route::resource('/variantes-produto', ProductVariantController::class)
         ->names('product-variant');
 
+    Route::put('/variantes-produto/{productVariant}/restore', [ProductVariantController::class, 'restore'])
+        ->withTrashed()
+        ->name('product-variant.restore');
+
     Route::resource('/variantes-loja', StoreProductVariantController::class)
         ->names('store-product-variant');
+
+    Route::put('/variantes-loja/{storeProductVariant}/restore', [StoreProductVariantController::class, 'restore'])
+        ->withTrashed()
+        ->name('store-product-variant.restore');
 
     Route::resource('/variante-ingredientes', VariantIngredientsController::class)
         ->names('variant-ingredients');
@@ -143,6 +173,10 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/mesas', App\Http\Controllers\TablesController::class)
         ->names('tables');
+
+    Route::put('/mesas/{table}/restaurar', [App\Http\Controllers\TablesController::class, 'restore'])
+        ->withTrashed()
+        ->name('tables.restore');
     
     Route::patch('/mesas/{table}/status', [App\Http\Controllers\TablesController::class, 'updateStatus'])
         ->name('tables.update-status');
@@ -150,12 +184,20 @@ Route::middleware('auth')->group(function () {
     Route::resource('/clientes', CustomersController::class)
         ->names('customers');
 
+    Route::put('/clientes/{customer}/restore', [CustomersController::class, 'restore'])
+        ->withTrashed()
+        ->name('customers.restore');
+
     Route::resource('/pedidos', OrdersController::class)
         ->except(['destroy'])
         ->names('orders');
 
     Route::resource('/impressoras', PrintersController::class)
         ->names('printers');
+
+    Route::put('/impressoras/{printer}/restaurar', [PrintersController::class, 'restore'])
+        ->withTrashed()
+        ->name('printers.restore');
 
     Route::post('/print-order/{orderId}/{printerId}', [PrintJobsController::class, 'printOrder'])
         ->name('order.print');

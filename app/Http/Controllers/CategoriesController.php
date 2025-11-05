@@ -22,6 +22,7 @@ class CategoriesController extends Controller
         $this->authorize('categories_view');
 
         $search = $request->search ?? '';
+        $trashed = $request->trashed ?? false;
         $categoriesQuery = $this->category->query();
         
         if (!request()->user()->hasPermission('categories_view', true)) {
@@ -36,14 +37,19 @@ class CategoriesController extends Controller
             $categoriesQuery->where('name', 'like', "%$search%");
         }
 
+        if ($trashed) {
+            $categoriesQuery->withTrashed();
+        }
+
         $categories = $categoriesQuery->orderBy('name')
             ->with('parent')
-            ->paginate(12, ['id', 'user_id', 'name', 'parent_id', 'status', 'created_at'])
+            ->paginate(12, ['id', 'user_id', 'name', 'parent_id', 'status', 'created_at', 'updated_at', 'deleted_at'])
             ->withQueryString();
 
         return Inertia::render('Categories/Index', [
             'categories' => CategoryResource::collection($categories),
             'search' => $search,
+            'trashed' => $trashed,
         ]);
     }
 
@@ -115,11 +121,29 @@ class CategoriesController extends Controller
                     ->with('fail', 'Erro ao remover categoria.');
             }
 
-            return redirect()->route('categories.index')
+            return redirect()->back()
                 ->with('success', 'Categoria removida com sucesso!');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao remover categoria: ' . $e->getMessage());
+        }
+    }
+
+    public function restore(Category $category)
+    {
+        $this->authorize('delete', $category);
+
+        try {
+            if (!$category->restore()) {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao restaurar categoria.');
+            }
+
+            return redirect()->back()
+                ->with('success', 'Categoria restaurada com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao restaurar categoria: ' . $e->getMessage());
         }
     }
 }

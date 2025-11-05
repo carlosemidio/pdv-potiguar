@@ -8,9 +8,10 @@ interface SimpleSearchBarProps {
   search?: string;
   withTrashed?: boolean;
   trashed?: boolean;
+  placeholder?: string;
 }
 
-export default function SimpleSearchBar({ field, search, withTrashed, trashed }: SimpleSearchBarProps) {
+export default function SimpleSearchBar({ field, search, withTrashed, trashed, placeholder }: SimpleSearchBarProps) {
   const [values, setValues] = useState({
     field,
     search: search || '',
@@ -49,7 +50,7 @@ export default function SimpleSearchBar({ field, search, withTrashed, trashed }:
         <input
           type="text"
           name="search"
-          placeholder="Buscar..."
+          placeholder={placeholder}
           autoComplete="on"
           value={values.search}
           onChange={handleChange}

@@ -7,6 +7,7 @@ import FieldGroup from '../Form/FieldGroup';
 import TextInput from '../Form/TextInput';
 import SecondaryButton from '../SecondaryButton';
 import PrimaryButton from '../PrimaryButton';
+import { CheckboxInput } from '../Form/CheckboxInput';
 
 export default function CustomersFilterBar({
   filters
@@ -15,6 +16,7 @@ export default function CustomersFilterBar({
     category?: string;
     field?: string;
     search?: string;
+    trashed?: boolean;
   };
 }) {
   const [opened, setOpened] = useState(false);
@@ -22,12 +24,14 @@ export default function CustomersFilterBar({
   const [values, setValues] = useState({
     field: filters.field || 'name',
     search: filters.search || '',
+    trashed: filters.trashed || false,
   });
 
   function reset() {
     setValues({
       search: '',
       field: 'name',
+      trashed: false,
     });
 
     window.location.href = route(route().current() as string);
@@ -105,6 +109,24 @@ export default function CustomersFilterBar({
           className="border-0 rounded-l-none flex-1 focus:ring-2"
         />
       </div>
+
+      <FieldGroup label="Incluir itens excluídos" name="trashed">
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            name="trashed"
+            id="trashed"
+            checked={values.trashed}
+            onChange={(e) =>
+              setValues((prev) => ({
+                ...prev,
+                trashed: e.target.checked,
+              }))
+            }
+            className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+          />
+        </div>
+      </FieldGroup>
 
       {/* Botões de ação */}
       <div className="flex gap-2 mt-2 sm:mt-0">

@@ -22,8 +22,7 @@ class RoleFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'permissions' => ['array'],
+            'name' => ['required', 'string', 'max:255', 'unique:roles,name,' . $this->route('role')],
         ];
     }
 
@@ -36,7 +35,9 @@ class RoleFormRequest extends FormRequest
     {
         return [
             'name.required' => 'O nome é obrigatório.',
-            'display_name.required' => 'O nome de exibição é obrigatório.',
+            'name.string' => 'O nome deve ser uma string.',
+            'name.max' => 'O nome não pode ter mais de 255 caracteres.',
+            'name.unique' => 'O nome já está em uso.'
         ];
     }
 }

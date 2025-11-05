@@ -8,7 +8,6 @@ use App\Models\Printer;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class PrintersController extends Controller
@@ -31,6 +30,7 @@ class PrintersController extends Controller
         }
 
         $search = $request->search ?? '';
+        $trashed = $request->trashed ?? false;
         $printersQuery = $this->printer->query();
 
         if (!request()->user()->hasPermission('printers_view', true)) {
@@ -49,6 +49,10 @@ class PrintersController extends Controller
             $printersQuery->where('name', 'like', "%$search%");
         }
 
+        if ($trashed) {
+            $printersQuery->withTrashed();
+        }
+
         $printers = $printersQuery->orderBy('name')
             ->paginate(12)
             ->withQueryString();
@@ -56,6 +60,7 @@ class PrintersController extends Controller
         return Inertia::render('Printers/Index', [
             'printers' => PrinterResource::collection($printers),
             'search' => $search,
+            'trashed' => $trashed,
         ]);
     }
 
@@ -124,6 +129,24 @@ class PrintersController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao remover impressora: ' . $e->getMessage());
+        }
+    }
+
+    public function restore(Printer $printer)
+    {
+        $this->authorize('delete', $printer);
+
+        try {
+            if (!$printer->restore()) {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao restaurar impressora.');
+            }
+
+            return redirect()->route('printers.index')
+                ->with('success', 'Impressora restaurada com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao restaurar impressora: ' . $e->getMessage());
         }
     }
 }

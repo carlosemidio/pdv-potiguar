@@ -5,8 +5,8 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
 import { Role } from "@/types/Role";
 import { can } from "@/utils/authorization";
-import { Head, Link, useForm } from "@inertiajs/react";
-import { Edit, Eye, Trash, Plus, Shield, Users, Key, Crown } from "lucide-react";
+import { Head, Link, router, useForm } from "@inertiajs/react";
+import { Edit, Trash, Plus, Shield, Users, Key, Crown, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { formatCustomDateTime } from "@/utils/date-format";
 import SimpleSearchBar from "@/Components/SimpleSearchBar";
@@ -14,8 +14,9 @@ import SimpleSearchBar from "@/Components/SimpleSearchBar";
 export default function Index({
     auth,
     roles,
-    search
-}: PageProps<{ roles: { data: Role[] }, search?: string }>) {
+    search,
+    trashed,
+}: PageProps<{ roles: { data: Role[] }, search?: string, trashed?: boolean }>) {
     const [confirmingRoleDeletion, setConfirmingRoleDeletion] = useState(false);
     const [roleIdToDelete, setRoleIdToDelete] = useState<number | null>(null);
 
@@ -86,7 +87,7 @@ export default function Index({
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                     Filtros de Busca
                                 </h3>
-                                <SimpleSearchBar field='name' search={search} />
+                                <SimpleSearchBar field='name' search={search} withTrashed={true} trashed={trashed} />
                             </div>
                         </div>
                     </div>
@@ -117,7 +118,12 @@ export default function Index({
                                 {roles.data.map((role) => (
                                     <div
                                         key={role.id}
-                                        className="group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-600 transition-all duration-300 hover:-translate-y-1"
+                                        className={`relative rounded-xl border p-4 transition-all duration-200
+                                            bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750
+                                            ${role.deleted_at
+                                            ? 'opacity-70 border-red-300 dark:border-red-700'
+                                            : 'border-gray-200 dark:border-gray-700 hover:shadow-lg'}
+                                        `}
                                     >
                                         <div className="p-6">
                                             {/* Header da Função */}
@@ -129,7 +135,7 @@ export default function Index({
                                                         </div>
                                                         <div className="flex-1">
                                                             <h4 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200 line-clamp-2">
-                                                                {role.slug}
+                                                                {role.name}
                                                             </h4>
                                                         </div>
                                                     </div>
@@ -142,7 +148,7 @@ export default function Index({
                                                     <Key className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                                                     <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Código:</span>
                                                     <code className="text-xs font-mono bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded text-gray-800 dark:text-gray-200">
-                                                        {role.name}
+                                                        {role.slug}
                                                     </code>
                                                 </div>
                                             </div>
@@ -170,27 +176,29 @@ export default function Index({
 
                                             {/* Ações */}
                                             <div className="flex gap-2 justify-end pt-4 mt-4 border-t border-gray-100 dark:border-gray-600">
-                                                {/* {can('roles_view') && (
-                                                    <Link href={route('role.show', { id: role.id })}>
-                                                        <button className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400 transition-all duration-200" title="Ver detalhes">
-                                                            <Eye className="w-4 h-4" />
-                                                        </button>
-                                                    </Link>
-                                                )} */}
-                                                {can('roles_edit') && (
+                                                {(!role.deleted_at && can('roles_edit')) && (
                                                     <Link href={route('role.edit', { id: role.id })}>
                                                         <button className="p-2 rounded-lg bg-green-100 dark:bg-green-900/50 hover:bg-green-200 dark:hover:bg-green-800 text-green-600 dark:text-green-400 transition-all duration-200" title="Editar função">
                                                             <Edit className="w-4 h-4" />
                                                         </button>
                                                     </Link>
                                                 )}
-                                                {can('roles_delete') && (
+                                                {(!role.deleted_at && can('roles_delete')) && (
                                                     <button
                                                         onClick={() => confirmRoleDeletion(role.id)}
                                                         className="p-2 rounded-lg bg-red-100 dark:bg-red-900/50 hover:bg-red-200 dark:hover:bg-red-800 text-red-600 dark:text-red-400 transition-all duration-200"
                                                         title="Excluir função"
                                                     >
                                                         <Trash className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                                {(role.deleted_at && can('roles_delete')) && (
+                                                    <button
+                                                        onClick={() => router.put(route('role.restore', role.id), {}, { preserveScroll: true })}
+                                                        className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400 transition-all duration-200"
+                                                        title="Restaurar função"
+                                                    >
+                                                        <RotateCcw className="w-4 h-4" />
                                                     </button>
                                                 )}
                                             </div>
@@ -223,7 +231,7 @@ export default function Index({
                             e.preventDefault();
                             deleteUser();
                         }}
-                        className="p-8"
+                        className="p-8 bg-white dark:bg-gray-800"
                     >
                         <div className="text-center mb-6">
                             <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full mb-4">

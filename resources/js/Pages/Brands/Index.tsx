@@ -3,19 +3,21 @@ import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus, Award, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Edit, Trash, Plus, Award, CheckCircle, XCircle, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Brand } from '@/types/Brand';
 import BrandFormModal from '@/Components/BrandFormModal';
 import SimpleSearchBar from '@/Components/SimpleSearchBar';
+import Pagination from '@/Components/Pagination/Pagination';
 
 export default function Index({
     auth,
     brands,
     search,
-}: PageProps<{ brands: PaginatedData<Brand>, search?: string }>) {
+    trashed,
+}: PageProps<{ brands: PaginatedData<Brand>, search?: string, trashed?: boolean }>) {
 
     const [confirmingBrandDeletion, setConfirmingBrandDeletion] = useState(false);
     const [brandIdToDelete, setBrandIdToDelete] = useState<number | null>(null);
@@ -96,7 +98,7 @@ export default function Index({
             <Head title="Marcas" />
 
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="container mx-auto px-4 py-6 max-w-7xl">
+                <div className="container px-4 py-6 max-w-7xl">
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-2xl p-6 border border-orange-200 dark:border-orange-800">
@@ -163,7 +165,7 @@ export default function Index({
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                         Filtros de Busca
                                     </h3>
-                                    <SimpleSearchBar field='name' search={search} />
+                                    <SimpleSearchBar field='name' search={search} withTrashed={true} trashed={trashed} placeholder='Buscar por nome da marca...' />
                                 </div>
                             </div>
                         </div>
@@ -172,7 +174,20 @@ export default function Index({
                             {brands?.data?.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                     {brands.data.map((brand) => (
-                                        <div key={brand.id} className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-200">
+                                        <div
+                                            key={brand.id}
+                                            className={`relative rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-200
+                                                ${brand.deleted_at
+                                                    ? 'bg-gray-100 dark:bg-gray-900 opacity-60'
+                                                    : 'bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750'}
+                                            `}
+                                        >
+                                            {/* Tag Deletada */}
+                                            {brand.deleted_at && (
+                                                <div className="absolute top-3 left-3 z-50 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow">
+                                                    Deletada
+                                                </div>
+                                            )}
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                                     <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
@@ -205,7 +220,7 @@ export default function Index({
                                                 </div>
                                                 
                                                 <div className="flex items-center gap-2">
-                                                    {(can('brands_edit') && brand.user_id != null) && (
+                                                    {(can('brands_edit') && !brand.deleted_at) && (
                                                         <button
                                                             onClick={() => openModal(brand)}
                                                             className="p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400 transition-colors"
@@ -214,13 +229,22 @@ export default function Index({
                                                             <Edit className="w-4 h-4" />
                                                         </button>
                                                     )}
-                                                    {(can('brands_delete') && brand.user_id != null) && (
+                                                    {(can('brands_delete') && !brand.deleted_at) && (
                                                         <button
                                                             onClick={() => confirmBrandDeletion(brand.id)}
                                                             className="p-1.5 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-800 text-red-600 dark:text-red-400 transition-colors"
                                                             title="Excluir marca"
                                                         >
                                                             <Trash className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                    {(brand.deleted_at && can('brands_delete')) && (
+                                                        <button
+                                                            onClick={() => router.put(route('brands.restore', brand.id), {}, { preserveScroll: true })}
+                                                            className="p-1.5 rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/50 dark:hover:bg-green-800 text-green-600 dark:text-green-400 transition-colors"
+                                                            title="Restaurar marca"
+                                                        >
+                                                            <RotateCcw className="w-4 h-4" />
                                                         </button>
                                                     )}
                                                 </div>
@@ -257,62 +281,7 @@ export default function Index({
                         </div>
 
                         {/* Pagination */}
-                        {brands?.data?.length > 0 && (
-                            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center justify-center">
-                                    <nav className="flex items-center gap-2">
-                                        {links?.map((link, index) => {
-                                            if (index === 0) {
-                                                return (
-                                                    <Link
-                                                        key={index}
-                                                        href={link.url || '#'}
-                                                        className={`p-2 rounded-lg border transition-colors ${
-                                                            link.url 
-                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
-                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                                                        }`}
-                                                    >
-                                                        <ChevronLeft className="w-4 h-4" />
-                                                    </Link>
-                                                );
-                                            }
-                                            
-                                            if (index === links.length - 1) {
-                                                return (
-                                                    <Link
-                                                        key={index}
-                                                        href={link.url || '#'}
-                                                        className={`p-2 rounded-lg border transition-colors ${
-                                                            link.url 
-                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
-                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                                                        }`}
-                                                    >
-                                                        <ChevronRight className="w-4 h-4" />
-                                                    </Link>
-                                                );
-                                            }
-                                            
-                                            return (
-                                                <Link
-                                                    key={index}
-                                                    href={link.url || '#'}
-                                                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                                                        link.active 
-                                                            ? 'border-orange-500 bg-orange-500 text-white' 
-                                                            : link.url 
-                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
-                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                                                    }`}
-                                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                                />
-                                            );
-                                        })}
-                                    </nav>
-                                </div>
-                            </div>
-                        )}
+                        <Pagination links={links} />
                     </div>
                 </div>
             </div>
@@ -331,7 +300,7 @@ export default function Index({
 
             {brandToDelete && (
                 <Modal show={confirmingBrandDeletion} onClose={closeModal}>
-                    <form onSubmit={(e) => { e.preventDefault(); deleteBrand(); }} className="p-6">
+                    <form onSubmit={(e) => { e.preventDefault(); deleteBrand(); }} className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
                         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                             Tem certeza que deseja deletar a marca <span className="font-bold">{brandToDelete.name}</span>?
                         </h2>

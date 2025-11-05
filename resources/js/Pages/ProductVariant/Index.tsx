@@ -4,15 +4,15 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { ProductVariant } from '@/types/ProductVariant';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Edit, Trash, Plus, Package, Tag, Copy, ChevronLeft, ChevronRight, Layers, Palette } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { formatCustomDateTime } from '@/utils/date-format';
-import Pagination from '@/Components/Pagination/Pagination';
 import Image from '@/Components/Image';
 import { Category } from '@/types/Category';
 import ProductsFilterBar from '@/Components/ProductsFilterBar';
+import Pagination from '@/Components/Pagination/Pagination';
 
 export default function Index({
     auth,
@@ -87,7 +87,7 @@ export default function Index({
             <Head title="Variantes de Produtos" />
 
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="container mx-auto px-4 py-6 max-w-7xl">
+                <div className="container px-4 py-6 max-w-7xl">
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-800">
@@ -163,7 +163,20 @@ export default function Index({
                             {data.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {data.map((item) => (
-                                        <div key={item.id} className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-200">
+                                        <div
+                                            key={item.id}
+                                            className={`relative rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-200
+                                                ${item.deleted_at
+                                                    ? 'bg-gray-100 dark:bg-gray-900 opacity-60'
+                                                    : 'bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750'}
+                                            `}
+                                        >
+                                            {/* Tag Deletada */}
+                                            {item.deleted_at && (
+                                                <div className="absolute top-3 left-3 z-50 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow">
+                                                    Deletada
+                                                </div>
+                                            )}
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                                     {item?.image ? (
@@ -189,7 +202,7 @@ export default function Index({
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    {can('product-variants_edit') && (
+                                                    {(!item.deleted_at && can('product-variants_edit')) && (
                                                         <Link
                                                             href={route('product-variant.edit', { id: item.id })}
                                                             className="p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400 transition-colors"
@@ -198,13 +211,26 @@ export default function Index({
                                                             <Edit className="w-4 h-4" />
                                                         </Link>
                                                     )}
-                                                    {can('product-variants_delete') && (
+                                                    {(!item.deleted_at && can('product-variants_delete')) && (
                                                         <button
                                                             onClick={() => handleDeleteClick(item)}
                                                             className="p-1.5 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-800 text-red-600 dark:text-red-400 transition-colors"
                                                             title="Excluir variante"
                                                         >
                                                             <Trash className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+
+                                                    {(item.deleted_at && can('product-variants_delete')) && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => router.put(route('product-variant.restore', { id: item.id }), { preserveScroll: true } )}
+                                                            className="p-1.5 rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/50 dark:hover:bg-green-800 text-green-600 dark:text-green-400 transition-colors"
+                                                            title="Restaurar variante"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clipRule="evenodd" />
+                                                            </svg>
                                                         </button>
                                                     )}
                                                 </div>
@@ -269,62 +295,7 @@ export default function Index({
                         </div>
 
                         {/* Pagination */}
-                        {data.length > 0 && (
-                            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center justify-center">
-                                    <nav className="flex items-center gap-2">
-                                        {meta.links?.map((link, index) => {
-                                            if (index === 0) {
-                                                return (
-                                                    <Link
-                                                        key={index}
-                                                        href={link.url || '#'}
-                                                        className={`p-2 rounded-lg border transition-colors ${
-                                                            link.url 
-                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
-                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                                                        }`}
-                                                    >
-                                                        <ChevronLeft className="w-4 h-4" />
-                                                    </Link>
-                                                );
-                                            }
-                                            
-                                            if (index === meta.links.length - 1) {
-                                                return (
-                                                    <Link
-                                                        key={index}
-                                                        href={link.url || '#'}
-                                                        className={`p-2 rounded-lg border transition-colors ${
-                                                            link.url 
-                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
-                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                                                        }`}
-                                                    >
-                                                        <ChevronRight className="w-4 h-4" />
-                                                    </Link>
-                                                );
-                                            }
-                                            
-                                            return (
-                                                <Link
-                                                    key={index}
-                                                    href={link.url || '#'}
-                                                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                                                        link.active 
-                                                            ? 'border-purple-500 bg-purple-500 text-white' 
-                                                            : link.url 
-                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
-                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                                                    }`}
-                                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                                />
-                                            );
-                                        })}
-                                    </nav>
-                                </div>
-                            </div>
-                        )}
+                        <Pagination links={productVariants.meta.links} />
                     </div>
                 </div>
             </div>
@@ -341,7 +312,7 @@ export default function Index({
             )}
 
             <Modal show={showModal} onClose={closeModal}>
-                <form onSubmit={(e) => { e.preventDefault(); deleteVariant(); }} className="p-6">
+                <form onSubmit={(e) => { e.preventDefault(); deleteVariant(); }} className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                         Tem certeza que deseja deletar {variant?.name}?
                     </h2>

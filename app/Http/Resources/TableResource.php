@@ -21,6 +21,7 @@ class TableResource extends JsonResource
             'order_id' => $this->order_id ?? null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'deleted_at' => $this->deleted_at,
         ];
     }
 }

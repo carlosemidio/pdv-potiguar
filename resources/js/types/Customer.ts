@@ -6,4 +6,7 @@ export type Customer = {
     phone?: string;
     type?: string;
     doc?: string;
+    created_at: string;
+    updated_at: string;
+    deleted_at?: string | null;
 }

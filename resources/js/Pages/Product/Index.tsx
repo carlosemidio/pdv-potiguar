@@ -2,7 +2,7 @@ import Modal from '@/Components/Modal';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
 import { Product } from '@/types/Product';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Edit, Trash, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
@@ -73,7 +73,7 @@ export default function Index({
             <Head title="Produtos" />
 
             <section className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="container mx-auto px-2 py-4 max-w-7xl">
+                <div className="container px-2 py-4 max-w-7xl">
                     {/* Filter Section */}
                     <div className="mb-4">
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
@@ -89,7 +89,20 @@ export default function Index({
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                                 {data.map((item) => (
-                                    <div key={item.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                                    <div
+                                        key={item.id}
+                                        className={`relative rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 group
+                                            ${item.deleted_at
+                                                ? 'bg-gray-100 dark:bg-gray-900 opacity-60'
+                                                : 'bg-white dark:bg-gray-800'}
+                                        `}
+                                    >
+                                        {/* Tag Deletado */}
+                                        {item.deleted_at && (
+                                            <div className="absolute top-3 left-3 z-50 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow">
+                                                Deletado
+                                            </div>
+                                        )}
                                         {/* Product Content */}
                                         <div className="p-6">
                                             {/* Product Name */}
@@ -129,7 +142,7 @@ export default function Index({
 
                                             {/* Action Buttons */}
                                             <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-600">
-                                                {can('products_edit') && (
+                                                {(!item?.deleted_at && can('products_edit')) && (
                                                     <Link 
                                                         href={route('product.edit', { id: item.id })}
                                                         className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-center py-2.5 px-4 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg"
@@ -140,7 +153,7 @@ export default function Index({
                                                         </span>
                                                     </Link>
                                                 )}
-                                                {can('products_delete') && (
+                                                {(!item?.deleted_at && can('products_delete')) && (
                                                     <button
                                                         type="button"
                                                         onClick={() => handleDeleteClick(item)}
@@ -149,6 +162,21 @@ export default function Index({
                                                         <span className="inline-flex items-center justify-center gap-2">
                                                             <Trash className="w-4 h-4" />
                                                             Excluir
+                                                        </span>
+                                                    </button>
+                                                )}
+
+                                                {(item?.deleted_at && can('products_delete')) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => router.put(route('product.restore', { id: item.id }), { preserveScroll: true } )}
+                                                        className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2.5 px-4 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+                                                    >
+                                                        <span className="inline-flex items-center justify-center gap-2">
+                                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clipRule="evenodd" />
+                                                            </svg>
+                                                            Restaurar
                                                         </span>
                                                     </button>
                                                 )}
@@ -203,7 +231,7 @@ export default function Index({
             </section>
 
             <Modal show={showModal} onClose={closeModal}>
-                <form onSubmit={(e) => { e.preventDefault(); deleteProduct(); }} className="p-6">
+                <form onSubmit={(e) => { e.preventDefault(); deleteProduct(); }} className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg">
                     <div className="flex items-center gap-4 mb-6">
                         <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
                             <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">

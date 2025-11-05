@@ -3,20 +3,21 @@ import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Edit, Eye, Trash, Plus, Package2, Layers3, ChevronLeft, ChevronRight, Puzzle } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Edit, Eye, Trash, Plus, Package2, Layers3, Puzzle, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Addon } from '@/types/Addon';
-import Pagination from '@/Components/Pagination/Pagination';
 import AddonFormModal from '@/Components/AddonFormModal';
 import SimpleSearchBar from '@/Components/SimpleSearchBar';
+import Pagination from '@/Components/Pagination/Pagination';
 
 export default function Index({
     auth,
     addons,
-    search
-}: PageProps<{ addons: PaginatedData<Addon>, search?: string }>) {
+    search,
+    trashed,
+}: PageProps<{ addons: PaginatedData<Addon>, search?: string, trashed?: boolean }>) {
 
     const [confirmingAddonDeletion, setConfirmingAddonDeletion] = useState(false);
     const [addonIdToDelete, setAddonIdToDelete] = useState<number | null>(null);
@@ -97,7 +98,7 @@ export default function Index({
             <Head title="Complementos" />
 
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="container mx-auto px-4 py-6 max-w-7xl">
+                <div className="container px-4 py-6 max-w-7xl">
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl p-6 border border-emerald-200 dark:border-emerald-800">
@@ -164,7 +165,7 @@ export default function Index({
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                         Filtros de Busca
                                     </h3>
-                                    <SimpleSearchBar field='name' search={search} />
+                                    <SimpleSearchBar field='name' search={search} withTrashed={true} trashed={trashed} placeholder="Buscar por nome do complemento..." />
                                 </div>
                             </div>
                         </div>
@@ -173,11 +174,25 @@ export default function Index({
                             {addons?.data?.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {addons.data.map((addon) => (
-                                        <div key={addon.id} className="group relative bg-gradient-to-br from-white via-purple-50 to-indigo-50 dark:from-gray-800 dark:via-purple-900/10 dark:to-indigo-900/10 rounded-2xl shadow-lg hover:shadow-2xl border border-purple-200 dark:border-purple-700/50 transition-all duration-300 hover:-translate-y-2 hover:rotate-1 overflow-hidden">
+                                        <div
+                                            key={addon.id}
+                                            className={`group relative rounded-2xl shadow-lg hover:shadow-2xl border border-purple-200 dark:border-purple-700/50 transition-all duration-300 hover:-translate-y-2 hover:rotate-1 overflow-hidden
+                                                ${addon.deleted_at
+                                                    ? 'bg-gray-100 dark:bg-gray-900 opacity-60'
+                                                    : 'bg-gradient-to-br from-white via-purple-50 to-indigo-50 dark:from-gray-800 dark:via-purple-900/10 dark:to-indigo-900/10'}
+                                            `}
+                                        >
                                             {/* Decoração de fundo */}
                                             <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-400/20 to-indigo-400/20 rounded-full transform translate-x-6 -translate-y-6"></div>
                                             <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-indigo-400/10 to-purple-400/10 rounded-full transform -translate-x-4 translate-y-4"></div>
-                                            
+
+                                            {/* Tag Deletado */}
+                                            {addon.deleted_at && (
+                                                <div className="absolute top-3 left-3 z-50 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow">
+                                                    Deletado
+                                                </div>
+                                            )}
+
                                             <div className="p-6 relative">
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -219,7 +234,7 @@ export default function Index({
 
                                                 {/* Botões de Ação - Sempre Visíveis */}
                                                 <div className="absolute top-3 right-3 flex gap-1 z-50">
-                                                    {can('addons_view') && (
+                                                    {(!addon.deleted_at && can('addons_view')) && (
                                                         <Link
                                                             href={route('addons.show', { id: addon.id })}
                                                             className="w-8 h-8 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
@@ -228,7 +243,7 @@ export default function Index({
                                                             <Eye className="w-4 h-4" />
                                                         </Link>
                                                     )}
-                                                    {(can('addons_edit') && addon.user_id != null) && (
+                                                    {(!addon.deleted_at && can('addons_edit')) && (
                                                         <button
                                                             onClick={() => openModal(addon)}
                                                             className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
@@ -237,13 +252,22 @@ export default function Index({
                                                             <Edit className="w-4 h-4" />
                                                         </button>
                                                     )}
-                                                    {(can('addons_delete') && addon.user_id != null && typeof addon.id === 'number') && (
+                                                    {(!addon.deleted_at && can('addons_delete')) && (
                                                         <button
                                                             onClick={() => confirmAddonDeletion(addon.id!)}
                                                             className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
                                                             title="Excluir complemento"
                                                         >
                                                             <Trash className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                    {(addon.deleted_at && can('addons_delete')) && (
+                                                        <button
+                                                            onClick={() => router.put(route('addons.restore', { id: addon.id! }), { preserveScroll: true })}
+                                                            className="w-8 h-8 bg-yellow-600 hover:bg-yellow-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
+                                                            title="Restaurar complemento"
+                                                        >
+                                                            <RotateCcw className="w-4 h-4" />
                                                         </button>
                                                     )}
                                                 </div>
@@ -314,62 +338,7 @@ export default function Index({
                         </div>
 
                         {/* Pagination */}
-                        {addons?.data?.length > 0 && (
-                            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center justify-center">
-                                    <nav className="flex items-center gap-2">
-                                        {links?.map((link, index) => {
-                                            if (index === 0) {
-                                                return (
-                                                    <Link
-                                                        key={index}
-                                                        href={link.url || '#'}
-                                                        className={`p-2 rounded-lg border transition-colors ${
-                                                            link.url 
-                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
-                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                                                        }`}
-                                                    >
-                                                        <ChevronLeft className="w-4 h-4" />
-                                                    </Link>
-                                                );
-                                            }
-                                            
-                                            if (index === links.length - 1) {
-                                                return (
-                                                    <Link
-                                                        key={index}
-                                                        href={link.url || '#'}
-                                                        className={`p-2 rounded-lg border transition-colors ${
-                                                            link.url 
-                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
-                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                                                        }`}
-                                                    >
-                                                        <ChevronRight className="w-4 h-4" />
-                                                    </Link>
-                                                );
-                                            }
-                                            
-                                            return (
-                                                <Link
-                                                    key={index}
-                                                    href={link.url || '#'}
-                                                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                                                        link.active 
-                                                            ? 'border-emerald-500 bg-emerald-500 text-white' 
-                                                            : link.url 
-                                                                ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
-                                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                                                    }`}
-                                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                                />
-                                            );
-                                        })}
-                                    </nav>
-                                </div>
-                            </div>
-                        )}
+                        <Pagination links={links} />
                     </div>
                 </div>
             </div>
@@ -388,7 +357,7 @@ export default function Index({
 
             {addonToDelete && (
                 <Modal show={confirmingAddonDeletion} onClose={closeModal}>
-                    <form onSubmit={(e) => { e.preventDefault(); deleteAddon(); }} className="p-6">
+                    <form onSubmit={(e) => { e.preventDefault(); deleteAddon(); }} className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
                         <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                             Tem certeza que deseja deletar o complemento <span className="font-bold">{addonToDelete?.name}</span>?
                         </h2>

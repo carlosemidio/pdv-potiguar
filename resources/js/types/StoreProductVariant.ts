@@ -32,4 +32,5 @@ export type StoreProductVariant = {
     is_published: boolean | null;
     created_at: string | null;
     updated_at: string | null;
+    deleted_at?: string | null;
 };

@@ -25,6 +25,7 @@ class IngredientsController extends Controller
         $this->authorize('ingredients_view');
 
         $search = $request->search ?? '';
+        $trashed = $request->trashed ?? false;
         $ingredientsQuery = $this->ingredient->query()
             ->with('unit');
 
@@ -40,6 +41,10 @@ class IngredientsController extends Controller
             $ingredientsQuery->where('name', 'like', "%$search%");
         }
 
+        if ($trashed) {
+            $ingredientsQuery->withTrashed();
+        }
+
         $ingredients = $ingredientsQuery->orderBy('name')
             ->paginate(12)
             ->withQueryString();
@@ -50,6 +55,7 @@ class IngredientsController extends Controller
             'ingredients' => IngredientResource::collection($ingredients),
             'units' => UnitResource::collection($units),
             'search' => $search,
+            'trashed' => $trashed,
         ]);
     }
     public function store(Request $request)
@@ -134,6 +140,24 @@ class IngredientsController extends Controller
             DB::rollBack();
             return redirect()->back()
                 ->with('fail', 'Erro ao remover ingrediente: ' . $e->getMessage());
+        }
+    }
+
+    public function restore(Ingredient $ingredient)
+    {
+        $this->authorize('delete', $ingredient);
+
+        try {
+            if (!$ingredient->restore()) {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao restaurar ingrediente.');
+            }
+
+            return redirect()->back()
+                ->with('success', 'Ingrediente restaurado com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao restaurar ingrediente: ' . $e->getMessage());
         }
     }
 }

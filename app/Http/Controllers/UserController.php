@@ -101,24 +101,23 @@ class UserController extends Controller
         $formData['user_id'] = $loggedUser->id;
         $user = User::create($formData);
         
-        $authUser = User::findOrFail(Auth::user()->id);
         $rolesQuery = Role::query();
         $storesQuery = Store::query();
 
-        if (!$authUser->hasPermission('roles_view', true)) {
-            $rolesQuery->where('user_id', $authUser->id);
+        if (!$loggedUser->hasPermission('roles_view', true)) {
+            $rolesQuery->where('user_id', $loggedUser->id);
         }
 
-        if ($authUser->tenant_id != null) {
-            $rolesQuery->where('tenant_id', $authUser->tenant_id);
+        if ($loggedUser->tenant_id != null) {
+            $rolesQuery->where('tenant_id', $loggedUser->tenant_id);
         }
 
-        if (!$authUser->hasPermission('stores_view', true)) {
-            $storesQuery->where('user_id', $authUser->id);
+        if (!$loggedUser->hasPermission('stores_view', true)) {
+            $storesQuery->where('user_id', $loggedUser->id);
         }
 
-        if ($authUser->tenant_id != null) {
-            $storesQuery->where('tenant_id', $authUser->tenant_id);
+        if ($loggedUser->tenant_id != null) {
+            $storesQuery->where('tenant_id', $loggedUser->tenant_id);
         }
 
         $loggedUserRoles = $rolesQuery->get();

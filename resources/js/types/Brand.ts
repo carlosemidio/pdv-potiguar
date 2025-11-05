@@ -4,4 +4,6 @@ export type Brand = {
     name: string;
     status: number; // 1 for active, 0 for inactive
     created_at: string;
+    updated_at: string;
+    deleted_at?: string | null;
 }

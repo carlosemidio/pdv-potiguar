@@ -19,6 +19,7 @@ class AddonResource extends JsonResource
             'addon_ingredients' => AddonIngredientResource::collection($this->whenLoaded('addonIngredients')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'deleted_at' => $this->deleted_at,
         ];
     }
 }

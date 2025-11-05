@@ -1,8 +1,8 @@
 import Modal from '@/Components/Modal';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus, Printer as PrinterIcon, Wifi, WifiOff, AlertTriangle, CheckCircle, Store, Hash, Cable, Clock, Zap, Settings } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { Edit, Trash, Plus, Printer as PrinterIcon, Wifi, WifiOff, AlertTriangle, CheckCircle, Store, Hash, Cable, Clock, Zap, Settings, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import Pagination from '@/Components/Pagination/Pagination';
@@ -13,8 +13,9 @@ import SimpleSearchBar from '@/Components/SimpleSearchBar';
 export default function Index({
     auth,
     printers,
-    search
-}: PageProps<{ printers: PaginatedData<Printer>, search?: string }>) {
+    search,
+    trashed,
+}: PageProps<{ printers: PaginatedData<Printer>, search?: string, trashed?: boolean }>) {
     const [confirmingPrinterDeletion, setConfirmingPrinterDeletion] = useState(false);
     const [printerIdToDelete, setPrinterIdToDelete] = useState<number | null>(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -162,7 +163,7 @@ export default function Index({
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                         Filtros de Busca
                                     </h3>
-                                    <SimpleSearchBar field='name' search={search} />
+                                    <SimpleSearchBar field='name' search={search} withTrashed={true} trashed={trashed} placeholder='Buscar por nome da impressora...' />
                                 </div>
                             </div>
                         </div>
@@ -175,7 +176,13 @@ export default function Index({
                                         const connectionType = connectionTypeConfig[printer.type?.toLowerCase()] || connectionTypeConfig.usb;
                                         
                                         return (
-                                            <div key={printer.id} className="group relative bg-gradient-to-br from-white via-indigo-50 to-purple-50 dark:from-gray-800 dark:via-indigo-900/10 dark:to-purple-900/10 rounded-2xl shadow-lg hover:shadow-2xl border border-indigo-200 dark:border-indigo-700/50 transition-all duration-300 hover:-translate-y-2 hover:rotate-1 overflow-hidden">
+                                            <div key={printer.id}
+                                                className={`relative rounded-xl border p-4 transition-all duration-200
+                                                    bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750
+                                                    ${printer.deleted_at
+                                                    ? 'opacity-70 border-red-300 dark:border-red-700'
+                                                    : 'border-gray-200 dark:border-gray-700 hover:shadow-lg'}
+                                                `}>
                                                 {/* Decoração de fundo */}
                                                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 rounded-full transform translate-x-6 -translate-y-6"></div>
                                                 <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-purple-400/10 to-indigo-400/10 rounded-full transform -translate-x-4 translate-y-4"></div>
@@ -201,7 +208,7 @@ export default function Index({
 
                                                 {/* Botões de Ação - Sempre Visíveis */}
                                                 <div className="absolute top-3 right-3 flex gap-1 z-50">
-                                                    {can('printers_edit') && printer.user_id != null && (
+                                                    {(can('printers_edit') && !printer.deleted_at) && (
                                                         <button
                                                             onClick={() => handleOpenModalForEdit(printer)}
                                                             className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
@@ -210,13 +217,23 @@ export default function Index({
                                                             <Edit className="w-4 h-4" />
                                                         </button>
                                                     )}
-                                                    {can('printers_delete') && printer.user_id != null && (
+                                                    {(can('printers_delete') && !printer.deleted_at) && (
                                                         <button
                                                             onClick={() => confirmPrinterDeletion(printer.id)}
                                                             className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
                                                             title="Excluir impressora"
                                                         >
                                                             <Trash className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+
+                                                    {(printer.deleted_at && can('printers_delete')) && (
+                                                        <button
+                                                            onClick={() => router.put(route('printers.restore', printer.id), {}, { preserveScroll: true })}
+                                                            className="w-8 h-8 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-110 active:scale-95"
+                                                            title="Restaurar impressora"
+                                                        >
+                                                            <RotateCcw className="w-4 h-4" />
                                                         </button>
                                                     )}
                                                 </div>
@@ -375,7 +392,7 @@ export default function Index({
 
             {printerToDelete && (
                 <Modal show={confirmingPrinterDeletion} onClose={closeModal}>
-                    <div className="p-8">
+                    <div className="p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-lg max-w-lg mx-auto">
                         <div className="flex items-start gap-4 mb-6">
                             <div className="flex-shrink-0">
                                 <div className="w-12 h-12 bg-red-100 dark:bg-red-900/40 rounded-full flex items-center justify-center">

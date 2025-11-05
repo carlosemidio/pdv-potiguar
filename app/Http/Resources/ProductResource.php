@@ -10,20 +10,21 @@ class ProductResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'              => $this->id,
-            'user_id'         => $this->user_id,
-            'store_id'        => $this->store_id,
-            'category_id'     => $this->category_id,
-            'brand_id'        => $this->brand_id,
-            'user'            => $this->whenLoaded('user'),
-            'category'        => $this->whenLoaded('category'),
-            'brand'           => $this->whenLoaded('brand'),
-            'name'            => $this->name,
-            'slug'            => $this->slug,
-            'description'     => $this->description,
+            'id' => $this->id,
+            'user_id' => $this->user_id,
+            'store_id' => $this->store_id,
+            'category_id' => $this->category_id,
+            'brand_id' => $this->brand_id,
+            'user' => $this->whenLoaded('user'),
+            'category' => $this->whenLoaded('category'),
+            'brand' => $this->whenLoaded('brand'),
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'description' => $this->description,
             'short_description' => $this->short_description,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
+            'deleted_at' => $this->deleted_at?->toDateTimeString(),
         ];
     }
 }

@@ -151,15 +151,15 @@ export default function Index({
 
                                                 {/* Botão de restaurar (apenas se estiver excluído) */}
                                                 {menu.deleted_at && can('menus_delete') && (
-                                                <button
-                                                    onClick={() =>
-                                                        router.put(route('menus.restore', menu.id), {}, { preserveScroll: true })
-                                                    }
-                                                    className="p-1.5 rounded-lg bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:hover:bg-yellow-800 text-yellow-600 dark:text-yellow-400 transition-colors"
-                                                    title="Restaurar menu"
-                                                >
-                                                    <RotateCcw className="w-4 h-4" />
-                                                </button>
+                                                    <button
+                                                        onClick={() =>
+                                                            router.put(route('menus.restore', menu.id), {}, { preserveScroll: true })
+                                                        }
+                                                        className="p-1.5 rounded-lg bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:hover:bg-yellow-800 text-yellow-600 dark:text-yellow-400 transition-colors"
+                                                        title="Restaurar menu"
+                                                    >
+                                                        <RotateCcw className="w-4 h-4" />
+                                                    </button>
                                                 )}
 
                                                 {/* Só mostra editar/excluir se não estiver excluído */}

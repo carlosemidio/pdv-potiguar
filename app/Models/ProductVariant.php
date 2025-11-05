@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Traits\GeneratesSku;
-use App\Traits\GeneratesVariantSlug;
 use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

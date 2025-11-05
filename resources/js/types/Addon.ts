@@ -10,4 +10,5 @@ export type Addon = {
     addon_ingredients?: AddonIngredient[] | null;
     created_at?: string;
     updated_at?: string;
+    deleted_at?: string | null;
 }

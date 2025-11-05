@@ -1,8 +1,8 @@
 import Modal from '@/Components/Modal';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, PaginatedData } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
-import { Edit, Trash, Plus } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { Edit, Trash, Plus, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { can } from '@/utils/authorization';
 import { Category } from '@/types/Category';
@@ -14,7 +14,8 @@ export default function Index({
     auth,
     categories,
     search,
-}: PageProps<{ categories: PaginatedData<Category>, search?: string }>) {
+    trashed,
+}: PageProps<{ categories: PaginatedData<Category>, search?: string, trashed?: boolean }>) {
 
     const [confirmingCategoryDeletion, setConfirmingCategoryDeletion] = useState(false);
     const [categoryIdToDelete, setCategoryIdToDelete] = useState<number | null>(null);
@@ -87,14 +88,14 @@ export default function Index({
             <Head title="Categorias" />
 
             <section className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
+                <div className="container px-4 py-6 md:py-8 max-w-7xl">
                     {/* Filter Section */}
                     <div className="mb-4">
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                 Filtros de Busca
                             </h3>
-                            <SimpleSearchBar field='name' search={search} />
+                            <SimpleSearchBar field='name' search={search} withTrashed={true} trashed={trashed} placeholder='Buscar por nome da categoria...' />
                         </div>
                     </div>
 
@@ -103,7 +104,20 @@ export default function Index({
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                                 {categories.data.map((category) => (
-                                    <div key={category.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                                    <div
+                                        key={category.id}
+                                        className={`relative rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 group
+                                            ${category.deleted_at
+                                                ? 'bg-gray-100 dark:bg-gray-900 opacity-60'
+                                                : 'bg-white dark:bg-gray-800'}
+                                        `}
+                                    >
+                                        {/* Tag Deletada */}
+                                        {category.deleted_at && (
+                                            <div className="absolute top-3 left-3 z-50 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow">
+                                                Deletada
+                                            </div>
+                                        )}
                                         {/* Category Header */}
                                         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                                             <div className="flex items-center justify-between">
@@ -162,7 +176,7 @@ export default function Index({
 
                                             {/* Action Buttons */}
                                             <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-600">
-                                                {(can('categories_edit') && category.user_id != null) && (
+                                                {(can('categories_edit') && !category.deleted_at) && (
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenModalForEdit(category)}
@@ -174,7 +188,7 @@ export default function Index({
                                                         </span>
                                                     </button>
                                                 )}
-                                                {(can('categories_delete') && category.user_id != null) && (
+                                                {(can('categories_delete') && !category.deleted_at) && (
                                                     <button
                                                         type="button"
                                                         onClick={() => confirmCategoryDeletion(category.id)}
@@ -183,6 +197,21 @@ export default function Index({
                                                         <span className="inline-flex items-center justify-center gap-2">
                                                             <Trash className="w-4 h-4" />
                                                             Excluir
+                                                        </span>
+                                                    </button>
+                                                )}
+
+                                                {(can('categories_delete') && category.deleted_at) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => router.put(route('categories.restore', category.id), {
+                                                            preserveScroll: true,
+                                                        })}
+                                                        className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2.5 px-4 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+                                                    >
+                                                        <span className="inline-flex items-center justify-center gap-2">
+                                                            <RotateCcw className="w-4 h-4" />
+                                                            Restaurar
                                                         </span>
                                                     </button>
                                                 )}
@@ -248,7 +277,7 @@ export default function Index({
             {/* Delete Confirmation Modal */}
             {categoryToDelete && (
                 <Modal show={confirmingCategoryDeletion} onClose={closeModal}>
-                    <form onSubmit={(e) => { e.preventDefault(); deleteCategory(); }} className="p-6">
+                    <form onSubmit={(e) => { e.preventDefault(); deleteCategory(); }} className="p-6 bg-white dark:bg-gray-800 rounded-2xl">
                         <div className="flex items-center gap-4 mb-6">
                             <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
                                 <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">

@@ -9,9 +9,11 @@ use App\Models\Category;
 use App\Models\File;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\StoreProductVariant;
 use App\Models\User;
 use App\Models\VariantAttribute;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
@@ -25,7 +27,7 @@ class ProductVariantController extends Controller
     {
         $this->authorize('product-variants_view');
 
-        $request_data = Request::all('category', 'type', 'search', 'field', 'page');
+        $request_data = Request::all('category', 'type', 'search', 'field', 'page', 'trashed');
         $user = User::find(Auth::id());
 
         $categories = Category::where('tenant_id', $user->tenant_id)
@@ -59,6 +61,10 @@ class ProductVariantController extends Controller
             $productVariantsQuery->where($request_data['field'], 'like', '%' . $request_data['search'] . '%');
         }
 
+        if ($request_data['trashed'] ?? false) {
+            $productVariantsQuery->withTrashed();
+        }
+
         $productVariants = $productVariantsQuery->orderBy('id', 'desc')
             ->paginate(12)->withQueryString();
 
@@ -66,6 +72,7 @@ class ProductVariantController extends Controller
             'productVariants' => ProductVariantResource::collection($productVariants),
             'filters' => $request_data,
             'categories' => CategoryResource::collection($categories),
+            'trashed' => $request_data['trashed'] ?? false,
         ]);
     }
 
@@ -82,10 +89,10 @@ class ProductVariantController extends Controller
     /**
      * Product a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store()
     {
         $this->authorize('create', ProductVariant::class);
-        $request->validate([
+        $dataForm = Request::validated([
             'product_id' => 'required|exists:products,id',
             'sku' => 'nullable|string|max:100|unique:product_variants,sku,NULL,id,tenant_id,' . Auth::user()->tenant_id,
         ], [
@@ -94,7 +101,6 @@ class ProductVariantController extends Controller
             'sku.unique' => 'Já existe uma variante com este SKU na loja.',
         ]);
 
-        $dataForm = $request->all();
         $dataForm['user_id'] = Auth::id();
         $dataForm['tenant_id'] = Auth::user()->tenant_id;
 
@@ -171,7 +177,7 @@ class ProductVariantController extends Controller
 
                         if ($uploadedFilePath) {
                             $uploadedFile = new File([
-                                'user_id' => $request->user()->id,
+                                'user_id' => Auth::id(),
                                 'name' => $file->getClientOriginalName(),
                                 'url' => $uploadedFilePath,
                                 'size' => $file->getSize(),
@@ -214,12 +220,12 @@ class ProductVariantController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update($id)
     {
         $productVariant = ProductVariant::where('id', $id)->firstOrFail();
         $this->authorize('update', $productVariant);
 
-        $request->validate([
+        Request::validate([
             'product_id' => 'required|exists:products,id',
             'sku' => 'nullable|string|max:100|unique:product_variants,sku,' . $productVariant->id . ',id,tenant_id,' . Auth::user()->tenant_id,
         ], [
@@ -228,7 +234,7 @@ class ProductVariantController extends Controller
             'sku.unique' => 'Já existe uma variante com este SKU na loja.',
         ]);
 
-        $dataForm = $request->all();
+        $dataForm = Request::all();
 
         try {
             $dataForm['name'] = $productVariant->product->name;
@@ -289,7 +295,7 @@ class ProductVariantController extends Controller
 
                         if ($uploadedFilePath) {
                             $uploadedFile = new File([
-                                'user_id' => $request->user()->id,
+                                'user_id' => Request::id(),
                                 'name' => $file->getClientOriginalName(),
                                 'url' => $uploadedFilePath,
                                 'size' => $file->getSize(),
@@ -323,8 +329,18 @@ class ProductVariantController extends Controller
         $this->authorize('delete', $productVariant);
 
         try {
-            if ($productVariant->delete()) {
-                return redirect()->route('product-variant.index')
+            $deleted = DB::transaction(function () use ($productVariant) {
+                // Deletar as associações na loja
+                StoreProductVariant::whereHas('productVariant', function ($q) use ($productVariant) {
+                    $q->where('id', $productVariant->id);
+                })->delete();
+
+                // Deletar a variante do produto
+                return $productVariant->delete();
+            });
+
+            if ($deleted) {
+                return redirect()->back()
                     ->with('success', 'Variante de produto excluída com sucesso.');
             } else {
                 return redirect()->back()
@@ -333,6 +349,37 @@ class ProductVariantController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao excluir variante de produto: ' . $e->getMessage());
+        }
+    }
+
+    public function restore(ProductVariant $productVariant)
+    {
+        $this->authorize('delete', $productVariant);
+
+        try {
+            $restored = DB::transaction(function () use ($productVariant) {
+                // Restaurar o produto
+                $productVariant->restore();
+
+                // Restaurar as associações na loja
+                StoreProductVariant::onlyTrashed()->whereHas('productVariant', function ($q) use ($productVariant) {
+                    $q->where('id', $productVariant->id);
+                })->restore();
+
+                // Restaurar as variantes do produto
+                return $productVariant;
+            });
+
+            if ($restored) {
+                return redirect()->back()
+                    ->with('success', 'Variante de produto restaurada com sucesso.');
+            } else {
+                return redirect()->back()
+                    ->with('fail', 'Erro ao restaurar variante de produto.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('fail', 'Erro ao restaurar variante de produto: ' . $e->getMessage());
         }
     }
 }

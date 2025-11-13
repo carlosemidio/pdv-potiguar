@@ -23,6 +23,7 @@ class Order extends Model
         'discount',
         'service_fee',
         'total_amount',
+        'payment_method',
         'paid_amount',
         'payment_status',
     ];

@@ -18,6 +18,7 @@ export type Order = {
     status_name: string;
     amount: number;
     total_amount: number;
+    payment_method: string | null;
     discount_type: number;
     discount_value: number;
     discount: number;

@@ -8,18 +8,18 @@ import { Order } from '@/types/Order';
 import { Printer } from '@/types/Printer';
 import OrderItemFormModal from '@/Components/OrderItemFormModal';
 import { useState } from 'react';
-import { OrderItem } from '@/types/OrderItem';
 import Swal from 'sweetalert2';
 import { BookmarkCheck, DollarSignIcon, PercentIcon, PlusIcon } from 'lucide-react';
 import OrderPaymentsForm from '@/Components/OrderPaymentsForm';
 import { formatDateTime } from '@/utils/date-format';
-import { MdCancel, MdLocalPrintshop, MdLocalShipping, MdOutlineFormatListNumbered, MdProductionQuantityLimits, MdWhatsapp } from 'react-icons/md';
+import { MdCancel, MdLocalPrintshop, MdLocalShipping, MdOutlineFormatListNumbered, MdWhatsapp } from 'react-icons/md';
 import OrderDiscountFormModal from '@/Components/OrderDiscountFormModal';
 import PrintOrderFormModal from '@/Components/PrintOrderFormModal';
 import PrintOrderItemsFormModal from '@/Components/PrintOrderItemsFormModal';
 import OrderItemsList from '@/Components/OrderItemsList';
 import PaymentsList from '@/Components/PaymentsList';
 import OrderStatusColors from '@/utils/OrderStatusColors';
+import paymentMethods from '@/utils/paymentMethods';
 
 export default function Index({
     auth,
@@ -216,6 +216,13 @@ export default function Index({
                                     <div className="space-y-2">
                                         <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Mesa</h3>
                                         <p className="text-lg md:text-xl font-medium text-gray-900 dark:text-white">{order.data.table.name}</p>
+                                    </div>
+                                )}
+
+                                {order?.data.payment_method && (
+                                    <div className="space-y-2">
+                                        <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Forma de Pagamento: </span>
+                                        <span className="text-lg md:text-xl font-medium text-gray-900 dark:text-white">{paymentMethods.filter(pm => pm.key === order.data.payment_method)[0]?.label || order.data.payment_method}</span>
                                     </div>
                                 )}
                             </div>

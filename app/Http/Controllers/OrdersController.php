@@ -204,13 +204,27 @@ class OrdersController extends Controller
                     }
                 }
 
-                if ($item->comboOptionItems->isNotEmpty()) {
-                    $message .= "    Itens do Combo:\n";
+                if ($item->storeProductVariant->is_combo) {
+                    if ($item->storeProductVariant->comboItems->isNotEmpty()) {
+                        $message .= "    Itens fixos do Combo:\n";
 
-                    foreach ($item->comboOptionItems as $orderItemComboOption) {
-                        $message .= "      • {$orderItemComboOption->quantity}x {$orderItemComboOption->comboOptionItem->storeProductVariant->productVariant->name}\n";
+                        foreach ($item->storeProductVariant->comboItems as $comboItem) {
+                            $message .= "      • {$comboItem->quantity}x {$comboItem->itemVariant->productVariant->name}\n";
+                        }
                     }
-                }
+
+                    if ($item->comboOptionItems->isNotEmpty()) {
+                        $message .= "    Itens selecionados do Combo:\n";
+
+                        foreach ($item->comboOptionItems as $orderItemComboOption) {
+                            if ($orderItemComboOption->unit_price > 0) {
+                                $message .= "      • {$orderItemComboOption->quantity}x {$orderItemComboOption->comboOptionItem->storeProductVariant->productVariant->name} + (R$ " . number_format($orderItemComboOption->unit_price, 2, ',', '.') . ")\n";
+                            } else {
+                                $message .= "      • {$orderItemComboOption->quantity}x {$orderItemComboOption->comboOptionItem->storeProductVariant->productVariant->name}\n";
+                            }                            
+                        }
+                    }
+                } 
 
                 if ($item->orderItemAddons->isNotEmpty()) {
                     $message .= "    Adicionais:\n";

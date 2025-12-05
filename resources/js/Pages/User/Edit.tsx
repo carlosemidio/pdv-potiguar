@@ -113,7 +113,7 @@ export default function Page({ auth }: PageProps) {
                         <div className="p-8">
                             <form onSubmit={submit} className="space-y-8">
                                 {/* Seção de Tenant - só se tiver permissão */}
-                                {can('tenants_show') && (
+                                {can('tenants_view') && (
                                     <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-600/50 rounded-xl p-6 border-l-4 border-gray-400">
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                                             <StoreIcon className="w-5 h-5" />

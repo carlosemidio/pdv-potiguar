@@ -36,7 +36,7 @@ import {
     Target
 } from 'lucide-react';
 import AddressForm from '@/Components/AddressForm';
-import { add } from 'lodash';
+
 registerPlugin(FilePondPluginImagePreview);
 
 export default function Edit({
@@ -182,6 +182,18 @@ export default function Edit({
                         </SecondaryButton>
                     </Link>
                 </div>
+
+                {Object.keys(errors).length > 0 && (
+                    <div className="mb-6">
+                        <div className="rounded-lg bg-red-100 p-4 text-sm text-red-700" role="alert">
+                            <ul className="list-disc list-inside">
+                                {Object.entries(errors).map(([field, errorMsg], idx) => (
+                                    errorMsg ? <li key={field}>{errorMsg}</li> : null
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                )}
 
                 <form onSubmit={submit} className="space-y-6">
                     {/* Informações Básicas */}

@@ -11,12 +11,14 @@ type SearchableTenantsSelectProps = {
   setTenant: (tenant: Tenant) => void;
   selectedTenant: Tenant | null;
   isDisabled?: boolean;
+  placeholder?: string;
 };
 
 const SearchableTenantsSelect: React.FC<SearchableTenantsSelectProps> = ({
   setTenant,
   selectedTenant,
-  isDisabled = false
+  isDisabled = false,
+  placeholder = 'Buscar inquilino...',
 }) => {
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(
     selectedTenant ? { value: selectedTenant.id, label: selectedTenant.name } : null
@@ -68,7 +70,7 @@ const SearchableTenantsSelect: React.FC<SearchableTenantsSelectProps> = ({
           value: tenant.id,
           label: tenant.name
         }))}
-        placeholder="Buscar inquilino..."
+        placeholder={placeholder}
         className="mt-1 block w-full"
         value={selectedOption}
         isClearable

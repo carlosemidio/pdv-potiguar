@@ -23,6 +23,7 @@ class UserFormRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
+            'tenant_id' => ['nullable', 'exists:tenants,id'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'roles' => ['array'],
@@ -46,6 +47,7 @@ class UserFormRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'tenant_id.exists' => 'A empresa selecionada é inválida.',
             'name.required' => 'O nome é obrigatório.',
             'email.required' => 'O e-mail é obrigatório.',
             'email.email' => 'O e-mail deve ser um endereço de e-mail válido.',

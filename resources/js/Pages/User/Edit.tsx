@@ -1,7 +1,5 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -114,13 +112,14 @@ export default function Page({ auth }: PageProps) {
                         {/* Corpo do Formulário */}
                         <div className="p-8">
                             <form onSubmit={submit} className="space-y-8">
-                                {/* Seção de Tenant */}
+                                {/* Seção de Tenant - só se tiver permissão */}
                                 {can('tenants_show') && (
                                     <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-600/50 rounded-xl p-6 border-l-4 border-gray-400">
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                                             <StoreIcon className="w-5 h-5" />
-                                            Organização
+                                            Organização (Tenant)
                                         </h3>
+                                        <InputLabel htmlFor="tenant_id" value="Selecione a organização" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" />
                                         <SearchableTenantsSelect
                                             selectedTenant={tenant}
                                             setTenant={t => {
@@ -128,7 +127,9 @@ export default function Page({ auth }: PageProps) {
                                                 setData('tenant_id', t ? t.id : 0);
                                             }}
                                             isDisabled={processing}
+                                            placeholder="Buscar organização..."
                                         />
+                                        <InputError message={errors.tenant_id} className="mt-2" />
                                     </div>
                                 )}
 

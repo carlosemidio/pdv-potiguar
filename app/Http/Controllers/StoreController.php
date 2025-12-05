@@ -64,7 +64,9 @@ class StoreController extends Controller
     public function store(StoreCreateFormRequest $request)
     {
         $this->authorize('create', Store::class);
+
         $dataForm = $request->validate([
+            'user_id' => 'required|exists:users,id',
             'city_id' => 'required|exists:cities,id',
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
@@ -75,18 +77,18 @@ class StoreController extends Controller
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'status' => 'required|in:0,1',
-            'is_default' => 'sometimes|boolean',
+            'is_default' => 'nullable|boolean',
             'layout' => 'nullable|string|max:255',
-            'files.*' => 'sometimes|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx|max:2048',
-            'address' => 'sometimes|array',
-            'address.street' => 'sometimes|string|max:255',
-            'address.number' => 'sometimes|string|max:50',
-            'address.complement' => 'sometimes|string|max:255',
-            'address.neighborhood' => 'sometimes|string|max:255',
-            'address.zipcode' => 'sometimes|string|max:20',
-            'address.city_id' => 'sometimes|exists:cities,id',
-            'address.state' => 'sometimes|string|max:100',
-            'address.country' => 'sometimes|string|max:100',
+            'files.*' => 'nullable|file|mimes:jpg,jpeg,png,webp,gif,pdf,doc,docx|max:2048',
+            'address' => 'nullable|array',
+            'address.street' => 'nullable|string|max:255',
+            'address.number' => 'nullable|string|max:50',
+            'address.complement' => 'nullable|string|max:255',
+            'address.neighborhood' => 'nullable|string|max:255',
+            'address.zipcode' => 'nullable|string|max:20',
+            'address.city_id' => 'nullable|exists:cities,id',
+            'address.state' => 'nullable|string|max:100',
+            'address.country' => 'nullable|string|max:100',
         ], [
             'city_id.required' => 'A cidade é obrigatória.',
             'city_id.exists' => 'A cidade selecionada é inválida.',
@@ -139,6 +141,7 @@ class StoreController extends Controller
             return redirect()->back()
                 ->with('fail', 'Erro ao criar loja.');
         } catch (\Exception $e) {
+
             return redirect()->back()
                 ->with('fail', 'Erro ao criar loja: ' . $e->getMessage());
         }

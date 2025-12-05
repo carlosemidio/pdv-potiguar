@@ -99,6 +99,11 @@ class UserController extends Controller
         $formData = $request->all();
         
         $formData['user_id'] = $loggedUser->id;
+
+        if (isset($formData['tenant_id']) && $formData['tenant_id'] == '') {
+            $formData['tenant_id'] = $loggedUser->tenant_id;
+        }
+
         $user = User::create($formData);
         
         $rolesQuery = Role::query();

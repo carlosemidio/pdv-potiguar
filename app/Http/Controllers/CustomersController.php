@@ -58,12 +58,12 @@ class CustomersController extends Controller
         return Inertia::render('Customers/Form');
     }
 
-    public function store(Request $request)
+    public function store()
     {
         $this->authorize('create', Customer::class);
 
         try {
-            $data = $request->validate([
+            $data = Request::validate([
                 'name' => 'required|string|max:255',
                 'email' => 'nullable|email|max:255',
                 'phone' => 'nullable|string|max:20',
@@ -107,14 +107,14 @@ class CustomersController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update($id)
     {
         $customer = $this->customer->findOrFail($id);
 
         $this->authorize('update', $customer);
 
         try {
-            $data = $request->validate([
+            $data = Request::validate([
                 'name' => 'required|string|max:255',
                 'email' => 'nullable|email|max:255',
                 'phone' => 'nullable|string|max:20',

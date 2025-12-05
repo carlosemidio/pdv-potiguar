@@ -295,7 +295,7 @@ class ProductVariantController extends Controller
 
                         if ($uploadedFilePath) {
                             $uploadedFile = new File([
-                                'user_id' => Request::id(),
+                                'user_id' => Auth::id(),
                                 'name' => $file->getClientOriginalName(),
                                 'url' => $uploadedFilePath,
                                 'size' => $file->getSize(),

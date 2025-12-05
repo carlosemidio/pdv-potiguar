@@ -92,7 +92,7 @@ class ProductVariantController extends Controller
     public function store()
     {
         $this->authorize('create', ProductVariant::class);
-        $dataForm = Request::validated([
+        $dataForm = Request::validate([
             'product_id' => 'required|exists:products,id',
             'sku' => 'nullable|string|max:100|unique:product_variants,sku,NULL,id,tenant_id,' . Auth::user()->tenant_id,
         ], [

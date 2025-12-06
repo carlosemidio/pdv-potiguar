@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Ajax;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProductVariant;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,19 +23,23 @@ class ProductVariantListController extends Controller
     {
         $search = $request->search ?? '';
         $variantsQuery = $this->productVariant->query();
+        $user = User::find(Auth::id());
 
-        if (!request()->user()->hasPermission('product-variants_view', true)) {
+        if (!$user->hasPermission('product-variants_view', true)) {
             $variantsQuery->where('user_id', Auth::id());
         }
 
-        if (request()->user()->tenant_id != null) {
-            $variantsQuery->where('tenant_id', request()->user()->tenant_id);
+        if ($user->tenant_id != null) {
+            $variantsQuery->where('tenant_id', $user->tenant_id);
         }
 
         if ($search != '') {
-            $variantsQuery->whereHas('product', function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            })->orWhere('sku', 'like', '%' . $search . '%');
+            $variantsQuery->where(function ($query) use ($search) {
+                $query->whereHas('product', function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%');
+                })
+                ->orWhere('sku', 'like', '%' . $search . '%');
+            });
         }
 
         $variants = $variantsQuery->orderBy('sku')->take(20)->get();

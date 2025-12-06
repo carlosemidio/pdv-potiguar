@@ -89,4 +89,28 @@ class OrderItemStockMovementService
             }
         }
     }
+
+    /**
+     * Reverte os movimentos de estoque para os itens do pedido.
+     *
+     * @param OrderItem $orderItem
+     * @return void
+    */
+    public function revertSaleFromOrderItem(OrderItem $orderItem) {   
+        if ($orderItem->storeProductVariant && $orderItem->storeProductVariant->manage_stock && !$orderItem->storeProductVariant->is_produced) {
+            $this->stockMovementService->register(
+                null,
+                $orderItem->order->tenant_id,
+                $orderItem->order->store_id,
+                get_class($orderItem->storeProductVariant),
+                $orderItem->storeProductVariant->id,
+                $orderItem->quantity,
+                StockMovementSubtype::RETURN_CUSTOMER,
+                $orderItem->storeProductVariant->cost_price,
+                "Reversão de venda do produto: {$orderItem->storeProductVariant->productVariant->name} (Pedido #{$orderItem->order->number})",
+                null,
+                null
+            );
+        }
+    }
 }

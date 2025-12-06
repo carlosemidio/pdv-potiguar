@@ -41,9 +41,10 @@ export default function EditVariant({
         files: Array<File>(),
     });
     
+    // Inicializa apenas uma vez, não sobrescreve após submit
     const [selectedAttribute, setSelectedAttribute] = useState<Attribute | null>(null);
     const [attributeName, setAttributeName] = useState<string | null>(null);
-    const [product, setProduct] = useState(productVariant ? productVariant.data.product : null);
+    const [product, setProduct] = useState(() => productVariant ? productVariant.data.product : null);
     const [files, setFiles] = useState<File[]>([]);
 
     // Funções para manipular atributos
@@ -92,20 +93,18 @@ export default function EditVariant({
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-
-        // Prepare files for upload
-        data.files = files;
-
+        // Sempre usa setData para garantir que arquivos estejam no form
+        setData('files', files);
         if (isEdit) {
             post(route('product-variant.update', productVariant.data.id), {
                 preserveScroll: true,
-                preserveState: false,
+                preserveState: true, // Mantém o state após erro
             });
         } else {
             post(route('product-variant.store'),
             {
                 preserveScroll: true,
-                preserveState: false,
+                preserveState: true, // Mantém o state após erro
             });
         }
     };

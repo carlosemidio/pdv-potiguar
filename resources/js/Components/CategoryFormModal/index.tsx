@@ -65,7 +65,7 @@ export default function CategoryFormModal({ isOpen, onClose, category }: Categor
 
     return (
         <Modal show={isOpen} onClose={onClose} maxWidth="lg">
-            <div className="bg-white dark:bg-gray-800 shadow-xl w-full">
+            <div className="bg-white dark:bg-gray-800 shadow-xl w-full rounded-2xl">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 rounded-t-2xl">
                     <div className="flex items-center justify-between">

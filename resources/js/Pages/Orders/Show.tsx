@@ -326,7 +326,7 @@ export default function Index({
                     </div>
                 )}
 
-                <div className="border-gray-200 dark:border-gray-700 w-full">
+                <div className="border-gray-200 dark:border-gray-700 w-[100%] md:w-auto">
                     <div className="text-sm text-gray-500 dark:text-gray-400 flex justify-between items-center">
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             Subtotal: <span className="font-semibold text-gray-900 dark:text-white">{order?.data.amount}</span>

@@ -92,7 +92,8 @@ class ProductVariantController extends Controller
     public function store()
     {
         $this->authorize('create', ProductVariant::class);
-        $dataForm = Request::validate([
+
+        Request::validate([
             'product_id' => 'required|exists:products,id',
             'sku' => 'nullable|string|max:100|unique:product_variants,sku,NULL,id,tenant_id,' . Auth::user()->tenant_id,
         ], [
@@ -100,6 +101,8 @@ class ProductVariantController extends Controller
             'product_id.exists' => 'O produto selecionado não é válido.',
             'sku.unique' => 'Já existe uma variante com este SKU na loja.',
         ]);
+
+        $dataForm = Request::all();
 
         $dataForm['user_id'] = Auth::id();
         $dataForm['tenant_id'] = Auth::user()->tenant_id;
@@ -144,10 +147,9 @@ class ProductVariantController extends Controller
         }
 
         try {
-            $productVariant = ProductVariant::create($dataForm);
+            $productVariant = DB::transaction(function () use ($dataForm, $product) {
+                $productVariant = ProductVariant::create($dataForm);
 
-            if (($productVariant instanceof ProductVariant)) {
-                // Sync attributes if provided
                 if (isset($dataForm['attributes']) && is_array($dataForm['attributes']) && count($dataForm['attributes']) > 0) {
                     $attributeNames = [];
                     foreach ($dataForm['attributes'] as $attribute) {
@@ -167,6 +169,12 @@ class ProductVariantController extends Controller
                             ],
                             ['value' => $attribute['value']]
                         );
+                    }
+
+                    $product = $productVariant->product;
+
+                    if (!($product)) {
+                        throw new \Exception('Produto associado à variante não encontrado.');
                     }
                 }
 
@@ -190,12 +198,11 @@ class ProductVariantController extends Controller
                     }
                 }
 
-                return redirect()->route('product-variant.edit', $productVariant->id)
-                    ->with('success', 'Variante de produto cadastrada com sucesso.');
-            }
+                return $productVariant;
+            });
 
-            return redirect()->back()
-                ->with('fail', 'Erro ao cadastrar variante de produto.');
+            return redirect()->route('product-variant.edit', $productVariant->id)
+                ->with('success', 'Variante de produto cadastrada com sucesso.');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('fail', 'Erro ao cadastrar variante de produto: ' . $e->getMessage());

@@ -238,6 +238,12 @@ class OrdersController extends Controller
             }
 
             $message .= "\nTotal: R$ " . number_format($order->total_amount, 2, ',', '.');
+
+            $message .= "\n\nLink para acompanhar o pedido: ";
+            $message .= "\nhttps://" . $order->store->slug . ".pdvp.com.br" . "/clientes/" . $order->customer->phone . "/pedidos/" . $order->number;
+
+            $message .= "\n\nObrigado por escolher a " . $order->store->name . "!";
+
             $encodedMessage = urlencode($message);
             $whatsappUrl = "https://wa.me/55{$order->customer->phone}?text={$encodedMessage}";
         } else {
@@ -422,6 +428,14 @@ class OrdersController extends Controller
                     $order->update(['status' => OrderStatus::CANCELED->value]);
                 } else {
                     $order->update(['status' => OrderStatus::REJECTED->value]);
+                }
+
+                foreach ($order->items as $item) {
+                    $storeProductVariant = $item->storeProductVariant;
+                    if ($storeProductVariant && $storeProductVariant->manage_stock && !$storeProductVariant->is_produced) {
+                        // Reverter o movimento de estoque associado ao item do pedido
+                        $this->orderItemStockMovementService->revertSaleFromOrderItem($item);
+                    }
                 }
             });
 

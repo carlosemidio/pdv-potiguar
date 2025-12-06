@@ -344,6 +344,8 @@ class OrderItemsController extends Controller
             }
 
             DB::transaction(function () use ($orderItem, $order) {
+                $this->orderItemStockMovementService->revertSaleFromOrderItem($orderItem);
+
                 // Recalculate order totals
                 $orderItem->delete();
                 $order->load('items');

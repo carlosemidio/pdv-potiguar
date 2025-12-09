@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Ajax;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\StoreProductVariantResource;
-use App\Models\Store;
 use App\Models\StoreProductVariant;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -55,7 +54,7 @@ class StoreProductVariantListController extends Controller
             });
         }
 
-        $storeProductVariants = $storeProductVariantsQuery->take(20)->get();
+        $storeProductVariants = $storeProductVariantsQuery->take(100)->get();
 
         return response()->json(StoreProductVariantResource::collection($storeProductVariants));
     }

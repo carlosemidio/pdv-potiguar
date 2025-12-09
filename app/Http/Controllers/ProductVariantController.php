@@ -269,6 +269,20 @@ class ProductVariantController extends Controller
             if ($productVariant->update($dataForm)) {
                 if (isset($dataForm['attributes']) && is_array($dataForm['attributes']) && count($dataForm['attributes']) > 0) {
                     $attributeNames = [];
+                    
+                    // Excluir os atributos antigos que não vierem na requisição
+                    $incomingAttributeNames = array_map(fn($attr) => $attr['name'], $dataForm['attributes']);
+                    
+                    $attributesToDelete = VariantAttribute::whereHas('attributeValues', function ($q) use ($productVariant) {
+                        $q->where('product_variant_id', $productVariant->id);
+                    })->whereNotIn('name', $incomingAttributeNames)->get();
+
+                    foreach ($attributesToDelete as $attributeToDelete) {
+                        AttributeValue::where('product_variant_id', $productVariant->id)
+                            ->where('variant_attribute_id', $attributeToDelete->id)
+                            ->delete();
+                    }
+
                     foreach ($dataForm['attributes'] as $attribute) {
                         // Ensure the attribute exists
                         $attributeNames[] = $attribute['value'];

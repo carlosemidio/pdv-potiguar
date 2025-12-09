@@ -71,6 +71,13 @@ export default function EditVariant({
         setData('attributes', updated);
     };
 
+    // Remove atributo pelo índice
+    const handleRemoveAttribute = (index: number) => {
+        const updated = [...data.attributes];
+        updated.splice(index, 1);
+        setData('attributes', updated);
+    };
+
     const handleDeleteFile = (fileId: number) => {
         data._method = 'delete';
         post(route('file.destroy', fileId), 
@@ -232,7 +239,7 @@ export default function EditVariant({
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {data.attributes.map((attribute: Attribute, attrIndex: number) => (
-                                                <div key={attrIndex} className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
+                                                <div key={attrIndex} className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600 relative">
                                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                         {attribute.name}
                                                     </label>
@@ -243,6 +250,14 @@ export default function EditVariant({
                                                         onChange={e => handleAttributeValueChange(attrIndex, e.target.value)}
                                                         className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:border-green-500 dark:focus:border-green-400 focus:ring-1 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-gray-800"
                                                     />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveAttribute(attrIndex)}
+                                                        className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md"
+                                                        title="Remover atributo"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
                                                 </div>
                                             ))}
                                         </div>

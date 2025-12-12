@@ -36,6 +36,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Reports\ReportOrdersController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\StoreProductVariantController;
@@ -261,6 +262,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('/redes-sociais', App\Http\Controllers\SocialNetworksController::class)
         ->only(['store', 'destroy'])
         ->names('social-networks');
+
+    // rotas de relatorios
+    Route::get('/relatorios/pedidos', [ReportOrdersController::class, 'index'])
+        ->name('reports.orders');
 
     // rota usada no componente select de cidades
     Route::get('search-cities-select', [CityController::class, 'index'])

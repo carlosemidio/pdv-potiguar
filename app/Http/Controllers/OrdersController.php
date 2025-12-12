@@ -72,7 +72,7 @@ class OrdersController extends Controller
 
         $orders = $ordersQuery->with(['store', 'table', 'customer', 'items.storeProductVariant.productVariant'])
             ->orderBy('id', 'desc')
-            ->paginate(5)
+            ->paginate(10)
             ->withQueryString();
 
         $tables = [];

@@ -1,5 +1,7 @@
 import { Payment } from "@/types/Payment";
+import { useForm } from "@inertiajs/react";
 import { useState } from "react";
+import Swal from "sweetalert2";
 
 interface PaymentsListExpandableProps {
   payments: Payment[];
@@ -7,6 +9,8 @@ interface PaymentsListExpandableProps {
 }
 
 export default function PaymentsListExpandable({ payments, formatDateTime }: PaymentsListExpandableProps) {
+  const { delete: destroy } = useForm({});
+
   const [openPayments, setOpenPayments] = useState<number[]>([]);
   const allIds = payments.map((p) => p.id);
   const allExpanded = openPayments.length === allIds.length;
@@ -20,6 +24,38 @@ export default function PaymentsListExpandable({ payments, formatDateTime }: Pay
   const toggleAll = () => {
     setOpenPayments((prev) => (prev.length === payments.length ? [] : allIds));
   };
+
+  const deletePayment = (id: number) => {
+    Swal.fire({
+      title: 'Tem certeza?',
+      text: 'Esta ação não pode ser desfeita.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sim, deletar!',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        destroy(route('payments.destroy', id), {
+          onSuccess: () => {
+            Swal.fire(
+              'Deletado!',
+              'O pagamento foi deletado com sucesso.',
+              'success'
+            );
+          },
+          onError: () => {
+            Swal.fire(
+              'Erro!',
+              'Houve um problema ao deletar o pagamento.',
+              'error'
+            );
+          },
+        });
+      }
+    });
+  }
 
   return (
     <div className="w-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
@@ -49,9 +85,8 @@ export default function PaymentsListExpandable({ payments, formatDateTime }: Pay
 
         return (
           <div key={payment.id}>
-            <button
+            <div
               onClick={() => togglePayment(payment.id)}
-              disabled={!hasNotes}
               className={`w-full flex justify-between items-center px-3 py-2 text-left transition ${
                 hasNotes
                   ? "hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
@@ -76,6 +111,26 @@ export default function PaymentsListExpandable({ payments, formatDateTime }: Pay
                     currency: "BRL",
                   })}
                 </span>
+
+                {/* Delete button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deletePayment(payment.id);
+                  }}
+                  className="text-red-600 hover:text-red-800"
+                  title="Deletar pagamento"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
 
                 {hasNotes && (
                   <>
@@ -103,7 +158,7 @@ export default function PaymentsListExpandable({ payments, formatDateTime }: Pay
                   </>
                 )}
               </div>
-            </button>
+            </div>
 
             {hasNotes && (
               <div

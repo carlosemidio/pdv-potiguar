@@ -243,6 +243,8 @@ class ProductVariantController extends Controller
 
         $dataForm = Request::all();
 
+        dd($dataForm);
+
         try {
             $dataForm['name'] = $productVariant->product->name;
 

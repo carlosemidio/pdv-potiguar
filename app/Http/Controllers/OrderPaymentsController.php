@@ -111,10 +111,12 @@ class OrderPaymentsController extends Controller
         }
     }
 
-    public function destroy(Payment $payment)
+    public function destroy(int $id)
     {
+        $payment = Payment::with('order')->findOrFail($id);
         $order = $payment->order;
-        $this->authorize('delete', $order);
+
+        $this->authorize('update', $order);
 
         try {
             DB::transaction(function () use ($payment, $order) {
@@ -162,5 +164,4 @@ class OrderPaymentsController extends Controller
                 ->with('fail', 'Erro ao remover pagamento do pedido: ' . $e->getMessage());
         }
     }
-
 }

@@ -100,20 +100,21 @@ export default function EditVariant({
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        // Sempre usa setData para garantir que arquivos estejam no form
-        setData('files', files);
-        if (isEdit) {
-            post(route('product-variant.update', productVariant.data.id), {
-                preserveScroll: true,
-                preserveState: true, // Mantém o state após erro
-            });
-        } else {
-            post(route('product-variant.store'),
-            {
-                preserveScroll: true,
-                preserveState: true, // Mantém o state após erro
-            });
-        }
+        // Garante que o setData seja aplicado antes do post
+        setTimeout(() => {
+            if (isEdit) {
+                post(route('product-variant.update', productVariant.data.id), {
+                    preserveScroll: true,
+                    preserveState: true, // Mantém o state após erro
+                });
+            } else {
+                post(route('product-variant.store'),
+                {
+                    preserveScroll: true,
+                    preserveState: true, // Mantém o state após erro
+                });
+            }
+        }, 100);
     };
 
     return (
@@ -360,6 +361,7 @@ export default function EditVariant({
                                             files={files}
                                             onupdatefiles={(fileItems: FilePondFile[]) => {
                                                 setFiles(fileItems.map(fileItem => fileItem.file) as File[]);
+                                                setData('files', fileItems.map(fileItem => fileItem.file as File));
                                             }}
                                             allowMultiple={true}
                                             maxFiles={10}

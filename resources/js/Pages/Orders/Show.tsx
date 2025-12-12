@@ -186,7 +186,7 @@ export default function Index({
             header={
                 <div className="flex items-center justify-between w-full">
                     <h1 className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white tracking-tight truncate">
-                        Pedido #{order?.data ? order.data.id : 'N/A'}
+                        Pedido #{order?.data ? order.data.number : 'N/A'}
                     </h1>
 
                     <div className="flex items-center space-x-2">
